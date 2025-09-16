@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherPro - Advanced Weather Application</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/weather-app/assets/icons8-favicon (1).gif">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background-container">
+        <div class="background-animation" id="backgroundAnimation"></div>
+        <div class="weather-particles" id="weatherParticles"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <i class="fas fa-cloud-sun"></i>
+                    WeatherPro
+                </h1>
+                <div class="header-controls">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <div class="search-input-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        id="cityInput" 
+                        class="search-input" 
+                        placeholder="Enter city name..."
+                        autocomplete="off"
+                    >
+                    <button class="search-btn" id="searchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <button class="location-btn" id="locationBtn" title="Use current location">
+                    <i class="fas fa-location-crosshairs"></i>
+                    <span>Current Location</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading Spinner -->
+        <div class="loader-container" id="loaderContainer">
+            <div class="weather-loader">
+                <div class="sun">
+                    <div class="sun-rays"></div>
+                </div>
+                <div class="cloud cloud1"></div>
+                <div class="cloud cloud2"></div>
+                <div class="rain-drops">
+                    <div class="drop"></div>
+                    <div class="drop"></div>
+                    <div class="drop"></div>
+                </div>
+            </div>
+            <p class="loading-text">Fetching weather data...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-container" id="errorContainer">
+            <div class="error-content">
+                <i class="fas fa-exclamation-triangle error-icon"></i>
+                <h3 class="error-title">Oops! Something went wrong</h3>
+                <p class="error-message" id="errorMessage">Unable to fetch weather data. Please try again.</p>
+                <button class="retry-btn" id="retryBtn">
+                    <i class="fas fa-redo"></i>
+                    Try Again
+                </button>
+            </div>
+        </div>
+
+        <!-- Weather Content -->
+        <main class="weather-content" id="weatherContent">
+            <!-- Current Weather Card -->
+            <section class="current-weather-card glassmorphism">
+                <div class="current-weather-header">
+                    <div class="location-info">
+                        <h2 class="location-name" id="locationName">New York, NY</h2>
+                        <p class="last-updated" id="lastUpdated">Last updated: 5 min ago</p>
+                    </div>
+                    <div class="weather-icon-container">
+                        <img src="" alt="Weather condition" class="weather-icon" id="currentWeatherIcon">
+                    </div>
+                </div>
+
+                <div class="temperature-section">
+                    <div class="main-temperature">
+                        <span class="temperature" id="currentTemp">22°C</span>
+                        <span class="condition" id="currentCondition">Partly Cloudy</span>
+                    </div>
+                    <div class="feels-like">
+                        <span>Feels like <span id="feelsLike">25°C</span></span>
+                    </div>
+                </div>
+
+                <!-- Weather Details Grid -->
+                <div class="weather-details-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-eye detail-icon"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Visibility</span>
+                            <span class="detail-value" id="visibility">10 km</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-tint detail-icon"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Humidity</span>
+                            <span class="detail-value" id="humidity">65%</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-wind detail-icon"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Wind</span>
+                            <span class="detail-value" id="windSpeed">15 km/h</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-thermometer-half detail-icon"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Pressure</span>
+                            <span class="detail-value" id="pressure">1013 hPa</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-compass detail-icon"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Wind Direction</span>
+                            <span class="detail-value" id="windDirection">NE</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-sun detail-icon"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">UV Index</span>
+                            <span class="detail-value" id="uvIndex">3</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 24-Hour Forecast Chart -->
+            <section class="chart-section glassmorphism">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    24-Hour Temperature Trend
+                </h3>
+                <div class="chart-container">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+            </section>
+
+            <!-- 7-Day Forecast -->
+            <section class="forecast-section glassmorphism">
+                <h3 class="section-title">
+                    <i class="fas fa-calendar-week"></i>
+                    7-Day Forecast
+                </h3>
+                <div class="forecast-grid" id="forecastGrid">
+                    <!-- Forecast items will be dynamically generated -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <script src="script.js"></script>
+    <p>by subbu</p>
+</body>
+</html>
