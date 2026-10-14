@@ -52,10 +52,16 @@
                         placeholder="Enter city name..."
                         autocomplete="off"
                         aria-label="Search for a city"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-haspopup="listbox"
+                        aria-controls="citySuggestions"
+                        aria-expanded="false"
                     >
-                    <button class="search-btn" id="searchBtn">
-                        <i class="fas fa-search"></i>
+                    <button class="search-btn" id="searchBtn" aria-label="Search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
                     </button>
+                    <div class="city-suggestions" id="citySuggestions" role="listbox" aria-label="City suggestions" hidden></div>
                 </div>
                 <button class="location-btn" id="locationBtn" title="Use current location" aria-label="Use my current location">
                     <i class="fas fa-location-crosshairs"></i>
