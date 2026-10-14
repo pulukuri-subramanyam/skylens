@@ -166,7 +166,7 @@ class WeatherApp {
     const longitude = Number(location.lon);
     const hasCoordinates = location.lat != null && location.lon != null &&
       Number.isFinite(latitude) && Number.isFinite(longitude);
-    const query = hasCoordinates ? String(latitude) + ',' + String(longitude) : label;
+    const query = label;
     const id = hasCoordinates ? latitude.toFixed(3) + ',' + longitude.toFixed(3) : label.toLowerCase();
     return { id, name, label, query };
   }
