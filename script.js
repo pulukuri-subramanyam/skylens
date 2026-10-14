@@ -24,6 +24,8 @@ class WeatherApp {
     this.suggestionController = null;
     this.suggestionRequestId = 0;
     this.citySuggestions = [];
+    this.lastSuggestionQuery = '';
+    this.isSearchingCities = false;
     this.activeSuggestionIndex = -1;
     this.temperatureUnit = localStorage.getItem('weatherapp-temperature-unit') || 'C';
     this.currentWeatherData = null;
@@ -137,20 +139,35 @@ class WeatherApp {
 
   handleCityInput() {
     const query = this.elements.cityInput.value.trim();
+    const previousSuggestions = this.citySuggestions;
+    const previousQuery = this.normalizeLocationText(this.lastSuggestionQuery);
+    const normalizedQuery = this.normalizeLocationText(query);
+
     window.clearTimeout(this.suggestionTimer);
     this.closeCitySuggestions();
 
-    if (query.length < 4 || /^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(query)) {
+    if (normalizedQuery.replace(/\s/g, '').length < 2 || /^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(query)) {
       return;
     }
 
-    this.citySuggestions = this.getLocalCitySuggestions(query);
+    const canReusePrevious =
+      previousQuery.length >= 2 &&
+      normalizedQuery.startsWith(previousQuery);
+    const cachedSuggestions = canReusePrevious
+      ? this.filterCitySuggestions(previousSuggestions, query)
+      : [];
+
+    this.citySuggestions = cachedSuggestions.length
+      ? cachedSuggestions
+      : this.getLocalCitySuggestions(query);
+    this.lastSuggestionQuery = query;
+    this.isSearchingCities = true;
     this.renderCitySuggestions();
 
     const requestId = this.suggestionRequestId;
     this.suggestionTimer = window.setTimeout(() => {
       this.fetchCitySuggestions(query, requestId);
-    }, 200);
+    }, 120);
   }
 
   async fetchCitySuggestions(query, requestId) {
@@ -183,6 +200,7 @@ class WeatherApp {
         candidates.photon,
         candidates.india
       );
+      this.lastSuggestionQuery = query;
       this.renderCitySuggestions();
     };
 
@@ -208,6 +226,11 @@ class WeatherApp {
       loadProvider('photon', photonRequest),
       loadProvider('india', indiaPhotonRequest)
     ]);
+
+    if (requestId === this.suggestionRequestId && !signal.aborted) {
+      this.isSearchingCities = false;
+      this.renderCitySuggestions();
+    }
 
     if (this.suggestionController === controller) {
       this.suggestionController = null;
@@ -342,9 +365,28 @@ class WeatherApp {
       .map((entry) => entry.location);
   }
 
+  filterCitySuggestions(locations, query) {
+    const queryTokens = this.normalizeLocationText(query).split(' ').filter(Boolean);
+    if (!queryTokens.length) return [];
+
+    return this.rankCityLocations(locations, query)
+      .filter((location) => {
+        const searchableText = this.normalizeLocationText([
+          location.name,
+          location.district,
+          location.parentCity,
+          location.state,
+          location.countryCode,
+          this.getCountryDisplayName(location.countryCode || location.country)
+        ].filter(Boolean).join(' '));
+        return queryTokens.every((token) => searchableText.includes(token));
+      })
+      .slice(0, 12);
+  }
+
   getLocalCitySuggestions(query) {
     const normalizedQuery = this.normalizeLocationText(query);
-    if (normalizedQuery.length < 4) return [];
+    if (normalizedQuery.replace(/\s/g, '').length < 2) return [];
 
     const entries = [
       ...(this.recentCities || []).map((city) => ({ city, source: 'Recent' })),
@@ -389,16 +431,41 @@ class WeatherApp {
   }
 
   isSameCitySuggestion(left, right) {
-    if (this.normalizeLocationText(left.name) !== this.normalizeLocationText(right.name)) {
-      return false;
-    }
+    const leftCountryCode = /^[a-z]{2}$/i.test(String(left.countryCode || ''))
+      ? left.countryCode
+      : (/^[a-z]{2}$/i.test(String(left.country || '')) ? left.country : '');
+    const rightCountryCode = /^[a-z]{2}$/i.test(String(right.countryCode || ''))
+      ? right.countryCode
+      : (/^[a-z]{2}$/i.test(String(right.country || '')) ? right.country : '');
+    const leftCountry = this.normalizeLocationText(
+      leftCountryCode ? this.getCountryDisplayName(leftCountryCode) : left.country
+    );
+    const rightCountry = this.normalizeLocationText(
+      rightCountryCode ? this.getCountryDisplayName(rightCountryCode) : right.country
+    );
 
-    const leftCountry = this.normalizeLocationText(left.countryCode || left.country);
-    const rightCountry = this.normalizeLocationText(right.countryCode || right.country);
     if (leftCountry && rightCountry && leftCountry !== rightCountry) return false;
 
+    const leftName = this.normalizeLocationText(left.name);
+    const rightName = this.normalizeLocationText(right.name);
+    const namesMatch = leftName === rightName;
     const leftState = this.normalizeLocationText(left.state);
     const rightState = this.normalizeLocationText(right.state);
+    const sameState = Boolean(leftState && rightState && leftState === rightState);
+
+    const latitudeDelta = (Number(left.lat) - Number(right.lat)) * 111;
+    const meanLatitude = (Number(left.lat) + Number(right.lat)) * Math.PI / 360;
+    const longitudeDelta =
+      (Number(left.lon) - Number(right.lon)) * 111 * Math.cos(meanLatitude);
+    const distanceKm = Math.hypot(latitudeDelta, longitudeDelta);
+
+    // Providers can return different spellings for the same place at the same point.
+    if (distanceKm < 1.5 && (namesMatch || sameState)) return true;
+    if (!namesMatch) return false;
+
+    // Small coordinate shifts between providers are normal; don't let differing
+    // district/state metadata create duplicate rows for the same town.
+    if (distanceKm < 5) return true;
     if (leftState && rightState && leftState !== rightState) return false;
 
     const leftArea = this.normalizeLocationText(left.district || left.parentCity);
@@ -409,11 +476,7 @@ class WeatherApp {
     const rightDetails = this.normalizeLocationText(this.formatCitySuggestionDetails(right));
     if (leftDetails === rightDetails) return true;
 
-    const latitudeDelta = (Number(left.lat) - Number(right.lat)) * 111;
-    const meanLatitude = (Number(left.lat) + Number(right.lat)) * Math.PI / 360;
-    const longitudeDelta =
-      (Number(left.lon) - Number(right.lon)) * 111 * Math.cos(meanLatitude);
-    return Math.hypot(latitudeDelta, longitudeDelta) < 15;
+    return distanceKm < 15;
   }
 
   combineCitySuggestions(results, query, supplementalResults = [], indiaResults = []) {
@@ -504,9 +567,20 @@ class WeatherApp {
       list.appendChild(option);
     });
 
+    if (this.isSearchingCities) {
+      const status = document.createElement('div');
+      status.className = 'city-suggestion-status';
+      status.setAttribute('role', 'option');
+      status.setAttribute('aria-disabled', 'true');
+      status.textContent = this.citySuggestions.length
+        ? 'Finding more places…'
+        : 'Searching places…';
+      list.appendChild(status);
+    }
+
     const hasSuggestions = this.citySuggestions.length > 0;
-    list.hidden = !hasSuggestions;
-    this.elements.cityInput.setAttribute('aria-expanded', String(hasSuggestions));
+    list.hidden = !hasSuggestions && !this.isSearchingCities;
+    this.elements.cityInput.setAttribute('aria-expanded', String(!list.hidden));
     this.elements.cityInput.removeAttribute('aria-activedescendant');
   }
 
@@ -580,6 +654,8 @@ class WeatherApp {
       this.suggestionController = null;
     }
     this.citySuggestions = [];
+    this.lastSuggestionQuery = '';
+    this.isSearchingCities = false;
     this.activeSuggestionIndex = -1;
     this.elements.citySuggestions.hidden = true;
     this.elements.cityInput.setAttribute('aria-expanded', 'false');
