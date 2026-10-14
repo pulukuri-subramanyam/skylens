@@ -779,55 +779,48 @@ body {
 
 @media (min-width: 1024px) {
   .weather-content {
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
   }
   
-  .current-weather-card {
+  .current-weather-card,
+  .chart-section,
+  .forecast-section {
     grid-column: 1 / -1;
   }
   
-  .chart-section {
-    grid-column: 1;
-    align-self: start;
-  }
-  
-  .forecast-section {
-    grid-column: 2;
-  }
-  
   .forecast-grid {
-    grid-template-columns: 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 12px;
   }
   
   .forecast-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    text-align: left;
-    padding: 15px;
-    gap: 15px;
+    text-align: center;
+    padding: 14px 8px;
+    gap: 0;
   }
   
   .forecast-date {
-    min-width: 80px;
-    margin-bottom: 0;
-    font-size: 13px;
+    min-width: 0;
+    margin-bottom: 6px;
+    font-size: 12px;
   }
   
   .forecast-icon {
-    width: 40px;
-    height: 40px;
-    margin: 0;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 6px;
     flex-shrink: 0;
   }
   
   .forecast-temps {
-    margin-left: auto;
-    margin-bottom: 0;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
+    margin: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
   
   .forecast-condition {
