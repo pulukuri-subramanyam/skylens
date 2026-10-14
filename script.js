@@ -374,11 +374,19 @@ class WeatherApp {
     const rightState = this.normalizeLocationText(right.state);
     if (leftState && rightState && leftState !== rightState) return false;
 
+    const leftArea = this.normalizeLocationText(left.district || left.parentCity);
+    const rightArea = this.normalizeLocationText(right.district || right.parentCity);
+    if (leftArea && rightArea && leftArea !== rightArea) return false;
+
+    const leftDetails = this.normalizeLocationText(this.formatCitySuggestionDetails(left));
+    const rightDetails = this.normalizeLocationText(this.formatCitySuggestionDetails(right));
+    if (leftDetails === rightDetails) return true;
+
     const latitudeDelta = (Number(left.lat) - Number(right.lat)) * 111;
     const meanLatitude = (Number(left.lat) + Number(right.lat)) * Math.PI / 360;
     const longitudeDelta =
       (Number(left.lon) - Number(right.lon)) * 111 * Math.cos(meanLatitude);
-    return Math.hypot(latitudeDelta, longitudeDelta) < 5;
+    return Math.hypot(latitudeDelta, longitudeDelta) < 15;
   }
 
   combineCitySuggestions(results, query, supplementalResults = [], indiaResults = []) {
