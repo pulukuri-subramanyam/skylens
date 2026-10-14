@@ -1008,3 +1008,9 @@ input:focus {
   outline: 2px solid var(--accent-color);
   outline-offset: 3px;
 }
+
+
+/* Keep the author footer out of the initial loading state; retain it after first data load. */
+body.loading:not(.has-weather-data) .app-footer {
+  display: none;
+}
