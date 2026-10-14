@@ -205,7 +205,14 @@ class WeatherApp {
 
   rankCityLocations(locations, query) {
     const normalizedQuery = this.normalizeLocationText(query);
-    const nameQuery = this.normalizeLocationText(String(query || '').split(',')[0]);
+    const rawParts = String(query || '').split(',');
+    const nameQuery = this.normalizeLocationText(rawParts[0]);
+    const qualifierTokens = rawParts
+      .slice(1)
+      .map((part) => this.normalizeLocationText(part))
+      .join(' ')
+      .split(' ')
+      .filter(Boolean);
     const queryTokens = normalizedQuery.split(' ').filter(Boolean);
 
     return (Array.isArray(locations) ? locations : [])
@@ -220,16 +227,20 @@ class WeatherApp {
 
         const name = this.normalizeLocationText(location.name);
         const state = this.normalizeLocationText(location.state);
-        const country = this.normalizeLocationText(this.getCountryDisplayName(location.country));
-        const searchableText = [name, state, country].filter(Boolean).join(' ');
+        const countryName = this.normalizeLocationText(this.getCountryDisplayName(location.country));
+        const countryCode = this.normalizeLocationText(location.country);
+        const searchableText = [name, state, countryName, countryCode].filter(Boolean).join(' ');
+        const qualifierMatches =
+          qualifierTokens.length === 0 ||
+          qualifierTokens.every((token) => searchableText.includes(token));
         let score = 5;
 
         if (name && name === nameQuery) {
-          score = 0;
+          score = qualifierMatches ? 0 : 4;
         } else if (name && nameQuery && name.startsWith(nameQuery)) {
-          score = 1;
+          score = qualifierMatches ? 1 : 4;
         } else if (name && nameQuery && name.includes(nameQuery)) {
-          score = 2;
+          score = qualifierMatches ? 2 : 4;
         } else if (queryTokens.length && queryTokens.every((token) => searchableText.includes(token))) {
           score = 3;
         }
