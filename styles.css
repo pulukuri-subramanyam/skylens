@@ -963,3 +963,48 @@ input:focus {
 .app-footer { display: flex; justify-content: center; gap: 10px; padding: 32px 0 10px; color: var(--text-muted); font-size: 0.82rem; }
 @media (min-width: 768px) { .search-container { gap: 8px; } .location-btn { min-width: auto; } }
 @media (max-width: 480px) { .app-kicker { margin-left: 0; } .current-weather-card::before { margin: -20px -20px 20px; } .weather-summary { text-align: center; } .app-footer { flex-wrap: wrap; padding-top: 24px; } }
+
+
+/* Footer credit and linked social profiles */
+.app-footer {
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 0 12px;
+}
+.footer-credit {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.footer-social-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.footer-social-link {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+.footer-social-link:hover,
+.footer-social-link:focus-visible {
+  color: var(--text-primary);
+  background: var(--accent-color);
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+.footer-social-link:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
