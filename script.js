@@ -514,6 +514,7 @@ class WeatherApp {
     this.elements.weatherContent.classList.add('show');
     this.elements.loaderContainer.classList.remove('show');
     this.elements.errorContainer.classList.remove('show');
+    document.body.classList.add('has-weather-data');
     document.body.classList.remove('loading');
   }
 
