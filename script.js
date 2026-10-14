@@ -11,6 +11,13 @@ class WeatherApp {
     this.currentLocation = null;
     this.lastSearchQuery = '';
     this.DEFAULT_CITY = 'London';
+    this.savedCities = this.loadCityList('weatherapp-saved-cities');
+    this.recentCities = this.loadCityList('weatherapp-recent-cities');
+    this.currentCity = null;
+    this.lastFetchedAt = null;
+    this.lastRefreshError = null;
+    this.isRefreshing = false;
+    this.weatherRequestId = 0;
     this.temperatureUnit = localStorage.getItem('weatherapp-temperature-unit') || 'C';
     this.currentWeatherData = null;
     this.forecastData = null;
@@ -18,6 +25,7 @@ class WeatherApp {
     this.initializeApp();
     this.bindEvents();
     this.loadThemePreference();
+    window.setInterval(() => this.updateFreshness(), 60000);
   }
 
   // Initialize the application
@@ -27,6 +35,15 @@ class WeatherApp {
       cityInput: document.getElementById('cityInput'),
       searchBtn: document.getElementById('searchBtn'),
       locationBtn: document.getElementById('locationBtn'),
+      cityShortcuts: document.getElementById('cityShortcuts'),
+      savedCitySection: document.getElementById('savedCitySection'),
+      savedCitiesList: document.getElementById('savedCitiesList'),
+      recentCitySection: document.getElementById('recentCitySection'),
+      recentCitiesList: document.getElementById('recentCitiesList'),
+      cityShortcutStatus: document.getElementById('cityShortcutStatus'),
+      saveCityBtn: document.getElementById('saveCityBtn'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      dataFreshness: document.getElementById('dataFreshness'),
       celsiusBtn: document.getElementById('celsiusBtn'),
       fahrenheitBtn: document.getElementById('fahrenheitBtn'),
       
@@ -67,6 +84,8 @@ class WeatherApp {
     };
 
     this.updateUnitToggle();
+    this.renderCityShortcuts();
+    this.updateSaveCityButton();
 
     // Auto-detect location on app load
     this.autoDetectLocation();
@@ -80,6 +99,8 @@ class WeatherApp {
       if (e.key === 'Enter') this.handleSearch();
     });
     this.elements.locationBtn.addEventListener('click', () => this.getCurrentLocation());
+    this.elements.saveCityBtn.addEventListener('click', () => this.toggleSavedCurrentCity());
+    this.elements.refreshBtn.addEventListener('click', () => this.refreshCurrentWeather());
     
     // Temperature unit toggle
     this.elements.celsiusBtn.addEventListener('click', () => this.setTemperatureUnit('C'));
@@ -108,6 +129,148 @@ class WeatherApp {
     this.elements.fahrenheitBtn.classList.toggle('is-active', !isCelsius);
     this.elements.celsiusBtn.setAttribute('aria-pressed', String(isCelsius));
     this.elements.fahrenheitBtn.setAttribute('aria-pressed', String(!isCelsius));
+  }
+
+  loadCityList(storageKey) {
+    try {
+      const cities = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (!Array.isArray(cities)) return [];
+      return cities.filter((city) =>
+        city &&
+        typeof city.id === 'string' &&
+        typeof city.name === 'string' &&
+        typeof city.label === 'string' &&
+        typeof city.query === 'string'
+      );
+    } catch (error) {
+      return [];
+    }
+  }
+
+  persistCityList(storageKey, cities) {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(cities));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  createCityShortcut(location) {
+    if (!location || !location.name) return null;
+    const name = String(location.name).trim();
+    if (!name) return null;
+    const region = String(location.region || location.country || '').trim();
+    const label = region ? name + ', ' + region : name;
+    const latitude = Number(location.lat);
+    const longitude = Number(location.lon);
+    const hasCoordinates = location.lat != null && location.lon != null &&
+      Number.isFinite(latitude) && Number.isFinite(longitude);
+    const query = hasCoordinates ? String(latitude) + ',' + String(longitude) : label;
+    const id = hasCoordinates ? latitude.toFixed(3) + ',' + longitude.toFixed(3) : label.toLowerCase();
+    return { id, name, label, query };
+  }
+
+  createCityChip(city, kind) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'city-chip';
+    button.textContent = city.label;
+    button.setAttribute('aria-label', 'Show weather for ' + city.label);
+    if (this.currentCity && this.currentCity.id === city.id) {
+      button.classList.add('is-current');
+      button.setAttribute('aria-current', 'true');
+    }
+    button.addEventListener('click', async () => {
+      this.lastSearchQuery = city.query;
+      this.elements.cityShortcutStatus.textContent = 'Loading weather for ' + city.label + '.';
+      await this.fetchWeatherData(city.query);
+    });
+    return button;
+  }
+
+  renderCityShortcuts() {
+    const savedCities = this.savedCities || [];
+    const recentCities = this.recentCities || [];
+    this.elements.savedCitiesList.replaceChildren();
+    this.elements.recentCitiesList.replaceChildren();
+
+    savedCities.forEach((city) => {
+      this.elements.savedCitiesList.appendChild(this.createCityChip(city, 'saved'));
+    });
+    recentCities.forEach((city) => {
+      this.elements.recentCitiesList.appendChild(this.createCityChip(city, 'recent'));
+    });
+
+    this.elements.savedCitySection.hidden = savedCities.length === 0;
+    this.elements.recentCitySection.hidden = recentCities.length === 0;
+    this.elements.cityShortcuts.hidden = savedCities.length === 0 && recentCities.length === 0;
+  }
+
+  rememberRecentCity(city) {
+    if (!city) return;
+    this.recentCities = [city, ...this.recentCities.filter((item) => item.id !== city.id)].slice(0, 5);
+    this.persistCityList('weatherapp-recent-cities', this.recentCities);
+    this.renderCityShortcuts();
+  }
+
+  toggleSavedCurrentCity() {
+    if (!this.currentCity) return;
+    const savedIndex = this.savedCities.findIndex((city) => city.id === this.currentCity.id);
+    const wasSaved = savedIndex !== -1;
+    this.savedCities = wasSaved
+      ? this.savedCities.filter((city) => city.id !== this.currentCity.id)
+      : [this.currentCity, ...this.savedCities];
+    const persisted = this.persistCityList('weatherapp-saved-cities', this.savedCities);
+    this.renderCityShortcuts();
+    this.updateSaveCityButton();
+    this.elements.cityShortcutStatus.textContent = persisted
+      ? (wasSaved ? this.currentCity.label + ' removed from saved cities.' : this.currentCity.label + ' saved.')
+      : 'Could not save this change on this device.';
+  }
+
+  updateSaveCityButton() {
+    const isSaved = Boolean(this.currentCity && this.savedCities.some((city) => city.id === this.currentCity.id));
+    const cityLabel = this.currentCity ? this.currentCity.label : 'current city';
+    this.elements.saveCityBtn.disabled = !this.currentCity;
+    this.elements.saveCityBtn.setAttribute('aria-pressed', String(isSaved));
+    this.elements.saveCityBtn.setAttribute('aria-label', (isSaved ? 'Remove ' + cityLabel + ' from saved cities' : 'Save ' + cityLabel + ' to saved cities'));
+    this.elements.saveCityBtn.classList.toggle('is-saved', isSaved);
+    this.elements.saveCityBtn.querySelector('span').textContent = isSaved ? 'Saved' : 'Save';
+    this.elements.refreshBtn.disabled = !this.currentCity || this.isRefreshing;
+  }
+
+  setRefreshingState(isRefreshing) {
+    this.isRefreshing = isRefreshing;
+    this.elements.refreshBtn.disabled = isRefreshing || !this.currentCity;
+    this.elements.refreshBtn.classList.toggle('is-refreshing', isRefreshing);
+    this.elements.refreshBtn.setAttribute('aria-label', isRefreshing ? 'Refreshing weather' : 'Refresh weather');
+    this.elements.refreshBtn.querySelector('span').textContent = isRefreshing ? 'Refreshing…' : 'Refresh';
+  }
+
+  async refreshCurrentWeather() {
+    if (!this.currentCity || this.isRefreshing) return;
+    this.elements.cityShortcutStatus.textContent = 'Refreshing weather for ' + this.currentCity.label + '.';
+    await this.fetchWeatherData(this.currentCity.query, { preserveCurrentData: true });
+  }
+
+  updateFreshness() {
+    const freshness = this.elements && this.elements.dataFreshness;
+    if (!freshness || !this.lastFetchedAt) return;
+    const age = Math.max(0, Date.now() - this.lastFetchedAt);
+    const relativeTime = this.formatTime(new Date(this.lastFetchedAt).toISOString());
+    const isStale = age >= 15 * 60 * 1000;
+    if (this.lastRefreshError) {
+      freshness.textContent = 'Refresh failed — showing data checked ' + relativeTime;
+      freshness.title = this.getErrorMessage(this.lastRefreshError);
+    } else if (isStale) {
+      freshness.textContent = 'May be outdated — checked ' + relativeTime;
+      freshness.title = 'Refresh to check for newer weather data.';
+    } else {
+      freshness.textContent = 'Checked ' + relativeTime;
+      freshness.title = 'Time of the last successful weather check.';
+    }
+    freshness.classList.toggle('is-stale', isStale || Boolean(this.lastRefreshError));
   }
 
   setTemperatureUnit(unit) {
@@ -146,6 +309,7 @@ class WeatherApp {
             const { latitude, longitude } = position.coords;
             const locationQuery = `${latitude},${longitude}`;
             this.currentLocation = { lat: latitude, lon: longitude };
+            this.lastSearchQuery = locationQuery;
             await this.fetchWeatherData(locationQuery);
             resolve();
           } catch (error) {
@@ -205,11 +369,17 @@ class WeatherApp {
   }
 
   // Fetch weather data from API
-  async fetchWeatherData(query) {
-    this.showLoading();
-    
+  async fetchWeatherData(query, options = {}) {
+    const requestId = ++this.weatherRequestId;
+    const preserveCurrentData = Boolean(options.preserveCurrentData && this.currentWeatherData && this.forecastData);
+    if (preserveCurrentData) {
+      this.setRefreshingState(true);
+    } else {
+      this.setRefreshingState(false);
+      this.showLoading();
+    }
+
     try {
-      // Fetch current weather and forecast data
       const [currentResponse, forecastResponse] = await Promise.all([
         fetch(`${this.BASE_URL}/current.json?key=${this.API_KEY}&q=${encodeURIComponent(query)}&aqi=yes`),
         fetch(`${this.BASE_URL}/forecast.json?key=${this.API_KEY}&q=${encodeURIComponent(query)}&days=7&aqi=yes&alerts=yes`)
@@ -227,25 +397,40 @@ class WeatherApp {
       if (currentData.error || forecastData.error) {
         throw new Error(currentData.error?.message || forecastData.error?.message || 'API returned an error');
       }
+      if (requestId !== this.weatherRequestId) return;
 
-      // Keep the latest API payload so unit changes can redraw without another request.
       this.currentWeatherData = currentData;
       this.forecastData = forecastData;
+      this.currentCity = this.createCityShortcut(currentData.location);
+      if (this.currentCity) {
+        this.rememberRecentCity(this.currentCity);
+        this.updateSaveCityButton();
+      }
+      this.lastFetchedAt = Date.now();
+      this.lastRefreshError = null;
+      this.updateFreshness();
 
-      // Update UI with weather data
       this.updateCurrentWeather(currentData);
       this.updateHourlyChart(forecastData);
       this.updateForecast(forecastData);
       this.updateBackground(currentData.current);
-      
       this.showWeatherContent();
-      
-      // Clear search input
+      this.elements.cityShortcutStatus.textContent = 'Weather loaded for ' + (this.currentCity ? this.currentCity.label : 'the selected city') + '.';
       this.elements.cityInput.value = '';
-      
     } catch (error) {
+      if (requestId !== this.weatherRequestId) return;
       console.error('Error fetching weather data:', error);
-      this.showError(this.getErrorMessage(error));
+      if (preserveCurrentData) {
+        this.lastRefreshError = error;
+        this.updateFreshness();
+        this.elements.cityShortcutStatus.textContent = 'Refresh failed. Showing the last successful weather data.';
+      } else {
+        this.showError(this.getErrorMessage(error));
+      }
+    } finally {
+      if (requestId === this.weatherRequestId && preserveCurrentData) {
+        this.setRefreshingState(false);
+      }
     }
   }
 

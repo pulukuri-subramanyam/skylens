@@ -64,6 +64,18 @@
             </div>
         </section>
 
+        <section class="city-shortcuts" id="cityShortcuts" aria-label="Saved and recent cities" hidden>
+            <div class="city-shortcut-group" id="savedCitySection" hidden>
+                <span class="city-shortcut-label">Saved</span>
+                <div class="city-chip-list" id="savedCitiesList" role="group" aria-label="Saved cities"></div>
+            </div>
+            <div class="city-shortcut-group" id="recentCitySection" hidden>
+                <span class="city-shortcut-label">Recent</span>
+                <div class="city-chip-list" id="recentCitiesList" role="group" aria-label="Recent cities"></div>
+            </div>
+        </section>
+        <p class="city-shortcut-status" id="cityShortcutStatus" role="status" aria-live="polite"></p>
+
         <!-- Loading Spinner -->
         <div class="loader-container" id="loaderContainer">
             <div class="weather-loader">
@@ -100,8 +112,23 @@
             <section class="current-weather-card glassmorphism">
                 <div class="current-weather-header">
                     <div class="location-info">
-                        <h2 class="location-name" id="locationName">New York, NY</h2>
-                        <p class="last-updated" id="lastUpdated">Last updated: 5 min ago</p>
+                        <div class="location-heading-row">
+                            <h2 class="location-name" id="locationName">New York, NY</h2>
+                            <button type="button" class="save-city-btn" id="saveCityBtn" aria-label="Save current city" aria-pressed="false" disabled>
+                                <i class="fas fa-star" aria-hidden="true"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                        <div class="location-meta-row">
+                            <div class="location-meta-copy">
+                                <p class="last-updated" id="lastUpdated">Last updated: 5 min ago</p>
+                                <span class="data-freshness" id="dataFreshness"></span>
+                            </div>
+                            <button type="button" class="refresh-btn" id="refreshBtn" aria-label="Refresh weather" title="Refresh weather" disabled>
+                                <i class="fas fa-rotate" aria-hidden="true"></i>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="weather-icon-container">
                         <img src="" alt="Weather condition" class="weather-icon" id="currentWeatherIcon">

@@ -1219,3 +1219,163 @@ body.loading:not(.has-weather-data) .app-footer {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
+
+
+/* Saved and recent city shortcuts */
+.city-shortcuts[hidden],
+.city-shortcut-group[hidden] {
+  display: none !important;
+}
+.city-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: -8px 8px 24px;
+}
+.city-shortcut-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.city-shortcut-label {
+  min-width: 52px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.city-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.city-chip {
+  max-width: min(340px, 72vw);
+  overflow: hidden;
+  padding: 7px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.city-chip:hover,
+.city-chip:focus-visible {
+  border-color: var(--accent-color);
+  color: var(--text-primary);
+}
+.city-chip.is-current {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+.city-shortcut-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Save and refresh controls with clear data-freshness context */
+.location-heading-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.location-heading-row .location-name {
+  margin-bottom: 0;
+}
+.save-city-btn,
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.save-city-btn:hover:not(:disabled),
+.refresh-btn:hover:not(:disabled),
+.save-city-btn:focus-visible,
+.refresh-btn:focus-visible {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+.save-city-btn.is-saved {
+  color: var(--accent-color);
+}
+.save-city-btn:disabled,
+.refresh-btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+.location-meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.location-meta-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.location-meta-copy .last-updated {
+  margin: 0;
+}
+.data-freshness {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+.data-freshness.is-stale {
+  color: #f0b44d;
+}
+[data-theme="light"] .data-freshness.is-stale {
+  color: #8b5a00;
+}
+.refresh-btn.is-refreshing i {
+  animation: weatherRefreshSpin 900ms linear infinite;
+}
+@keyframes weatherRefreshSpin {
+  to { transform: rotate(360deg); }
+}
+@media (max-width: 480px) {
+  .city-shortcuts {
+    margin: -8px 0 20px;
+  }
+  .city-shortcut-label {
+    min-width: 46px;
+  }
+  .location-heading-row {
+    justify-content: center;
+  }
+  .location-meta-row {
+    justify-content: center;
+  }
+  .location-meta-copy {
+    text-align: center;
+  }
+}
