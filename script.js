@@ -266,9 +266,23 @@ class WeatherApp {
     return comfort + ' ' + current.condition.text.toLowerCase() + ' day with ' + wind + ' km/h winds.';
   }
 
+  getChartPalette() {
+    const styles = getComputedStyle(document.documentElement);
+    const read = (property) => styles.getPropertyValue(property).trim();
+
+    return {
+      line: read('--chart-line-color'),
+      fill: read('--chart-fill-color'),
+      grid: read('--chart-grid-color'),
+      text: read('--chart-text-color'),
+      pointBorder: read('--chart-point-border')
+    };
+  }
+
   // Update 24-hour temperature chart
   updateHourlyChart(data) {
     const ctx = this.elements.temperatureChart.getContext('2d');
+    const chartPalette = this.getChartPalette();
     
     // Destroy existing chart
     if (this.currentChart) {
@@ -307,13 +321,13 @@ class WeatherApp {
         datasets: [{
           label: 'Temperature (°C)',
           data: temperatures,
-          borderColor: 'rgba(79, 172, 254, 1)',
-          backgroundColor: 'rgba(79, 172, 254, 0.1)',
+          borderColor: chartPalette.line,
+          backgroundColor: chartPalette.fill,
           borderWidth: 3,
           fill: true,
           tension: 0.4,
-          pointBackgroundColor: 'rgba(79, 172, 254, 1)',
-          pointBorderColor: '#ffffff',
+          pointBackgroundColor: chartPalette.line,
+          pointBorderColor: chartPalette.pointBorder,
           pointBorderWidth: 2,
           pointRadius: 5,
           pointHoverRadius: 7
@@ -330,7 +344,7 @@ class WeatherApp {
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
             titleColor: '#ffffff',
             bodyColor: '#ffffff',
-            borderColor: 'rgba(79, 172, 254, 1)',
+            borderColor: chartPalette.line,
             borderWidth: 1,
             cornerRadius: 8,
             displayColors: false,
@@ -356,7 +370,7 @@ class WeatherApp {
               display: false
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: chartPalette.text,
               maxTicksLimit: 8
             },
             border: {
@@ -365,11 +379,11 @@ class WeatherApp {
           },
           y: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
+              color: chartPalette.grid,
               borderDash: [2, 2]
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: chartPalette.text,
               callback: function(value) {
                 return `${value}°C`;
               }
@@ -466,6 +480,7 @@ class WeatherApp {
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     
     document.documentElement.setAttribute('data-theme', newTheme);
+    this.refreshChartTheme();
     
     // Update theme toggle icon
     const icon = this.elements.themeToggle.querySelector('i');
@@ -479,6 +494,22 @@ class WeatherApp {
     setTimeout(() => {
       this.elements.themeToggle.style.transform = '';
     }, 150);
+  }
+
+  refreshChartTheme() {
+    if (!this.currentChart) return;
+
+    const chartPalette = this.getChartPalette();
+    const dataset = this.currentChart.data.datasets[0];
+    dataset.borderColor = chartPalette.line;
+    dataset.backgroundColor = chartPalette.fill;
+    dataset.pointBackgroundColor = chartPalette.line;
+    dataset.pointBorderColor = chartPalette.pointBorder;
+    this.currentChart.options.plugins.tooltip.borderColor = chartPalette.line;
+    this.currentChart.options.scales.x.ticks.color = chartPalette.text;
+    this.currentChart.options.scales.y.grid.color = chartPalette.grid;
+    this.currentChart.options.scales.y.ticks.color = chartPalette.text;
+    this.currentChart.update();
   }
 
   // Load theme preference from localStorage
