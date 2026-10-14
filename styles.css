@@ -1373,3 +1373,175 @@ body.loading:not(.has-weather-data) .app-footer {
     text-align: center;
   }
 }
+
+
+/* Fluid refinements for phones, tablets, and wide screens */
+.app-container {
+  width: 100%;
+  min-height: 100svh;
+  padding: clamp(16px, 3.2vw, 40px);
+}
+
+.weather-content > *,
+.location-info,
+.detail-content,
+.brand-lockup {
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    padding: clamp(28px, 4vw, 40px);
+  }
+}
+
+@media (min-width: 481px) and (max-width: 1023px) {
+  .forecast-grid {
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-content {
+    gap: 12px;
+  }
+
+  .app-title {
+    gap: 10px;
+    font-size: clamp(1.55rem, 7vw, 2rem);
+  }
+
+  .header-controls {
+    gap: 8px;
+  }
+
+  .theme-toggle {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+
+  .search-container {
+    gap: 8px;
+  }
+
+  .location-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .weather-content {
+    gap: 18px;
+  }
+
+  .current-weather-card,
+  .chart-section,
+  .forecast-section {
+    padding: clamp(16px, 4vw, 20px);
+  }
+
+  .weather-details-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .detail-item {
+    gap: 8px;
+    padding: 12px 10px;
+  }
+
+  .detail-label {
+    font-size: 10px;
+    letter-spacing: 0.35px;
+  }
+
+  .detail-value {
+    font-size: 14px;
+  }
+
+  .chart-container {
+    height: clamp(220px, 64vw, 280px);
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .forecast-item {
+    min-width: 0;
+    padding: 14px 8px;
+  }
+
+  .forecast-date {
+    font-size: 12px;
+  }
+
+  .forecast-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 8px;
+  }
+
+  .city-chip {
+    min-height: 36px;
+  }
+
+  .save-city-btn,
+  .refresh-btn {
+    min-height: 40px;
+  }
+
+  .footer-credit {
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .footer-social-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-container {
+    padding: 12px;
+  }
+
+  .header-content {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .header-controls {
+    margin-left: auto;
+  }
+
+  .section-title {
+    gap: 8px;
+    font-size: 1rem;
+  }
+
+  .current-weather-card,
+  .chart-section,
+  .forecast-section {
+    padding: 16px;
+  }
+
+  .forecast-grid {
+    gap: 10px;
+  }
+
+  .forecast-item {
+    padding: 12px 6px;
+  }
+
+  .temp-max {
+    font-size: 16px;
+  }
+
+  .temp-min {
+    font-size: 14px;
+  }
+}
