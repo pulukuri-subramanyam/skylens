@@ -19,6 +19,10 @@ class WeatherApp {
     this.lastRefreshError = null;
     this.isRefreshing = false;
     this.weatherRequestId = 0;
+    this.suggestionTimer = null;
+    this.suggestionRequestId = 0;
+    this.citySuggestions = [];
+    this.activeSuggestionIndex = -1;
     this.temperatureUnit = localStorage.getItem('weatherapp-temperature-unit') || 'C';
     this.currentWeatherData = null;
     this.forecastData = null;
@@ -35,6 +39,7 @@ class WeatherApp {
       // Search elements
       cityInput: document.getElementById('cityInput'),
       searchBtn: document.getElementById('searchBtn'),
+      citySuggestions: document.getElementById('citySuggestions'),
       locationBtn: document.getElementById('locationBtn'),
       cityShortcuts: document.getElementById('cityShortcuts'),
       savedCitySection: document.getElementById('savedCitySection'),
@@ -94,33 +99,196 @@ class WeatherApp {
 
   // Bind all event listeners
   bindEvents() {
-    // Search functionality
+    // Search and city suggestions
     this.elements.searchBtn.addEventListener('click', () => this.handleSearch());
-    this.elements.cityInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') this.handleSearch();
+    this.elements.cityInput.addEventListener('input', () => this.handleCityInput());
+    this.elements.cityInput.addEventListener('keydown', (event) => this.handleCitySuggestionKeydown(event));
+    this.elements.citySuggestions.addEventListener('pointerdown', (event) => event.preventDefault());
+    this.elements.citySuggestions.addEventListener('click', (event) => {
+      const option = event.target.closest('.city-suggestion');
+      if (option) this.selectCitySuggestion(Number(option.dataset.suggestionIndex));
     });
     this.elements.locationBtn.addEventListener('click', () => this.getCurrentLocation());
     this.elements.saveCityBtn.addEventListener('click', () => this.toggleSavedCurrentCity());
     this.elements.refreshBtn.addEventListener('click', () => this.refreshCurrentWeather());
-    
+
     // Temperature unit toggle
     this.elements.celsiusBtn.addEventListener('click', () => this.setTemperatureUnit('C'));
     this.elements.fahrenheitBtn.addEventListener('click', () => this.setTemperatureUnit('F'));
 
     // Theme toggle
     this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
-    
+
     // Retry button
     this.elements.retryBtn.addEventListener('click', () => this.retryLastAction());
-    
+
     // Input focus effects
     this.elements.cityInput.addEventListener('focus', () => {
       this.elements.cityInput.parentElement.classList.add('focused');
     });
-    
+
     this.elements.cityInput.addEventListener('blur', () => {
       this.elements.cityInput.parentElement.classList.remove('focused');
+      window.setTimeout(() => this.closeCitySuggestions(), 120);
     });
+  }
+
+  handleCityInput() {
+    const query = this.elements.cityInput.value.trim();
+    window.clearTimeout(this.suggestionTimer);
+    this.closeCitySuggestions();
+
+    if (query.length < 2 || /^-?\\d+(?:\\.\\d+)?\\s*,\\s*-?\\d+(?:\\.\\d+)?$/.test(query)) {
+      return;
+    }
+
+    const requestId = this.suggestionRequestId;
+    this.suggestionTimer = window.setTimeout(() => {
+      this.fetchCitySuggestions(query, requestId);
+    }, 280);
+  }
+
+  async fetchCitySuggestions(query, requestId) {
+    const params = new URLSearchParams({
+      q: query,
+      limit: '5',
+      appid: this.API_KEY
+    });
+
+    try {
+      const results = await this.fetchOpenWeather(
+        `${this.OPENWEATHER_BASE_URL}/geo/1.0/direct?${params.toString()}`
+      );
+      if (
+        requestId !== this.suggestionRequestId ||
+        this.elements.cityInput.value.trim() !== query
+      ) {
+        return;
+      }
+
+      const uniqueLocations = new Map();
+      (Array.isArray(results) ? results : []).forEach((location) => {
+        const key = `${Number(location.lat).toFixed(3)},${Number(location.lon).toFixed(3)}`;
+        if (!uniqueLocations.has(key)) uniqueLocations.set(key, location);
+      });
+      this.citySuggestions = Array.from(uniqueLocations.values()).slice(0, 5);
+      this.renderCitySuggestions();
+    } catch (error) {
+      if (requestId === this.suggestionRequestId) {
+        this.citySuggestions = [];
+        this.renderCitySuggestions();
+      }
+    }
+  }
+
+  formatCitySuggestionDetails(location) {
+    return [location.state, location.country].filter(Boolean).join(', ');
+  }
+
+  renderCitySuggestions() {
+    const list = this.elements.citySuggestions;
+    list.replaceChildren();
+    this.activeSuggestionIndex = -1;
+
+    this.citySuggestions.forEach((location, index) => {
+      const option = document.createElement('div');
+      option.id = `city-suggestion-${index}`;
+      option.className = 'city-suggestion';
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', 'false');
+      option.dataset.suggestionIndex = String(index);
+
+      const name = document.createElement('span');
+      name.className = 'city-suggestion-name';
+      name.textContent = location.name;
+
+      const details = document.createElement('span');
+      details.className = 'city-suggestion-details';
+      details.textContent = this.formatCitySuggestionDetails(location);
+
+      option.append(name, details);
+      list.appendChild(option);
+    });
+
+    const hasSuggestions = this.citySuggestions.length > 0;
+    list.hidden = !hasSuggestions;
+    this.elements.cityInput.setAttribute('aria-expanded', String(hasSuggestions));
+    this.elements.cityInput.removeAttribute('aria-activedescendant');
+  }
+
+  setActiveCitySuggestion(index) {
+    const options = Array.from(this.elements.citySuggestions.querySelectorAll('.city-suggestion'));
+    if (!options.length) return;
+
+    this.activeSuggestionIndex = index;
+    options.forEach((option, optionIndex) => {
+      const isActive = optionIndex === index;
+      option.classList.toggle('is-active', isActive);
+      option.setAttribute('aria-selected', String(isActive));
+    });
+
+    const activeOption = options[index];
+    this.elements.cityInput.setAttribute('aria-activedescendant', activeOption.id);
+    activeOption.scrollIntoView({ block: 'nearest' });
+  }
+
+  handleCitySuggestionKeydown(event) {
+    const optionCount = this.citySuggestions.length;
+
+    if (event.key === 'ArrowDown' && optionCount) {
+      event.preventDefault();
+      const nextIndex = (this.activeSuggestionIndex + 1) % optionCount;
+      this.setActiveCitySuggestion(nextIndex);
+      return;
+    }
+
+    if (event.key === 'ArrowUp' && optionCount) {
+      event.preventDefault();
+      const nextIndex = this.activeSuggestionIndex <= 0
+        ? optionCount - 1
+        : this.activeSuggestionIndex - 1;
+      this.setActiveCitySuggestion(nextIndex);
+      return;
+    }
+
+    if (event.key === 'Escape' && !this.elements.citySuggestions.hidden) {
+      event.preventDefault();
+      this.closeCitySuggestions();
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (this.activeSuggestionIndex >= 0) {
+        this.selectCitySuggestion(this.activeSuggestionIndex);
+      } else {
+        this.handleSearch();
+      }
+    }
+  }
+
+  async selectCitySuggestion(index) {
+    const location = this.citySuggestions[index];
+    if (!location) return;
+
+    const query = `${location.lat},${location.lon}`;
+    this.elements.cityInput.value = [
+      location.name,
+      location.state,
+      location.country
+    ].filter(Boolean).join(', ');
+    this.lastSearchQuery = query;
+    this.closeCitySuggestions();
+    await this.fetchWeatherData(query, { location });
+  }
+
+  closeCitySuggestions() {
+    this.suggestionRequestId += 1;
+    this.citySuggestions = [];
+    this.activeSuggestionIndex = -1;
+    this.elements.citySuggestions.hidden = true;
+    this.elements.cityInput.setAttribute('aria-expanded', 'false');
+    this.elements.cityInput.removeAttribute('aria-activedescendant');
   }
 
   updateUnitToggle() {
@@ -352,7 +520,9 @@ class WeatherApp {
       this.elements.cityInput.focus();
       return;
     }
-    
+
+    window.clearTimeout(this.suggestionTimer);
+    this.closeCitySuggestions();
     this.lastSearchQuery = query;
     await this.fetchWeatherData(query);
   }
@@ -518,7 +688,7 @@ class WeatherApp {
     }
 
     try {
-      const location = await this.resolveLocation(query);
+      const location = options.location || await this.resolveLocation(query);
       if (requestId !== this.weatherRequestId) return;
 
       const params = `lat=${location.lat}&lon=${location.lon}&units=metric&lang=en&appid=${this.API_KEY}`;
