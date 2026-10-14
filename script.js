@@ -11,6 +11,9 @@ class WeatherApp {
     this.currentLocation = null;
     this.lastSearchQuery = '';
     this.DEFAULT_CITY = 'London';
+    this.temperatureUnit = localStorage.getItem('weatherapp-temperature-unit') || 'C';
+    this.currentWeatherData = null;
+    this.forecastData = null;
     
     this.initializeApp();
     this.bindEvents();
@@ -24,6 +27,8 @@ class WeatherApp {
       cityInput: document.getElementById('cityInput'),
       searchBtn: document.getElementById('searchBtn'),
       locationBtn: document.getElementById('locationBtn'),
+      celsiusBtn: document.getElementById('celsiusBtn'),
+      fahrenheitBtn: document.getElementById('fahrenheitBtn'),
       
       // Theme toggle
       themeToggle: document.getElementById('themeToggle'),
@@ -61,6 +66,8 @@ class WeatherApp {
       weatherParticles: document.getElementById('weatherParticles')
     };
 
+    this.updateUnitToggle();
+
     // Auto-detect location on app load
     this.autoDetectLocation();
   }
@@ -74,6 +81,10 @@ class WeatherApp {
     });
     this.elements.locationBtn.addEventListener('click', () => this.getCurrentLocation());
     
+    // Temperature unit toggle
+    this.elements.celsiusBtn.addEventListener('click', () => this.setTemperatureUnit('C'));
+    this.elements.fahrenheitBtn.addEventListener('click', () => this.setTemperatureUnit('F'));
+
     // Theme toggle
     this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
     
@@ -88,6 +99,28 @@ class WeatherApp {
     this.elements.cityInput.addEventListener('blur', () => {
       this.elements.cityInput.parentElement.classList.remove('focused');
     });
+  }
+
+  updateUnitToggle() {
+    const isCelsius = this.temperatureUnit === 'C';
+    this.elements.celsiusBtn.classList.toggle('is-active', isCelsius);
+    this.elements.fahrenheitBtn.classList.toggle('is-active', !isCelsius);
+    this.elements.celsiusBtn.setAttribute('aria-pressed', String(isCelsius));
+    this.elements.fahrenheitBtn.setAttribute('aria-pressed', String(!isCelsius));
+  }
+
+  setTemperatureUnit(unit) {
+    if (unit !== 'C' && unit !== 'F') return;
+    if (unit === this.temperatureUnit) return;
+
+    this.temperatureUnit = unit;
+    localStorage.setItem('weatherapp-temperature-unit', unit);
+    this.updateUnitToggle();
+
+    if (!this.currentWeatherData || !this.forecastData) return;
+    this.updateCurrentWeather(this.currentWeatherData);
+    this.updateHourlyChart(this.forecastData);
+    this.updateForecast(this.forecastData);
   }
 
   // Start with a reliable default forecast. Location remains an explicit, optional action.
@@ -194,6 +227,10 @@ class WeatherApp {
         throw new Error(currentData.error?.message || forecastData.error?.message || 'API returned an error');
       }
 
+      // Keep the latest API payload so unit changes can redraw without another request.
+      this.currentWeatherData = currentData;
+      this.forecastData = forecastData;
+
       // Update UI with weather data
       this.updateCurrentWeather(currentData);
       this.updateHourlyChart(forecastData);
@@ -227,6 +264,7 @@ class WeatherApp {
   // Update current weather display
   updateCurrentWeather(data) {
     const { location, current } = data;
+    const unitKey = this.temperatureUnit.toLowerCase();
     
     // Location and timestamp
     this.elements.locationName.textContent = `${location.name}, ${location.region || location.country}`;
@@ -237,9 +275,9 @@ class WeatherApp {
     this.elements.currentWeatherIcon.alt = current.condition.text;
     
     // Temperature and condition
-    this.elements.currentTemp.textContent = `${Math.round(current.temp_c)}°C`;
+    this.elements.currentTemp.textContent = `${Math.round(current[`temp_${unitKey}`])}°${this.temperatureUnit}`;
     this.elements.currentCondition.textContent = current.condition.text;
-    this.elements.feelsLike.textContent = `${Math.round(current.feelslike_c)}°C`;
+    this.elements.feelsLike.textContent = `${Math.round(current[`feelslike_${unitKey}`])}°${this.temperatureUnit}`;
     this.elements.weatherSummary.textContent = this.getWeatherSummary(current);
 
     // Weather details
@@ -283,6 +321,8 @@ class WeatherApp {
   updateHourlyChart(data) {
     const ctx = this.elements.temperatureChart.getContext('2d');
     const chartPalette = this.getChartPalette();
+    const unitKey = this.temperatureUnit.toLowerCase();
+    const temperatureUnit = this.temperatureUnit;
     
     // Destroy existing chart
     if (this.currentChart) {
@@ -311,7 +351,7 @@ class WeatherApp {
              `${time.getHours()} AM`;
     });
     
-    const temperatures = hourlyData.map(hour => Math.round(hour.temp_c));
+    const temperatures = hourlyData.map(hour => Math.round(hour[`temp_${unitKey}`]));
     
     // Chart configuration
     const config = {
@@ -319,7 +359,7 @@ class WeatherApp {
       data: {
         labels: labels,
         datasets: [{
-          label: 'Temperature (°C)',
+          label: `Temperature (°${temperatureUnit})`,
           data: temperatures,
           borderColor: chartPalette.line,
           backgroundColor: chartPalette.fill,
@@ -359,7 +399,7 @@ class WeatherApp {
                 });
               },
               label: function(context) {
-                return `${context.parsed.y}°C`;
+                return `${context.parsed.y}°${temperatureUnit}`;
               }
             }
           }
@@ -385,7 +425,7 @@ class WeatherApp {
             ticks: {
               color: chartPalette.text,
               callback: function(value) {
-                return `${value}°C`;
+                return `${value}°${temperatureUnit}`;
               }
             },
             border: {
@@ -411,6 +451,7 @@ class WeatherApp {
   // Update 7-day forecast
   updateForecast(data) {
     const forecastDays = data.forecast.forecastday;
+    const unitKey = this.temperatureUnit.toLowerCase();
     this.elements.forecastGrid.innerHTML = '';
     
     forecastDays.forEach((day, index) => {
@@ -426,8 +467,8 @@ class WeatherApp {
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
         <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}" class="forecast-icon">
         <div class="forecast-temps">
-          <span class="temp-max">${Math.round(day.day.maxtemp_c)}°</span>
-          <span class="temp-min">${Math.round(day.day.mintemp_c)}°</span>
+          <span class="temp-max">${Math.round(day.day[`maxtemp_${unitKey}`])}°</span>
+          <span class="temp-min">${Math.round(day.day[`mintemp_${unitKey}`])}°</span>
         </div>
         <div class="forecast-condition">${day.day.condition.text}</div>
       `;
