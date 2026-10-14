@@ -21,6 +21,7 @@ class WeatherApp {
     this.isRefreshing = false;
     this.weatherRequestId = 0;
     this.suggestionTimer = null;
+    this.suggestionController = null;
     this.suggestionRequestId = 0;
     this.citySuggestions = [];
     this.activeSuggestionIndex = -1;
@@ -149,28 +150,27 @@ class WeatherApp {
     const requestId = this.suggestionRequestId;
     this.suggestionTimer = window.setTimeout(() => {
       this.fetchCitySuggestions(query, requestId);
-    }, 300);
+    }, 200);
   }
 
   async fetchCitySuggestions(query, requestId) {
+    const controller = new AbortController();
+    this.suggestionController = controller;
+    const { signal } = controller;
     const weatherParams = new URLSearchParams({
       q: query,
       limit: '5',
       appid: this.API_KEY
     });
-    const openWeatherPromise = this.fetchOpenWeather(
-      this.OPENWEATHER_BASE_URL + '/geo/1.0/direct?' + weatherParams.toString()
-    ).catch(() => []);
-    const photonPromise = this.fetchPhotonCitySuggestions(query).catch(() => []);
-    const indiaPhotonPromise = this.fetchPhotonCitySuggestions(query, 'IN').catch(() => []);
+    const candidates = {
+      weather: [],
+      photon: [],
+      india: []
+    };
 
-    try {
-      const [weatherResults, photonResults, indiaPhotonResults] = await Promise.all([
-        openWeatherPromise,
-        photonPromise,
-        indiaPhotonPromise
-      ]);
+    const renderCurrentResults = () => {
       if (
+        signal.aborted ||
         requestId !== this.suggestionRequestId ||
         this.elements.cityInput.value.trim() !== query
       ) {
@@ -178,28 +178,51 @@ class WeatherApp {
       }
 
       this.citySuggestions = this.combineCitySuggestions(
-        weatherResults,
+        candidates.weather,
         query,
-        photonResults,
-        indiaPhotonResults
+        candidates.photon,
+        candidates.india
       );
       this.renderCitySuggestions();
-    } catch (error) {
-      if (requestId === this.suggestionRequestId) {
-        this.citySuggestions = this.getLocalCitySuggestions(query);
-        this.renderCitySuggestions();
+    };
+
+    const loadProvider = async (key, request) => {
+      try {
+        const results = await request;
+        candidates[key] = Array.isArray(results) ? results : [];
+      } catch (error) {
+        if (error.name !== 'AbortError') candidates[key] = [];
       }
+      renderCurrentResults();
+    };
+
+    const weatherRequest = this.fetchOpenWeather(
+      this.OPENWEATHER_BASE_URL + '/geo/1.0/direct?' + weatherParams.toString(),
+      { signal }
+    );
+    const photonRequest = this.fetchPhotonCitySuggestions(query, '', signal);
+    const indiaPhotonRequest = this.fetchPhotonCitySuggestions(query, 'IN', signal);
+
+    await Promise.all([
+      loadProvider('weather', weatherRequest),
+      loadProvider('photon', photonRequest),
+      loadProvider('india', indiaPhotonRequest)
+    ]);
+
+    if (this.suggestionController === controller) {
+      this.suggestionController = null;
     }
   }
 
-  async fetchPhotonCitySuggestions(query, countryCode = '') {
+  async fetchPhotonCitySuggestions(query, countryCode = '', signal) {
     const params = new URLSearchParams({ q: query, limit: '15', lang: 'en' });
     if (countryCode) params.set('countrycode', countryCode);
     params.append('layer', 'city');
     params.append('layer', 'locality');
 
     const payload = await this.fetchOpenWeather(
-      this.PHOTON_BASE_URL + '/api/?' + params.toString()
+      this.PHOTON_BASE_URL + '/api/?' + params.toString(),
+      { signal }
     );
     const features = Array.isArray(payload.features) ? payload.features : [];
 
@@ -552,6 +575,10 @@ class WeatherApp {
 
   closeCitySuggestions() {
     this.suggestionRequestId += 1;
+    if (this.suggestionController) {
+      this.suggestionController.abort();
+      this.suggestionController = null;
+    }
     this.citySuggestions = [];
     this.activeSuggestionIndex = -1;
     this.elements.citySuggestions.hidden = true;
@@ -859,8 +886,8 @@ class WeatherApp {
     };
   }
 
-  async fetchOpenWeather(url) {
-    const response = await fetch(url);
+  async fetchOpenWeather(url, requestOptions = {}) {
+    const response = await fetch(url, requestOptions);
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok) {
