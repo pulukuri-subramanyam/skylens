@@ -10,6 +10,7 @@ class WeatherApp {
     this.currentChart = null;
     this.currentLocation = null;
     this.lastSearchQuery = '';
+    this.DEFAULT_CITY = 'London';
     
     this.initializeApp();
     this.bindEvents();
@@ -43,6 +44,7 @@ class WeatherApp {
       currentTemp: document.getElementById('currentTemp'),
       currentCondition: document.getElementById('currentCondition'),
       feelsLike: document.getElementById('feelsLike'),
+      weatherSummary: document.getElementById('weatherSummary'),
       visibility: document.getElementById('visibility'),
       humidity: document.getElementById('humidity'),
       windSpeed: document.getElementById('windSpeed'),
@@ -88,18 +90,9 @@ class WeatherApp {
     });
   }
 
-  // Auto-detect user location on app initialization
+  // Start with a reliable default forecast. Location remains an explicit, optional action.
   async autoDetectLocation() {
-    if ('geolocation' in navigator) {
-      try {
-        await this.getCurrentLocation();
-      } catch (error) {
-        console.warn('Geolocation failed, using default city');
-        await this.fetchWeatherData('London');
-      }
-    } else {
-      await this.fetchWeatherData('London');
-    }
+    await this.fetchWeatherData(this.DEFAULT_CITY);
   }
 
   // Get current geolocation
@@ -146,7 +139,7 @@ class WeatherApp {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 6000,
           maximumAge: 300000 // 5 minutes
         }
       );
@@ -173,7 +166,7 @@ class WeatherApp {
       const locationQuery = `${this.currentLocation.lat},${this.currentLocation.lon}`;
       await this.fetchWeatherData(locationQuery);
     } else {
-      await this.getCurrentLocation();
+      await this.fetchWeatherData(this.DEFAULT_CITY);
     }
   }
 
@@ -247,7 +240,8 @@ class WeatherApp {
     this.elements.currentTemp.textContent = `${Math.round(current.temp_c)}°C`;
     this.elements.currentCondition.textContent = current.condition.text;
     this.elements.feelsLike.textContent = `${Math.round(current.feelslike_c)}°C`;
-    
+    this.elements.weatherSummary.textContent = this.getWeatherSummary(current);
+
     // Weather details
     this.elements.visibility.textContent = `${current.vis_km} km`;
     this.elements.humidity.textContent = `${current.humidity}%`;
@@ -255,6 +249,21 @@ class WeatherApp {
     this.elements.pressure.textContent = `${current.pressure_mb} hPa`;
     this.elements.windDirection.textContent = current.wind_dir;
     this.elements.uvIndex.textContent = current.uv;
+  }
+
+  getWeatherSummary(current) {
+    const condition = current.condition.text.toLowerCase();
+    const wind = Math.round(current.wind_kph);
+    const uv = Number(current.uv);
+    const comfort = wind > 25 ? 'A breezy' : 'A calm';
+
+    if (condition.includes('rain') || condition.includes('shower') || condition.includes('drizzle')) {
+      return 'Rain is in the picture — keep an umbrella close. UV index ' + uv + '.';
+    }
+    if (condition.includes('sun') || condition.includes('clear')) {
+      return comfort + ' ' + current.condition.text.toLowerCase() + ' day. UV index ' + uv + '; plan sun protection if needed.';
+    }
+    return comfort + ' ' + current.condition.text.toLowerCase() + ' day with ' + wind + ' km/h winds.';
   }
 
   // Update 24-hour temperature chart
@@ -397,7 +406,7 @@ class WeatherApp {
       const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
       const forecastItem = document.createElement('div');
-      forecastItem.className = 'forecast-item';
+      forecastItem.className = `forecast-item${isToday ? ' is-today' : ''}`;
       
       forecastItem.innerHTML = `
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
