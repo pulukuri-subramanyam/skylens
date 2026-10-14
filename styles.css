@@ -1666,3 +1666,23 @@ body.loading:not(.has-weather-data) .app-footer {
     text-align: left;
   }
 }
+
+
+.footer-data-attribution {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.footer-data-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-data-attribution a:hover,
+.footer-data-attribution a:focus-visible {
+  color: var(--text-primary);
+}
