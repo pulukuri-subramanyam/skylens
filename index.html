@@ -21,10 +21,13 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1 class="app-title">
-                    <i class="fas fa-cloud-sun"></i>
-                    WeatherPro
-                </h1>
+                <div class="brand-lockup">
+                    <h1 class="app-title">
+                        <i class="fas fa-cloud-sun"></i>
+                        WeatherPro
+                    </h1>
+                    <p class="app-kicker">Live conditions, made clear</p>
+                </div>
                 <div class="header-controls">
                     <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                         <i class="fas fa-moon"></i>
@@ -44,12 +47,13 @@
                         class="search-input" 
                         placeholder="Enter city name..."
                         autocomplete="off"
+                        aria-label="Search for a city"
                     >
                     <button class="search-btn" id="searchBtn">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
-                <button class="location-btn" id="locationBtn" title="Use current location">
+                <button class="location-btn" id="locationBtn" title="Use current location" aria-label="Use my current location">
                     <i class="fas fa-location-crosshairs"></i>
                     <span>Current Location</span>
                 </button>
@@ -108,6 +112,7 @@
                     <div class="feels-like">
                         <span>Feels like <span id="feelsLike">25°C</span></span>
                     </div>
+                    <p class="weather-summary" id="weatherSummary">A calm, comfortable day ahead.</p>
                 </div>
 
                 <!-- Weather Details Grid -->
@@ -179,11 +184,16 @@
                 </div>
             </section>
         </main>
+
+        <footer class="app-footer">
+            <span>WeatherPro</span>
+            <span aria-hidden="true">•</span>
+            <span>Clear forecasts for every day</span>
+        </footer>
     </div>
 
     <!-- Chart.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
     <script src="script.js"></script>
-    <p>by subbu</p>
 </body>
 </html>
