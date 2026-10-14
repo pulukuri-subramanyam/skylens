@@ -8,6 +8,11 @@
   --text-secondary: #d7e0ec;
   --text-muted: #b0bed0;
   --accent-color: #58b7ff;
+  --chart-line-color: #58b7ff;
+  --chart-fill-color: rgba(88, 183, 255, 0.12);
+  --chart-grid-color: rgba(176, 190, 208, 0.16);
+  --chart-text-color: #d7e0ec;
+  --chart-point-border: #101b2b;
   --error-color: #ff6b6b;
   --success-color: #4ecdc4;
   --warning-color: #ffe66d;
@@ -30,6 +35,11 @@
   --text-secondary: #d7e0ec;
   --text-muted: #b0bed0;
   --accent-color: #58b7ff;
+  --chart-line-color: #58b7ff;
+  --chart-fill-color: rgba(88, 183, 255, 0.12);
+  --chart-grid-color: rgba(176, 190, 208, 0.16);
+  --chart-text-color: #d7e0ec;
+  --chart-point-border: #101b2b;
   --border-color: rgba(183, 201, 224, 0.16);
   --shadow-light: rgba(255, 255, 255, 0.035);
   --shadow-dark: rgba(1, 8, 19, 0.22);
@@ -45,6 +55,11 @@
   --text-secondary: #334155;
   --text-muted: #536277;
   --accent-color: #006eaf;
+  --chart-line-color: #006eaf;
+  --chart-fill-color: rgba(0, 110, 175, 0.1);
+  --chart-grid-color: rgba(51, 65, 85, 0.14);
+  --chart-text-color: #536277;
+  --chart-point-border: #ffffff;
   --border-color: rgba(51, 65, 85, 0.16);
   --shadow-light: rgba(255, 255, 255, 0.88);
   --shadow-dark: rgba(26, 45, 70, 0.1);
