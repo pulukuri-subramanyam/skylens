@@ -1,46 +1,53 @@
 /* CSS Variables for Theme Management */
 :root {
-  --primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-bg: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.8);
-  --text-muted: rgba(255, 255, 255, 0.6);
-  --accent-color: #4facfe;
+  --primary-bg: #0b1220;
+  --secondary-bg: #142136;
+  --glass-bg: #101b2b;
+  --surface-input: #0c1728;
+  --text-primary: #f3f7fc;
+  --text-secondary: #d7e0ec;
+  --text-muted: #b0bed0;
+  --accent-color: #58b7ff;
   --error-color: #ff6b6b;
   --success-color: #4ecdc4;
   --warning-color: #ffe66d;
-  --border-color: rgba(255, 255, 255, 0.2);
-  --shadow-light: rgba(255, 255, 255, 0.1);
-  --shadow-dark: rgba(0, 0, 0, 0.1);
-  --backdrop-filter: blur(20px);
-  --border-radius: 20px;
+  --border-color: rgba(183, 201, 224, 0.16);
+  --shadow-light: rgba(255, 255, 255, 0.035);
+  --shadow-dark: rgba(1, 8, 19, 0.22);
+  --backdrop-filter: blur(12px);
+  --border-radius: 18px;
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Dark Theme Variables */
 [data-theme="dark"] {
-  --primary-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  --secondary-bg: rgba(0, 0, 0, 0.3);
-  --glass-bg: rgba(0, 0, 0, 0.25);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.9);
-  --text-muted: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.15);
-  --shadow-light: rgba(255, 255, 255, 0.05);
+  --primary-bg: #0b1220;
+  --secondary-bg: #142136;
+  --glass-bg: #101b2b;
+  --surface-input: #0c1728;
+  --text-primary: #f3f7fc;
+  --text-secondary: #d7e0ec;
+  --text-muted: #b0bed0;
+  --accent-color: #58b7ff;
+  --border-color: rgba(183, 201, 224, 0.16);
+  --shadow-light: rgba(255, 255, 255, 0.035);
+  --shadow-dark: rgba(1, 8, 19, 0.22);
 }
 
 /* Light Theme Variables */
 [data-theme="light"] {
-  --primary-bg: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-  --secondary-bg: rgba(255, 255, 255, 0.8);
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --text-primary: #2d3436;
-  --text-secondary: #636e72;
-  --text-muted: #b2bec3;
-  --border-color: rgba(255, 255, 255, 0.8);
-  --shadow-light: rgba(255, 255, 255, 0.9);
+  --primary-bg: linear-gradient(135deg, #f3f6fa 0%, #eaf0f7 100%);
+  --secondary-bg: #f3f6fa;
+  --glass-bg: rgba(255, 255, 255, 0.94);
+  --surface-input: #f7f9fc;
+  --text-primary: #172033;
+  --text-secondary: #334155;
+  --text-muted: #536277;
+  --accent-color: #006eaf;
+  --border-color: rgba(51, 65, 85, 0.16);
+  --shadow-light: rgba(255, 255, 255, 0.88);
+  --shadow-dark: rgba(26, 45, 70, 0.1);
 }
 
 /* Base Styles */
@@ -81,23 +88,23 @@ body {
 
 /* Weather-based backgrounds */
 .background-animation.clear-day {
-  background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 50%, #e17055 100%);
+  background: linear-gradient(135deg, #1a2a37 0%, #253f50 55%, #315565 100%);
 }
 
 .background-animation.clear-night {
-  background: linear-gradient(135deg, #2d3436 0%, #636e72 50%, #b2bec3 100%);
+  background: linear-gradient(135deg, #0b1220 0%, #111e30 55%, #172940 100%);
 }
 
 .background-animation.cloudy {
-  background: linear-gradient(135deg, #636e72 0%, #b2bec3 100%);
+  background: linear-gradient(135deg, #283544 0%, #394a5c 100%);
 }
 
 .background-animation.rainy {
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 50%, #2d3436 100%);
+  background: linear-gradient(135deg, #112a40 0%, #1c405b 55%, #25394d 100%);
 }
 
 .background-animation.snowy {
-  background: linear-gradient(135deg, #ddd6fe 0%, #a855f7 50%, #7c3aed 100%);
+  background: linear-gradient(135deg, #27394c 0%, #354e64 55%, #435d73 100%);
 }
 
 /* Weather Particles */
@@ -1052,4 +1059,82 @@ body.loading:not(.has-weather-data) .app-footer {
   background: transparent;
   border-color: transparent;
   transform: none;
+}
+
+
+
+/* Refined surfaces, contrast, and theme-aware condition backdrops */
+[data-theme="light"] .background-animation.clear-day {
+  background: linear-gradient(135deg, #f4ebd5 0%, #e9dfd1 55%, #d8e1e5 100%);
+}
+[data-theme="light"] .background-animation.clear-night {
+  background: linear-gradient(135deg, #d9e3ef 0%, #c7d4e3 55%, #b6c8da 100%);
+}
+[data-theme="light"] .background-animation.cloudy {
+  background: linear-gradient(135deg, #e7edf3 0%, #d3dde7 100%);
+}
+[data-theme="light"] .background-animation.rainy {
+  background: linear-gradient(135deg, #dce9f4 0%, #c8dceb 55%, #b9cbdc 100%);
+}
+[data-theme="light"] .background-animation.snowy {
+  background: linear-gradient(135deg, #e8eef5 0%, #d9e3ed 55%, #c9d7e5 100%);
+}
+
+.search-container {
+  background: var(--secondary-bg);
+}
+.search-input,
+.search-input:focus {
+  background: var(--surface-input);
+  border: 1px solid var(--border-color);
+}
+.search-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(88, 183, 255, 0.14);
+}
+
+.glassmorphism {
+  background: var(--glass-bg);
+  border-color: var(--border-color);
+  box-shadow:
+    0 12px 32px var(--shadow-dark),
+    inset 0 1px 0 var(--shadow-light);
+}
+
+.detail-item {
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+}
+.detail-item:hover {
+  background: var(--secondary-bg);
+  border-color: var(--border-color);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .detail-item:hover {
+  background: #192a40;
+}
+[data-theme="light"] .detail-item:hover {
+  background: #edf3fa;
+}
+
+.forecast-item {
+  background: var(--secondary-bg);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .forecast-item:hover {
+  background: #192a40;
+}
+[data-theme="light"] .forecast-item:hover {
+  background: #edf3fa;
+}
+.forecast-item.is-today {
+  border-color: rgba(88, 183, 255, 0.58);
+  background: rgba(88, 183, 255, 0.12);
+}
+[data-theme="light"] .forecast-item.is-today {
+  border-color: rgba(0, 110, 175, 0.38);
+  background: rgba(0, 110, 175, 0.08);
+}
+.current-weather-card::before {
+  background: linear-gradient(90deg, var(--accent-color), transparent);
 }
