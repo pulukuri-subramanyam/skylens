@@ -1020,3 +1020,11 @@ body.loading:not(.has-weather-data) .app-footer {
   color: var(--text-primary);
   font-weight: 700;
 }
+
+
+/* Subtle divider between weather content and the footer */
+.app-footer {
+  margin-top: 32px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 24px;
+}
