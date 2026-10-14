@@ -459,7 +459,7 @@ class WeatherApp {
         feelslike_c: Number(currentPoint.feels_like),
         feelslike_f: toFahrenheit(currentPoint.feels_like),
         humidity: Number(currentPoint.humidity),
-        wind_kph: toKph(currentPoint.wind_speed),
+        wind_kph: Math.round(toKph(currentPoint.wind_speed)),
         wind_dir: this.getWindDirection(currentPoint.wind_deg),
         pressure_mb: Number(currentPoint.pressure),
         vis_km: Number(currentPoint.visibility || 0) / 1000,
