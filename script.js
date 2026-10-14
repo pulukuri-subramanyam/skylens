@@ -5,8 +5,9 @@
 
 class WeatherApp {
   constructor() {
-    this.API_KEY = '56220ed1b63d436789b111226251409'; // Free WeatherAPI key
-    this.BASE_URL = 'https://api.weatherapi.com/v1';
+    this.API_KEY = 'efee026d9bd3f6c38d85018aade0bc49'; // OpenWeather One Call API key
+    this.OPENWEATHER_BASE_URL = 'https://api.openweathermap.org';
+    this.OPENWEATHER_ICON_BASE_URL = 'https://openweathermap.org/img/wn';
     this.currentChart = null;
     this.currentLocation = null;
     this.lastSearchQuery = '';
@@ -368,7 +369,144 @@ class WeatherApp {
     }
   }
 
-  // Fetch weather data from API
+  // Resolve a city name or coordinate pair to a precise OpenWeather location.
+  async resolveLocation(query) {
+    const coordinateMatch = String(query).trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+    let endpoint;
+
+    if (coordinateMatch) {
+      const [, lat, lon] = coordinateMatch;
+      endpoint = `${this.OPENWEATHER_BASE_URL}/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${this.API_KEY}`;
+    } else {
+      endpoint = `${this.OPENWEATHER_BASE_URL}/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=1&appid=${this.API_KEY}`;
+    }
+
+    const response = await this.fetchOpenWeather(endpoint);
+    const match = Array.isArray(response) ? response[0] : null;
+
+    if (!match) {
+      if (coordinateMatch) {
+        const [, lat, lon] = coordinateMatch;
+        return { name: 'Current location', state: '', country: '', lat: Number(lat), lon: Number(lon) };
+      }
+      throw new Error('No matching location found');
+    }
+
+    return {
+      name: match.name,
+      state: match.state || '',
+      country: match.country || '',
+      lat: Number(match.lat),
+      lon: Number(match.lon)
+    };
+  }
+
+  async fetchOpenWeather(url) {
+    const response = await fetch(url);
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return payload;
+  }
+
+  getOpenWeatherIcon(weather) {
+    const iconCode = weather?.icon || '01d';
+    return `${this.OPENWEATHER_ICON_BASE_URL}/${iconCode}@2x.png`;
+  }
+
+  getWindDirection(degrees) {
+    const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    return directions[Math.round((Number(degrees || 0) % 360) / 45) % 8];
+  }
+
+  normalizeOpenWeatherData(location, currentPayload, hourlyPayload, dailyPayload) {
+    const currentPoint = currentPayload.data?.[0];
+    if (!currentPoint) {
+      throw new Error('Weather data was not available');
+    }
+
+    const toFahrenheit = value => (Number(value) * 9) / 5 + 32;
+    const toKph = value => Number(value || 0) * 3.6;
+    const toIso = timestamp => new Date(Number(timestamp) * 1000).toISOString();
+    const readableText = weather => {
+      const value = weather?.description || 'Unknown conditions';
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    };
+    const conditionFor = point => ({
+      text: readableText(point.weather?.[0]),
+      icon: this.getOpenWeatherIcon(point.weather?.[0])
+    });
+    const isDay = currentPoint.sunrise && currentPoint.sunset
+      ? currentPoint.dt >= currentPoint.sunrise && currentPoint.dt <= currentPoint.sunset
+      : true;
+
+    const currentData = {
+      location: {
+        name: location.name,
+        region: location.state || location.country,
+        country: location.country,
+        lat: location.lat,
+        lon: location.lon
+      },
+      current: {
+        last_updated: toIso(currentPoint.dt),
+        condition: conditionFor(currentPoint),
+        temp_c: Number(currentPoint.temp),
+        temp_f: toFahrenheit(currentPoint.temp),
+        feelslike_c: Number(currentPoint.feels_like),
+        feelslike_f: toFahrenheit(currentPoint.feels_like),
+        humidity: Number(currentPoint.humidity),
+        wind_kph: toKph(currentPoint.wind_speed),
+        wind_dir: this.getWindDirection(currentPoint.wind_deg),
+        pressure_mb: Number(currentPoint.pressure),
+        vis_km: Number(currentPoint.visibility || 0) / 1000,
+        uv: Number(currentPoint.uvi || 0),
+        is_day: isDay ? 1 : 0
+      }
+    };
+
+    const hourly = (hourlyPayload.data || [])
+      .filter(point => Number(point.dt) * 1000 >= Date.now())
+      .slice(0, 24)
+      .map(point => ({
+        time: toIso(point.dt),
+        temp_c: Number(point.temp),
+        temp_f: toFahrenheit(point.temp)
+      }));
+
+    const forecastDays = (dailyPayload.data || []).slice(0, 7).map(point => ({
+      date: toIso(point.dt),
+      day: {
+        condition: conditionFor(point),
+        maxtemp_c: Number(point.temp?.max ?? point.temp?.day),
+        maxtemp_f: toFahrenheit(point.temp?.max ?? point.temp?.day),
+        mintemp_c: Number(point.temp?.min ?? point.temp?.night),
+        mintemp_f: toFahrenheit(point.temp?.min ?? point.temp?.night)
+      }
+    }));
+
+    if (!forecastDays.length) {
+      throw new Error('Forecast data was not available');
+    }
+
+    // Keep a stable display shape so the rest of the interface needs no API-specific logic.
+    return {
+      currentData,
+      forecastData: {
+        forecast: {
+          forecastday: [{
+            ...forecastDays[0],
+            hour: hourly
+          }, ...forecastDays.slice(1)]
+        }
+      }
+    };
+  }
+
+  // Fetch weather data from OpenWeather One Call 4.0.
   async fetchWeatherData(query, options = {}) {
     const requestId = ++this.weatherRequestId;
     const preserveCurrentData = Boolean(options.preserveCurrentData && this.currentWeatherData && this.forecastData);
@@ -380,24 +518,24 @@ class WeatherApp {
     }
 
     try {
-      const [currentResponse, forecastResponse] = await Promise.all([
-        fetch(`${this.BASE_URL}/current.json?key=${this.API_KEY}&q=${encodeURIComponent(query)}&aqi=yes`),
-        fetch(`${this.BASE_URL}/forecast.json?key=${this.API_KEY}&q=${encodeURIComponent(query)}&days=7&aqi=yes&alerts=yes`)
-      ]);
-
-      if (!currentResponse.ok || !forecastResponse.ok) {
-        throw new Error(`HTTP error! status: ${currentResponse.status || forecastResponse.status}`);
-      }
-
-      const [currentData, forecastData] = await Promise.all([
-        currentResponse.json(),
-        forecastResponse.json()
-      ]);
-
-      if (currentData.error || forecastData.error) {
-        throw new Error(currentData.error?.message || forecastData.error?.message || 'API returned an error');
-      }
+      const location = await this.resolveLocation(query);
       if (requestId !== this.weatherRequestId) return;
+
+      const params = `lat=${location.lat}&lon=${location.lon}&units=metric&lang=en&appid=${this.API_KEY}`;
+      const [currentPayload, hourlyPayload, dailyPayload] = await Promise.all([
+        this.fetchOpenWeather(`${this.OPENWEATHER_BASE_URL}/data/4.0/onecall/current?${params}`),
+        this.fetchOpenWeather(`${this.OPENWEATHER_BASE_URL}/data/4.0/onecall/timeline/1h?${params}`),
+        this.fetchOpenWeather(`${this.OPENWEATHER_BASE_URL}/data/4.0/onecall/timeline/1day?${params}`)
+      ]);
+
+      if (requestId !== this.weatherRequestId) return;
+
+      const { currentData, forecastData } = this.normalizeOpenWeatherData(
+        location,
+        currentPayload,
+        hourlyPayload,
+        dailyPayload
+      );
 
       this.currentWeatherData = currentData;
       this.forecastData = forecastData;
@@ -457,7 +595,7 @@ class WeatherApp {
     this.elements.lastUpdated.textContent = `Last updated: ${this.formatTime(current.last_updated)}`;
     
     // Weather icon
-    this.elements.currentWeatherIcon.src = `https:${current.condition.icon}`;
+    this.elements.currentWeatherIcon.src = current.condition.icon;
     this.elements.currentWeatherIcon.alt = current.condition.text;
     
     // Temperature and condition
@@ -515,19 +653,10 @@ class WeatherApp {
       this.currentChart.destroy();
     }
     
-    // Prepare hourly data (next 24 hours)
-    const now = new Date();
-    const hourlyData = [];
-    
-    // Get today's remaining hours
-    const todayHours = data.forecast.forecastday[0].hour.slice(now.getHours());
-    hourlyData.push(...todayHours);
-    
-    // Get tomorrow's hours to complete 24 hours
-    if (data.forecast.forecastday[1] && hourlyData.length < 24) {
-      const tomorrowHours = data.forecast.forecastday[1].hour.slice(0, 24 - hourlyData.length);
-      hourlyData.push(...tomorrowHours);
-    }
+    // One Call's hourly timeline starts at the current hour.
+    const hourlyData = data.forecast.forecastday
+      .flatMap(day => day.hour || [])
+      .slice(0, 24);
     
     const labels = hourlyData.map(hour => {
       const time = new Date(hour.time);
@@ -651,7 +780,7 @@ class WeatherApp {
       
       forecastItem.innerHTML = `
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
-        <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}" class="forecast-icon">
+        <img src="${day.day.condition.icon}" alt="${day.day.condition.text}" class="forecast-icon">
         <div class="forecast-temps">
           <span class="temp-max">${Math.round(day.day[`maxtemp_${unitKey}`])}°</span>
           <span class="temp-min">${Math.round(day.day[`mintemp_${unitKey}`])}°</span>
