@@ -7,6 +7,7 @@ class WeatherApp {
   constructor() {
     this.API_KEY = 'efee026d9bd3f6c38d85018aade0bc49'; // OpenWeather One Call API key
     this.OPENWEATHER_BASE_URL = 'https://api.openweathermap.org';
+    this.PHOTON_BASE_URL = 'https://photon.komoot.io';
     this.OPENWEATHER_ICON_BASE_URL = 'https://openweathermap.org/img/wn';
     this.currentChart = null;
     this.currentLocation = null;
@@ -148,20 +149,27 @@ class WeatherApp {
     const requestId = this.suggestionRequestId;
     this.suggestionTimer = window.setTimeout(() => {
       this.fetchCitySuggestions(query, requestId);
-    }, 250);
+    }, 300);
   }
 
   async fetchCitySuggestions(query, requestId) {
-    const params = new URLSearchParams({
+    const weatherParams = new URLSearchParams({
       q: query,
       limit: '5',
       appid: this.API_KEY
     });
+    const openWeatherPromise = this.fetchOpenWeather(
+      this.OPENWEATHER_BASE_URL + '/geo/1.0/direct?' + weatherParams.toString()
+    ).catch(() => []);
+    const photonPromise = query.length >= 3
+      ? this.fetchPhotonCitySuggestions(query).catch(() => [])
+      : Promise.resolve([]);
 
     try {
-      const results = await this.fetchOpenWeather(
-        this.OPENWEATHER_BASE_URL + '/geo/1.0/direct?' + params.toString()
-      );
+      const [weatherResults, photonResults] = await Promise.all([
+        openWeatherPromise,
+        photonPromise
+      ]);
       if (
         requestId !== this.suggestionRequestId ||
         this.elements.cityInput.value.trim() !== query
@@ -169,7 +177,7 @@ class WeatherApp {
         return;
       }
 
-      this.citySuggestions = this.combineCitySuggestions(results, query);
+      this.citySuggestions = this.combineCitySuggestions(weatherResults, query, photonResults);
       this.renderCitySuggestions();
     } catch (error) {
       if (requestId === this.suggestionRequestId) {
@@ -177,6 +185,40 @@ class WeatherApp {
         this.renderCitySuggestions();
       }
     }
+  }
+
+  async fetchPhotonCitySuggestions(query) {
+    const params = new URLSearchParams({ q: query, limit: '10', lang: 'en' });
+    params.append('layer', 'city');
+    params.append('layer', 'locality');
+
+    const payload = await this.fetchOpenWeather(
+      this.PHOTON_BASE_URL + '/api/?' + params.toString()
+    );
+    const features = Array.isArray(payload.features) ? payload.features : [];
+
+    return features.map((feature) => {
+      const properties = feature && feature.properties ? feature.properties : {};
+      const coordinates =
+        feature && feature.geometry && Array.isArray(feature.geometry.coordinates)
+          ? feature.geometry.coordinates
+          : [];
+      const name = properties.city || properties.name;
+      const lon = Number(coordinates[0]);
+      const lat = Number(coordinates[1]);
+
+      if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+
+      return {
+        name,
+        state: properties.state || properties.county || '',
+        country: properties.country || '',
+        countryCode: properties.countrycode || properties.country_code || '',
+        lat,
+        lon,
+        osmSource: true
+      };
+    }).filter(Boolean);
   }
 
   normalizeLocationText(value) {
@@ -191,16 +233,17 @@ class WeatherApp {
 
   getCountryDisplayName(countryCode) {
     const code = String(countryCode || '').trim();
+    const displayCode = /^[a-z]{2}$/i.test(code) ? code.toUpperCase() : code;
     if (!code) return '';
 
     try {
       if (typeof Intl !== 'undefined' && typeof Intl.DisplayNames === 'function') {
-        return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) || code;
+        return new Intl.DisplayNames(['en'], { type: 'region' }).of(displayCode) || displayCode;
       }
     } catch (error) {
-      return code;
+      return displayCode;
     }
-    return code;
+    return displayCode;
   }
 
   rankCityLocations(locations, query) {
@@ -227,8 +270,11 @@ class WeatherApp {
 
         const name = this.normalizeLocationText(location.name);
         const state = this.normalizeLocationText(location.state);
-        const countryName = this.normalizeLocationText(this.getCountryDisplayName(location.country));
-        const countryCode = this.normalizeLocationText(location.country);
+        const rawCountry = location.countryCode || location.country;
+        const countryName = this.normalizeLocationText(this.getCountryDisplayName(rawCountry));
+        const countryCode = this.normalizeLocationText(
+          location.countryCode || (/^[a-z]{2}$/i.test(String(location.country || '')) ? location.country : '')
+        );
         const searchableText = [name, state, countryName, countryCode].filter(Boolean).join(' ');
         const qualifierMatches =
           qualifierTokens.length === 0 ||
@@ -287,6 +333,7 @@ class WeatherApp {
         name: city.name,
         state: city.state || '',
         country: city.country || '',
+        countryCode: city.countryCode || city.country || '',
         lat,
         lon,
         suggestionDetails: city.state || city.country ? '' : savedRegion,
@@ -302,18 +349,27 @@ class WeatherApp {
       return false;
     }
 
+    const leftCountry = this.normalizeLocationText(left.countryCode || left.country);
+    const rightCountry = this.normalizeLocationText(right.countryCode || right.country);
+    if (leftCountry && rightCountry && leftCountry !== rightCountry) return false;
+
+    const leftState = this.normalizeLocationText(left.state);
+    const rightState = this.normalizeLocationText(right.state);
+    if (leftState && rightState && leftState !== rightState) return false;
+
     const latitudeDelta = (Number(left.lat) - Number(right.lat)) * 111;
     const meanLatitude = (Number(left.lat) + Number(right.lat)) * Math.PI / 360;
     const longitudeDelta =
       (Number(left.lon) - Number(right.lon)) * 111 * Math.cos(meanLatitude);
-    return Math.hypot(latitudeDelta, longitudeDelta) < 1.5;
+    return Math.hypot(latitudeDelta, longitudeDelta) < 5;
   }
 
-  combineCitySuggestions(results, query) {
-    const providerResults = this.rankCityLocations(results, query).slice(0, 5);
+  combineCitySuggestions(results, query, supplementalResults = []) {
+    const openWeatherResults = this.rankCityLocations(results, query).slice(0, 5);
+    const mapResults = this.rankCityLocations(supplementalResults, query).slice(0, 10);
     const suggestions = [];
 
-    providerResults.forEach((location) => {
+    [...openWeatherResults, ...mapResults].forEach((location) => {
       const normalizedLocation = {
         ...location,
         lat: Number(location.lat),
@@ -324,6 +380,7 @@ class WeatherApp {
       );
 
       if (duplicate) {
+        if (normalizedLocation.osmSource) duplicate.osmSource = true;
         if (!duplicate.source) duplicate.source = normalizedLocation.source;
       } else {
         suggestions.push(normalizedLocation);
@@ -346,7 +403,7 @@ class WeatherApp {
     if (location.suggestionDetails) return location.suggestionDetails;
     return [
       location.state,
-      this.getCountryDisplayName(location.country)
+      this.getCountryDisplayName(location.countryCode || location.country)
     ].filter(Boolean).join(', ');
   }
 
@@ -518,7 +575,8 @@ class WeatherApp {
       lat: hasCoordinates ? latitude : null,
       lon: hasCoordinates ? longitude : null,
       state: String(location.state || '').trim(),
-      country: String(location.country || '').trim()
+      country: String(location.country || '').trim(),
+      countryCode: String(location.countryCode || location.country || '').trim()
     };
   }
 
@@ -737,9 +795,14 @@ class WeatherApp {
 
     const response = await this.fetchOpenWeather(endpoint);
     const matches = Array.isArray(response) ? response : [];
-    const match = coordinateMatch
+    let match = coordinateMatch
       ? matches[0]
       : this.rankCityLocations(matches, query)[0];
+
+    if (!coordinateMatch && !match) {
+      const mapMatches = await this.fetchPhotonCitySuggestions(query).catch(() => []);
+      match = this.rankCityLocations(mapMatches, query)[0];
+    }
     if (!match) {
       if (coordinateMatch) {
         const [, lat, lon] = coordinateMatch;
@@ -752,6 +815,7 @@ class WeatherApp {
       name: match.name,
       state: match.state || '',
       country: match.country || '',
+      countryCode: match.countryCode || match.country || '',
       lat: Number(match.lat),
       lon: Number(match.lon)
     };
