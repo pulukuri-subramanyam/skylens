@@ -205,6 +205,10 @@ class WeatherApp {
 
     return features.map((feature) => {
       const properties = feature && feature.properties ? feature.properties : {};
+      const featureType = String(properties.type || '').toLowerCase();
+      const osmKey = String(properties.osm_key || '').toLowerCase();
+      if (featureType === 'locality' && osmKey !== 'place') return null;
+
       const coordinates =
         feature && feature.geometry && Array.isArray(feature.geometry.coordinates)
           ? feature.geometry.coordinates
