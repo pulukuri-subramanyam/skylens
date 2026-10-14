@@ -138,7 +138,7 @@ class WeatherApp {
     window.clearTimeout(this.suggestionTimer);
     this.closeCitySuggestions();
 
-    if (query.length < 2 || /^-?\\d+(?:\\.\\d+)?\\s*,\\s*-?\\d+(?:\\.\\d+)?$/.test(query)) {
+    if (query.length < 2 || /^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(query)) {
       return;
     }
 
