@@ -103,6 +103,7 @@ class WeatherApp {
 
   updateUnitToggle() {
     const isCelsius = this.temperatureUnit === 'C';
+    this.elements.celsiusBtn.closest('.unit-toggle').dataset.unit = this.temperatureUnit;
     this.elements.celsiusBtn.classList.toggle('is-active', isCelsius);
     this.elements.fahrenheitBtn.classList.toggle('is-active', !isCelsius);
     this.elements.celsiusBtn.setAttribute('aria-pressed', String(isCelsius));
