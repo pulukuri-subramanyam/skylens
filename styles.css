@@ -1155,8 +1155,10 @@ body.loading:not(.has-weather-data) .app-footer {
 }
 
 
-/* Compact, accessible Celsius/Fahrenheit segmented control */
+/* Compact Celsius/Fahrenheit segmented control with a sliding active thumb */
 .unit-toggle {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -1166,7 +1168,27 @@ body.loading:not(.has-weather-data) .app-footer {
   background: var(--glass-bg);
   backdrop-filter: var(--backdrop-filter);
 }
+.unit-toggle::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 4px;
+  left: 4px;
+  width: 36px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  transform: translateX(0);
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.unit-toggle[data-unit="F"]::before {
+  transform: translateX(38px);
+}
 .unit-option {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 36px;
   min-width: 36px;
   height: 34px;
   padding: 0 8px;
@@ -1179,17 +1201,18 @@ body.loading:not(.has-weather-data) .app-footer {
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: color 180ms ease;
 }
-.unit-option:hover {
+.unit-option:not(.is-active):hover {
   color: var(--text-primary);
-  background: var(--secondary-bg);
 }
-.unit-option.is-active {
+.unit-option.is-active,
+.unit-option.is-active:hover {
   color: #0b1220;
-  background: var(--accent-color);
+  background: transparent;
 }
-[data-theme="light"] .unit-option.is-active {
+[data-theme="light"] .unit-option.is-active,
+[data-theme="light"] .unit-option.is-active:hover {
   color: #ffffff;
 }
 .unit-option:focus-visible {
