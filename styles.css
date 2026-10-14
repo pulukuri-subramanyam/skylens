@@ -1603,6 +1603,7 @@ body.loading:not(.has-weather-data) .app-footer {
 }
 
 .city-suggestion-name {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   font-size: 0.92rem;
@@ -1611,25 +1612,54 @@ body.loading:not(.has-weather-data) .app-footer {
   white-space: nowrap;
 }
 
-.city-suggestion-details {
+.city-suggestion-meta {
+  display: flex;
   flex: 0 1 auto;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  min-width: 0;
+}
+
+.city-suggestion-details {
+  min-width: 0;
+  overflow: hidden;
   color: var(--text-muted);
   font-size: 0.8rem;
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.city-suggestion-source {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--secondary-bg);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 @media (max-width: 600px) {
   .city-suggestions {
-    max-height: min(320px, 45vh);
+    max-height: min(360px, 50vh);
   }
 
   .city-suggestion {
     align-items: flex-start;
     flex-direction: column;
     justify-content: center;
-    gap: 2px;
-    min-height: 52px;
+    gap: 3px;
+    min-height: 54px;
     padding: 9px 12px;
+  }
+
+  .city-suggestion-meta {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .city-suggestion-details {
