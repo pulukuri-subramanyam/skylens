@@ -1153,3 +1153,46 @@ body.loading:not(.has-weather-data) .app-footer {
 .current-weather-card::before {
   background: linear-gradient(90deg, var(--accent-color), transparent);
 }
+
+
+/* Compact, accessible Celsius/Fahrenheit segmented control */
+.unit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--backdrop-filter);
+}
+.unit-option {
+  min-width: 36px;
+  height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+.unit-option:hover {
+  color: var(--text-primary);
+  background: var(--secondary-bg);
+}
+.unit-option.is-active {
+  color: #0b1220;
+  background: var(--accent-color);
+}
+[data-theme="light"] .unit-option.is-active {
+  color: #ffffff;
+}
+.unit-option:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
