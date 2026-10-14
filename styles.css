@@ -1014,3 +1014,9 @@ input:focus {
 body.loading:not(.has-weather-data) .app-footer {
   display: none;
 }
+
+
+.footer-brand {
+  color: var(--text-primary);
+  font-weight: 700;
+}
