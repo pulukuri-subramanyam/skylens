@@ -1039,6 +1039,18 @@ class WeatherApp {
       return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(sunSvg);
     }
 
+    // Keep the same sun-and-rays design visible behind the cloud on clear days.
+    if (safeIconCode === '02d') {
+      const partlyCloudySvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+        <g stroke="#e8892d" stroke-width="2.8" stroke-linecap="round">
+          <path d="M44 3v5M44 34v5M25 20h5M58 20h4M30.5 7.5l3.5 3.5M54 29l3.5 3.5M57.5 7.5 54 11M34 29l-3.5 3.5"/>
+        </g>
+        <circle cx="44" cy="20" r="8.5" fill="#f7aa43" stroke="#e8892d" stroke-width="1.8"/>
+        <path d="M15 48h32a9 9 0 0 0 0-18h-1.2a13 13 0 0 0-25.2-2.5A10.5 10.5 0 0 0 15 48Z" fill="#f6f8fa" stroke="#a7b8c4" stroke-width="1.8" stroke-linejoin="round"/>
+      </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(partlyCloudySvg);
+    }
+
     return this.OPENWEATHER_ICON_BASE_URL + '/' + safeIconCode + '@2x.png';
   }
 
