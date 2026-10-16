@@ -1018,29 +1018,16 @@ class WeatherApp {
     return payload;
   }
 
-  getOpenWeatherIconClass(weather) {
-    const iconCode = weather?.icon || '01d';
-    const iconsByCode = {
-      '01d': 'fa-sun',
-      '01n': 'fa-moon',
-      '02d': 'fa-cloud-sun',
-      '02n': 'fa-cloud-moon',
-      '03d': 'fa-cloud',
-      '03n': 'fa-cloud',
-      '04d': 'fa-cloud',
-      '04n': 'fa-cloud',
-      '09d': 'fa-cloud-showers-heavy',
-      '09n': 'fa-cloud-showers-heavy',
-      '10d': 'fa-cloud-rain',
-      '10n': 'fa-cloud-rain',
-      '11d': 'fa-cloud-bolt',
-      '11n': 'fa-cloud-bolt',
-      '13d': 'fa-snowflake',
-      '13n': 'fa-snowflake',
-      '50d': 'fa-smog',
-      '50n': 'fa-smog'
-    };
-    return iconsByCode[iconCode] || 'fa-cloud';
+  getOpenWeatherIconCode(weather) {
+    const iconCode = String(weather?.icon || '01d').trim().toLowerCase();
+    return /^\d{2}[dn]$/.test(iconCode) ? iconCode : '01d';
+  }
+
+  getOpenWeatherIconUrl(iconCode) {
+    const safeIconCode = /^\d{2}[dn]$/.test(String(iconCode || ''))
+      ? iconCode
+      : '01d';
+    return `${this.OPENWEATHER_ICON_BASE_URL}/${safeIconCode}@2x.png`;
   }
 
   getWindDirection(degrees) {
@@ -1063,7 +1050,7 @@ class WeatherApp {
     };
     const conditionFor = point => ({
       text: readableText(point.weather?.[0]),
-      icon: this.getOpenWeatherIconClass(point.weather?.[0])
+      iconCode: this.getOpenWeatherIconCode(point.weather?.[0])
     });
     const isDay = currentPoint.sunrise && currentPoint.sunset
       ? currentPoint.dt >= currentPoint.sunrise && currentPoint.dt <= currentPoint.sunset
@@ -1228,7 +1215,7 @@ class WeatherApp {
     this.elements.lastUpdated.textContent = `Last updated: ${this.formatTime(current.last_updated)}`;
     
     // Weather icon
-    this.elements.currentWeatherIcon.className = `weather-icon fas ${current.condition.icon}`;
+    this.elements.currentWeatherIcon.src = this.getOpenWeatherIconUrl(current.condition.iconCode);
     
     // Temperature and condition
     this.elements.currentTemp.textContent = `${Math.round(current[`temp_${unitKey}`])}°${this.temperatureUnit}`;
@@ -1418,7 +1405,7 @@ class WeatherApp {
       
       forecastItem.innerHTML = `
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
-        <i class="forecast-icon fas ${day.day.condition.icon}" aria-hidden="true"></i>
+        <img class="forecast-icon" src="${this.getOpenWeatherIconUrl(day.day.condition.iconCode)}" alt="" aria-hidden="true" loading="lazy" decoding="async">
         <div class="forecast-temps">
           <span class="temp-max">${Math.round(day.day[`maxtemp_${unitKey}`])}°</span>
           <span class="temp-min">${Math.round(day.day[`mintemp_${unitKey}`])}°</span>
