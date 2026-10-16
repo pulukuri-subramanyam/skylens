@@ -2157,6 +2157,28 @@ body {
     grid-row: 3;
     margin-top: 4px;
   }
+
+  .forecast-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .forecast-item {
+    min-height: 156px;
+    padding: 15px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--secondary-bg);
+  }
+
+  .forecast-item:last-child {
+    border-right: 1px solid var(--border-color);
+  }
+
+  .forecast-item.is-today {
+    border: 1px solid color-mix(in srgb, var(--accent-color) 48%, transparent);
+    background: color-mix(in srgb, var(--accent-color) 10%, var(--glass-bg));
+  }
 }
 
 @media (max-width: 760px) {
