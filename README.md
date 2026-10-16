@@ -25,23 +25,18 @@
 
 ## Run locally
 
-Skylens is a static website; there is no build step or package installation.
+Skylens is a static website with a small Vercel Function for weather requests.
 
-1. Clone this repository and open its root folder.
-2. Add your OpenWeather API key to the `API_KEY` setting in `script.js`.
-3. Serve the folder locally, for example:
-
-   ```sh
-   python -m http.server 8000
-   ```
-
-4. Open [http://localhost:8000](http://localhost:8000).
-
-You can also use a local static-server extension such as Live Server in VS Code.
+1. Install the [Vercel CLI](https://vercel.com/docs/cli) and open the repository folder.
+2. Link the folder to the Skylens Vercel project with `vercel link`.
+3. Add `OPENWEATHER_API_KEY` as a **Secret** in Vercel Project Settings → Environment Variables for Development, Preview, and Production. For local-only work, put it in `.env.local` (never commit that file).
+4. Run `vercel dev` and open the local URL it prints. A plain static server such as `python -m http.server` cannot run the API Function.
 
 ## API key security
 
-The current frontend calls OpenWeather directly, so a key placed in `script.js` is visible to anyone using the site. Use a restricted key and monitor its quota. For a public production app, move weather requests behind a server-side or serverless endpoint and store the key as a server-only environment variable. Never commit a private key to a public repository.
+The browser calls the same-origin `/api/weather` function; only that server-side function reads `OPENWEATHER_API_KEY`. The function accepts a small set of weather/geocoding request types and validates its inputs. Never add the key to `script.js`, a browser-exposed variable such as `VITE_*`, or a committed environment file.
+
+If a key has ever been committed or shared, rotate it with OpenWeather and replace it in Vercel. Removing a key from the current source does not remove it from earlier Git history, so revoke the old key rather than relying on source cleanup.
 
 ## Quick manual checks
 
