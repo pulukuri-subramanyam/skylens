@@ -125,6 +125,11 @@
                                 <span>Save</span>
                             </button>
                         </div>
+                        <p class="city-local-time">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            <span>Local time</span>
+                            <time id="cityLocalTime">—</time>
+                        </p>
                         <div class="location-meta-row">
                             <div class="location-meta-copy">
                                 <p class="last-updated" id="lastUpdated">Last updated: 5 min ago</p>
@@ -137,7 +142,7 @@
                         </div>
                     </div>
                     <div class="weather-icon-container">
-                        <img src="" alt="Weather condition" class="weather-icon" id="currentWeatherIcon">
+                        <img class="weather-icon" id="currentWeatherIcon" alt="" aria-hidden="true" decoding="async">
                     </div>
                 </div>
 
@@ -190,10 +195,24 @@
                         </div>
                     </div>
                     <div class="detail-item">
-                        <i class="fas fa-sun detail-icon"></i>
+                        <i class="fas fa-sun detail-icon" aria-hidden="true"></i>
                         <div class="detail-content">
                             <span class="detail-label">UV Index</span>
                             <span class="detail-value" id="uvIndex">3</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-sun detail-icon" aria-hidden="true"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Sunrise</span>
+                            <span class="detail-value" id="sunriseTime">—</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-moon detail-icon" aria-hidden="true"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Sunset</span>
+                            <span class="detail-value" id="sunsetTime">—</span>
                         </div>
                     </div>
                 </div>
