@@ -2371,3 +2371,98 @@ body {
     border-right: 1px solid var(--border-color);
   }
 }
+
+/* Skylens finish: consistent type, quieter surfaces, and restrained depth. */
+:root,
+[data-theme="light"] {
+  --border-radius: 18px;
+  --border-color: rgba(23, 43, 56, 0.12);
+  --shadow-dark: rgba(25, 50, 62, 0.055);
+}
+
+[data-theme="dark"] {
+  --border-radius: 18px;
+  --border-color: rgba(213, 228, 232, 0.13);
+  --shadow-dark: rgba(0, 0, 0, 0.16);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.app-title {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.location-name {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.section-title {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.detail-label,
+.forecast-date {
+  font-weight: 600;
+  letter-spacing: 0.055em;
+}
+
+.detail-value,
+.temp-max {
+  font-weight: 600;
+}
+
+.temperature {
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  font-variant-numeric: tabular-nums;
+}
+
+.glassmorphism {
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 22px var(--shadow-dark);
+}
+
+.search-container {
+  box-shadow: 0 4px 14px var(--shadow-dark);
+}
+
+.current-weather-card,
+.current-weather-card:hover {
+  border-radius: 20px;
+  box-shadow: 0 10px 26px var(--shadow-dark);
+  transform: none;
+}
+
+.forecast-section,
+.chart-section {
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--secondary-bg);
+  box-shadow: none;
+}
+
+.forecast-section:hover,
+.chart-section:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+.weather-icon,
+.forecast-icon {
+  filter: none;
+}
+
+@media (max-width: 900px) {
+  .forecast-item,
+  .forecast-item.is-today {
+    border-radius: 12px;
+  }
+}
