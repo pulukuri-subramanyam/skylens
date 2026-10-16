@@ -35,7 +35,10 @@ class WeatherApp {
     this.initializeApp();
     this.bindEvents();
     this.loadThemePreference();
-    window.setInterval(() => this.updateFreshness(), 60000);
+    window.setInterval(() => {
+      this.updateFreshness();
+      this.updateLocationLocalTime();
+    }, 60000);
   }
 
   // Initialize the application
@@ -72,6 +75,7 @@ class WeatherApp {
       
       // Current weather elements
       locationName: document.getElementById('locationName'),
+      cityLocalTime: document.getElementById('cityLocalTime'),
       lastUpdated: document.getElementById('lastUpdated'),
       currentWeatherIcon: document.getElementById('currentWeatherIcon'),
       currentTemp: document.getElementById('currentTemp'),
@@ -813,6 +817,31 @@ class WeatherApp {
     await this.fetchWeatherData(this.currentCity.query, { preserveCurrentData: true });
   }
 
+  updateLocationLocalTime() {
+    const timeElement = this.elements?.cityLocalTime;
+    if (!timeElement) return;
+
+    const timeZone = this.currentWeatherData?.location?.timezone;
+    if (!timeZone) {
+      timeElement.textContent = 'Unavailable';
+      timeElement.removeAttribute('datetime');
+      return;
+    }
+
+    const now = new Date();
+    try {
+      timeElement.textContent = new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone
+      }).format(now);
+      timeElement.dateTime = now.toISOString();
+    } catch {
+      timeElement.textContent = 'Unavailable';
+      timeElement.removeAttribute('datetime');
+    }
+  }
+
   updateFreshness() {
     const freshness = this.elements && this.elements.dataFreshness;
     if (!freshness || !this.lastFetchedAt) return;
@@ -1175,6 +1204,7 @@ class WeatherApp {
     
     // Location and timestamp
     this.elements.locationName.textContent = `${location.name}, ${location.region || location.country}`;
+    this.updateLocationLocalTime();
     this.elements.lastUpdated.textContent = `Last updated: ${this.formatTime(current.last_updated)}`;
     
     // Weather icon
