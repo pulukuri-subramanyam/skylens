@@ -21,6 +21,7 @@ class WeatherApp {
     this.lastRefreshError = null;
     this.isRefreshing = false;
     this.weatherRequestId = 0;
+    this.locationRequestId = 0;
     this.suggestionTimer = null;
     this.suggestionController = null;
     this.suggestionRequestId = 0;
@@ -650,6 +651,7 @@ class WeatherApp {
     const location = this.citySuggestions[index];
     if (!location) return;
 
+    this.invalidatePendingLocationLookup();
     const query = `${location.lat},${location.lon}`;
     const details = this.formatCitySuggestionDetails(location);
     this.elements.cityInput.value = [location.name, details].filter(Boolean).join(', ');
@@ -744,6 +746,7 @@ class WeatherApp {
       button.setAttribute('aria-current', 'true');
     }
     button.addEventListener('click', async () => {
+      this.invalidatePendingLocationLookup();
       this.lastSearchQuery = city.query;
       this.lastActionType = 'search';
       this.elements.cityShortcutStatus.textContent = 'Loading weather for ' + city.label + '.';
@@ -880,10 +883,16 @@ class WeatherApp {
     await this.fetchWeatherData(this.DEFAULT_CITY);
   }
 
+  // Invalidate a pending browser location callback after another city action wins.
+  invalidatePendingLocationLookup() {
+    this.locationRequestId += 1;
+  }
+
   // Get current geolocation
   getCurrentLocation() {
     this.lastActionType = 'location';
     this.showLoading();
+    const requestId = ++this.locationRequestId;
     
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
@@ -894,11 +903,16 @@ class WeatherApp {
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
+          if (requestId !== this.locationRequestId) {
+            resolve();
+            return;
+          }
           try {
             const { latitude, longitude } = position.coords;
             const locationQuery = `${latitude},${longitude}`;
             this.currentLocation = { lat: latitude, lon: longitude };
             this.lastSearchQuery = locationQuery;
+            this.lastActionType = 'search';
             await this.fetchWeatherData(locationQuery);
             resolve();
           } catch (error) {
@@ -907,6 +921,10 @@ class WeatherApp {
           }
         },
         (error) => {
+          if (requestId !== this.locationRequestId) {
+            resolve();
+            return;
+          }
           let errorMessage = 'Unable to retrieve location. ';
           switch (error.code) {
             case error.PERMISSION_DENIED:
@@ -941,6 +959,7 @@ class WeatherApp {
       return;
     }
 
+    this.invalidatePendingLocationLookup();
     window.clearTimeout(this.suggestionTimer);
     this.closeCitySuggestions();
     this.lastSearchQuery = query;
