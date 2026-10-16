@@ -895,8 +895,7 @@ body {
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .weather-icon,
   .forecast-icon {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+    image-rendering: auto;
   }
 }
 
@@ -1890,14 +1889,12 @@ body {
 }
 
 .weather-icon {
-  display: grid;
-  place-items: center;
+  display: block;
   width: clamp(72px, 8vw, 98px);
   height: clamp(72px, 8vw, 98px);
-  color: var(--accent-color);
-  font-size: clamp(3.5rem, 6vw, 5rem);
-  filter: none;
-  line-height: 1;
+  flex: 0 0 auto;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 12px var(--shadow-dark));
 }
 
 .temperature-section {
@@ -2077,15 +2074,12 @@ body {
 }
 
 .forecast-icon {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 42px;
   height: 42px;
   margin: 0 auto 8px;
-  color: var(--accent-color);
-  font-size: 1.55rem;
-  filter: none;
-  line-height: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px var(--shadow-dark));
 }
 
 .forecast-temps {
