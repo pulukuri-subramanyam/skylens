@@ -5,8 +5,6 @@
 
 class WeatherApp {
   constructor() {
-    this.API_KEY = 'efee026d9bd3f6c38d85018aade0bc49'; // OpenWeather One Call API key
-    this.OPENWEATHER_BASE_URL = 'https://api.openweathermap.org';
     this.PHOTON_BASE_URL = 'https://photon.komoot.io';
     this.OPENWEATHER_ICON_BASE_URL = 'https://openweathermap.org/img/wn';
     this.currentChart = null;
@@ -186,11 +184,7 @@ class WeatherApp {
     const controller = new AbortController();
     this.suggestionController = controller;
     const { signal } = controller;
-    const weatherParams = new URLSearchParams({
-      q: query,
-      limit: '5',
-      appid: this.API_KEY
-    });
+
     const candidates = {
       weather: [],
       photon: [],
@@ -226,8 +220,8 @@ class WeatherApp {
       renderCurrentResults();
     };
 
-    const weatherRequest = this.fetchOpenWeather(
-      this.OPENWEATHER_BASE_URL + '/geo/1.0/direct?' + weatherParams.toString(),
+    const weatherRequest = this.fetchJson(
+      this.getWeatherApiUrl('geocode', { q: query }),
       { signal }
     );
     const photonRequest = this.fetchPhotonCitySuggestions(query, '', signal);
@@ -255,7 +249,7 @@ class WeatherApp {
     params.append('layer', 'city');
     params.append('layer', 'locality');
 
-    const payload = await this.fetchOpenWeather(
+    const payload = await this.fetchJson(
       this.PHOTON_BASE_URL + '/api/?' + params.toString(),
       { signal }
     );
@@ -986,27 +980,22 @@ class WeatherApp {
 
   // Resolve a city name or coordinate pair to a precise OpenWeather location.
   async resolveLocation(query) {
-    const coordinateMatch = String(query).trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
-    let endpoint;
+    const queryText = String(query).trim();
+    const coordinateMatch = queryText.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+    const type = coordinateMatch ? 'reverse' : 'geocode';
+    const params = coordinateMatch
+      ? { lat: coordinateMatch[1], lon: coordinateMatch[2] }
+      : { q: queryText };
 
-    if (coordinateMatch) {
-      const [, lat, lon] = coordinateMatch;
-      const params = new URLSearchParams({ lat, lon, limit: '1', appid: this.API_KEY });
-      endpoint = this.OPENWEATHER_BASE_URL + '/geo/1.0/reverse?' + params.toString();
-    } else {
-      const params = new URLSearchParams({ q: query, limit: '5', appid: this.API_KEY });
-      endpoint = this.OPENWEATHER_BASE_URL + '/geo/1.0/direct?' + params.toString();
-    }
-
-    const response = await this.fetchOpenWeather(endpoint);
+    const response = await this.fetchJson(this.getWeatherApiUrl(type, params));
     const matches = Array.isArray(response) ? response : [];
     let match = coordinateMatch
       ? matches[0]
-      : this.rankCityLocations(matches, query)[0];
+      : this.rankCityLocations(matches, queryText)[0];
 
     if (!coordinateMatch && !match) {
-      const mapMatches = await this.fetchPhotonCitySuggestions(query).catch(() => []);
-      match = this.rankCityLocations(mapMatches, query)[0];
+      const mapMatches = await this.fetchPhotonCitySuggestions(queryText).catch(() => []);
+      match = this.rankCityLocations(mapMatches, queryText)[0];
     }
     if (!match) {
       if (coordinateMatch) {
@@ -1026,7 +1015,12 @@ class WeatherApp {
     };
   }
 
-  async fetchOpenWeather(url, requestOptions = {}) {
+  getWeatherApiUrl(type, params = {}) {
+    const query = new URLSearchParams({ type, ...params });
+    return `/api/weather?${query.toString()}`;
+  }
+
+  async fetchJson(url, requestOptions = {}) {
     const response = await fetch(url, requestOptions);
     const payload = await response.json().catch(() => ({}));
 
@@ -1222,11 +1216,14 @@ class WeatherApp {
       const location = options.location || await this.resolveLocation(query);
       if (requestId !== this.weatherRequestId) return;
 
-      const params = `lat=${location.lat}&lon=${location.lon}&units=metric&lang=en&appid=${this.API_KEY}`;
+      const coordinates = {
+        lat: String(location.lat),
+        lon: String(location.lon)
+      };
       const [currentPayload, hourlyPayload, dailyPayload] = await Promise.all([
-        this.fetchOpenWeather(`${this.OPENWEATHER_BASE_URL}/data/4.0/onecall/current?${params}`),
-        this.fetchOpenWeather(`${this.OPENWEATHER_BASE_URL}/data/4.0/onecall/timeline/1h?${params}`),
-        this.fetchOpenWeather(`${this.OPENWEATHER_BASE_URL}/data/4.0/onecall/timeline/1day?${params}`)
+        this.fetchJson(this.getWeatherApiUrl('current', coordinates)),
+        this.fetchJson(this.getWeatherApiUrl('hourly', coordinates)),
+        this.fetchJson(this.getWeatherApiUrl('daily', coordinates))
       ]);
 
       if (requestId !== this.weatherRequestId) return;
