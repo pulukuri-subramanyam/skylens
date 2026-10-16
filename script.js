@@ -84,6 +84,8 @@ class WeatherApp {
       pressure: document.getElementById('pressure'),
       windDirection: document.getElementById('windDirection'),
       uvIndex: document.getElementById('uvIndex'),
+      sunriseTime: document.getElementById('sunriseTime'),
+      sunsetTime: document.getElementById('sunsetTime'),
       
       // Chart and forecast
       temperatureChart: document.getElementById('temperatureChart'),
@@ -1024,7 +1026,8 @@ class WeatherApp {
         region: location.state || location.country,
         country: location.country,
         lat: location.lat,
-        lon: location.lon
+        lon: location.lon,
+        timezone: currentPayload.timezone || dailyPayload.timezone || location.timezone || null
       },
       current: {
         last_updated: toIso(currentPoint.dt),
@@ -1039,6 +1042,8 @@ class WeatherApp {
         pressure_mb: Number(currentPoint.pressure),
         vis_km: Number(currentPoint.visibility || 0) / 1000,
         uv: Number(currentPoint.uvi || 0),
+        sunrise: currentPoint.sunrise ?? null,
+        sunset: currentPoint.sunset ?? null,
         is_day: isDay ? 1 : 0
       }
     };
@@ -1059,7 +1064,10 @@ class WeatherApp {
         maxtemp_c: Number(point.temp?.max ?? point.temp?.day),
         maxtemp_f: toFahrenheit(point.temp?.max ?? point.temp?.day),
         mintemp_c: Number(point.temp?.min ?? point.temp?.night),
-        mintemp_f: toFahrenheit(point.temp?.min ?? point.temp?.night)
+        mintemp_f: toFahrenheit(point.temp?.min ?? point.temp?.night),
+        precipitation_probability_percent: point.pop == null || !Number.isFinite(Number(point.pop))
+          ? null
+          : Math.max(0, Math.min(100, Math.round(Number(point.pop) * 100)))
       }
     }));
 
@@ -1186,6 +1194,8 @@ class WeatherApp {
     this.elements.pressure.textContent = `${current.pressure_mb} hPa`;
     this.elements.windDirection.textContent = current.wind_dir;
     this.elements.uvIndex.textContent = current.uv;
+    this.elements.sunriseTime.textContent = this.formatLocationTime(current.sunrise, location.timezone);
+    this.elements.sunsetTime.textContent = this.formatLocationTime(current.sunset, location.timezone);
   }
 
   getWeatherSummary(current) {
@@ -1352,6 +1362,10 @@ class WeatherApp {
       
       const forecastItem = document.createElement('div');
       forecastItem.className = `forecast-item${isToday ? ' is-today' : ''}`;
+      const rainChance = day.day.precipitation_probability_percent;
+      const rainMarkup = Number.isFinite(rainChance)
+        ? `<p class="forecast-rain"><i class="fas fa-droplet" aria-hidden="true"></i><span>${rainChance}% rain chance</span></p>`
+        : '';
       
       forecastItem.innerHTML = `
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
@@ -1361,6 +1375,7 @@ class WeatherApp {
           <span class="temp-min">${Math.round(day.day[`mintemp_${unitKey}`])}°</span>
         </div>
         <div class="forecast-condition">${day.day.condition.text}</div>
+        ${rainMarkup}
       `;
       
       this.elements.forecastGrid.appendChild(forecastItem);
@@ -1481,6 +1496,20 @@ class WeatherApp {
   }
 
   // Utility Functions
+  formatLocationTime(unixSeconds, timeZone) {
+    if (unixSeconds == null || !Number.isFinite(Number(unixSeconds))) return '—';
+
+    const date = new Date(Number(unixSeconds) * 1000);
+    const options = { hour: 'numeric', minute: '2-digit' };
+    if (timeZone) options.timeZone = timeZone;
+
+    try {
+      return new Intl.DateTimeFormat(undefined, options).format(date);
+    } catch {
+      return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+    }
+  }
+
   formatTime(timestamp) {
     const date = new Date(timestamp);
     const now = new Date();
