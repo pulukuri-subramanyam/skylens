@@ -2334,3 +2334,46 @@ body {
   }
 }
 
+
+
+/* Swipeable forecast strip for tablet and mobile: keep all seven days in one row. */
+@media (max-width: 900px) {
+  .forecast-grid {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(156px, 22vw, 190px);
+    gap: 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: 2px;
+    scroll-snap-type: x proximity;
+    padding: 2px 2px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) var(--secondary-bg);
+  }
+
+  .forecast-grid::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .forecast-grid::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: var(--secondary-bg);
+  }
+
+  .forecast-grid::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--accent-color);
+  }
+
+  .forecast-item {
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  .forecast-item:last-child {
+    border-right: 1px solid var(--border-color);
+  }
+}
