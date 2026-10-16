@@ -2343,7 +2343,7 @@ body {
     min-width: 0;
     grid-template-columns: none;
     grid-auto-flow: column;
-    grid-auto-columns: clamp(156px, 22vw, 190px);
+    grid-auto-columns: clamp(145px, 22vw, 190px);
     gap: 10px;
     overflow-x: auto;
     overscroll-behavior-x: contain;
