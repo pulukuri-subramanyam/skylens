@@ -1307,6 +1307,32 @@ body.loading:not(.has-weather-data) .app-footer {
 .location-heading-row .location-name {
   margin-bottom: 0;
 }
+
+.city-local-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.city-local-time i {
+  color: var(--accent-color);
+}
+
+.city-local-time time {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+@media (max-width: 767px) {
+  .city-local-time {
+    justify-content: center;
+  }
+}
 .save-city-btn,
 .refresh-btn {
   display: inline-flex;
