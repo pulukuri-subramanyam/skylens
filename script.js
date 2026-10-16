@@ -1018,9 +1018,29 @@ class WeatherApp {
     return payload;
   }
 
-  getOpenWeatherIcon(weather) {
+  getOpenWeatherIconClass(weather) {
     const iconCode = weather?.icon || '01d';
-    return `${this.OPENWEATHER_ICON_BASE_URL}/${iconCode}@2x.png`;
+    const iconsByCode = {
+      '01d': 'fa-sun',
+      '01n': 'fa-moon',
+      '02d': 'fa-cloud-sun',
+      '02n': 'fa-cloud-moon',
+      '03d': 'fa-cloud',
+      '03n': 'fa-cloud',
+      '04d': 'fa-cloud',
+      '04n': 'fa-cloud',
+      '09d': 'fa-cloud-showers-heavy',
+      '09n': 'fa-cloud-showers-heavy',
+      '10d': 'fa-cloud-rain',
+      '10n': 'fa-cloud-rain',
+      '11d': 'fa-cloud-bolt',
+      '11n': 'fa-cloud-bolt',
+      '13d': 'fa-snowflake',
+      '13n': 'fa-snowflake',
+      '50d': 'fa-smog',
+      '50n': 'fa-smog'
+    };
+    return iconsByCode[iconCode] || 'fa-cloud';
   }
 
   getWindDirection(degrees) {
@@ -1043,7 +1063,7 @@ class WeatherApp {
     };
     const conditionFor = point => ({
       text: readableText(point.weather?.[0]),
-      icon: this.getOpenWeatherIcon(point.weather?.[0])
+      icon: this.getOpenWeatherIconClass(point.weather?.[0])
     });
     const isDay = currentPoint.sunrise && currentPoint.sunset
       ? currentPoint.dt >= currentPoint.sunrise && currentPoint.dt <= currentPoint.sunset
@@ -1208,8 +1228,7 @@ class WeatherApp {
     this.elements.lastUpdated.textContent = `Last updated: ${this.formatTime(current.last_updated)}`;
     
     // Weather icon
-    this.elements.currentWeatherIcon.src = current.condition.icon;
-    this.elements.currentWeatherIcon.alt = current.condition.text;
+    this.elements.currentWeatherIcon.className = `weather-icon fas ${current.condition.icon}`;
     
     // Temperature and condition
     this.elements.currentTemp.textContent = `${Math.round(current[`temp_${unitKey}`])}°${this.temperatureUnit}`;
@@ -1399,7 +1418,7 @@ class WeatherApp {
       
       forecastItem.innerHTML = `
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
-        <img src="${day.day.condition.icon}" alt="${day.day.condition.text}" class="forecast-icon">
+        <i class="forecast-icon fas ${day.day.condition.icon}" aria-hidden="true"></i>
         <div class="forecast-temps">
           <span class="temp-max">${Math.round(day.day[`maxtemp_${unitKey}`])}°</span>
           <span class="temp-min">${Math.round(day.day[`mintemp_${unitKey}`])}°</span>
