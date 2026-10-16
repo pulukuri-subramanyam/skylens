@@ -1515,8 +1515,10 @@ class WeatherApp {
       const icon = this.elements.themeToggle.querySelector('i');
       icon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
     } else {
-      // Default to dark theme
-      document.documentElement.setAttribute('data-theme', 'dark');
+      // Use a light first-visit theme; keep any saved preference.
+      document.documentElement.setAttribute('data-theme', 'light');
+      const icon = this.elements.themeToggle.querySelector('i');
+      icon.className = 'fas fa-moon';
     }
   }
 
