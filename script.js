@@ -12,6 +12,7 @@ class WeatherApp {
     this.currentChart = null;
     this.currentLocation = null;
     this.lastSearchQuery = '';
+    this.lastActionType = 'default';
     this.DEFAULT_CITY = 'London';
     this.savedCities = this.loadCityList('weatherapp-saved-cities');
     this.recentCities = this.loadCityList('weatherapp-recent-cities');
@@ -112,7 +113,9 @@ class WeatherApp {
       const option = event.target.closest('.city-suggestion');
       if (option) this.selectCitySuggestion(Number(option.dataset.suggestionIndex));
     });
-    this.elements.locationBtn.addEventListener('click', () => this.getCurrentLocation());
+    this.elements.locationBtn.addEventListener('click', () => {
+      this.getCurrentLocation().catch(() => {});
+    });
     this.elements.saveCityBtn.addEventListener('click', () => this.toggleSavedCurrentCity());
     this.elements.refreshBtn.addEventListener('click', () => this.refreshCurrentWeather());
 
@@ -124,7 +127,9 @@ class WeatherApp {
     this.elements.themeToggle.addEventListener('click', () => this.toggleTheme());
 
     // Retry button
-    this.elements.retryBtn.addEventListener('click', () => this.retryLastAction());
+    this.elements.retryBtn.addEventListener('click', () => {
+      this.retryLastAction().catch(() => {});
+    });
 
     // Input focus effects
     this.elements.cityInput.addEventListener('focus', () => {
@@ -643,6 +648,7 @@ class WeatherApp {
     const details = this.formatCitySuggestionDetails(location);
     this.elements.cityInput.value = [location.name, details].filter(Boolean).join(', ');
     this.lastSearchQuery = query;
+    this.lastActionType = 'search';
     this.closeCitySuggestions();
     await this.fetchWeatherData(query, { location });
   }
@@ -733,6 +739,7 @@ class WeatherApp {
     }
     button.addEventListener('click', async () => {
       this.lastSearchQuery = city.query;
+      this.lastActionType = 'search';
       this.elements.cityShortcutStatus.textContent = 'Loading weather for ' + city.label + '.';
       await this.fetchWeatherData(city.query);
     });
@@ -844,6 +851,7 @@ class WeatherApp {
 
   // Get current geolocation
   getCurrentLocation() {
+    this.lastActionType = 'location';
     this.showLoading();
     
     return new Promise((resolve, reject) => {
@@ -877,7 +885,7 @@ class WeatherApp {
               errorMessage += 'Location information unavailable.';
               break;
             case error.TIMEOUT:
-              errorMessage += 'Location request timed out.';
+              errorMessage += 'Location lookup took too long. Check that device location services are enabled and allow location access for this site, or search for a city instead.';
               break;
             default:
               errorMessage += 'An unknown error occurred.';
@@ -886,9 +894,9 @@ class WeatherApp {
           reject(error);
         },
         {
-          enableHighAccuracy: true,
-          timeout: 6000,
-          maximumAge: 300000 // 5 minutes
+          enableHighAccuracy: false,
+          timeout: 20000,
+          maximumAge: 300000 // reuse a recent location for up to 5 minutes
         }
       );
     });
@@ -905,11 +913,17 @@ class WeatherApp {
     window.clearTimeout(this.suggestionTimer);
     this.closeCitySuggestions();
     this.lastSearchQuery = query;
+    this.lastActionType = 'search';
     await this.fetchWeatherData(query);
   }
 
   // Retry last action
   async retryLastAction() {
+    if (this.lastActionType === 'location') {
+      await this.getCurrentLocation();
+      return;
+    }
+
     if (this.lastSearchQuery) {
       await this.fetchWeatherData(this.lastSearchQuery);
     } else if (this.currentLocation) {
