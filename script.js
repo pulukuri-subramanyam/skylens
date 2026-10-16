@@ -1051,6 +1051,19 @@ class WeatherApp {
       return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(partlyCloudySvg);
     }
 
+    // Preserve the visible sun rays on daytime rain icons too.
+    if (safeIconCode === '10d') {
+      const sunShowerSvg =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">' +
+        '<g stroke="#e8892d" stroke-width="2.8" stroke-linecap="round">' +
+        '<path d="M44 3v5M44 34v5M25 20h5M58 20h4M30.5 7.5l3.5 3.5M54 29l3.5 3.5M57.5 7.5 54 11M34 29l-3.5 3.5"/>' +
+        '</g><circle cx="44" cy="20" r="8.5" fill="#f7aa43" stroke="#e8892d" stroke-width="1.8"/>' +
+        '<path d="M15 43h32a9 9 0 0 0 0-18h-1.2a13 13 0 0 0-25.2-2.5A10.5 10.5 0 0 0 15 43Z" fill="#f6f8fa" stroke="#a7b8c4" stroke-width="1.8" stroke-linejoin="round"/>' +
+        '<g fill="#348eae"><path d="M21 48c0 2-3 4.3-3 6.2a3 3 0 0 0 6 0c0-1.9-3-4.2-3-6.2Z"/><path d="M33 48c0 2-3 4.3-3 6.2a3 3 0 0 0 6 0c0-1.9-3-4.2-3-6.2Z"/><path d="M45 48c0 2-3 4.3-3 6.2a3 3 0 0 0 6 0c0-1.9-3-4.2-3-6.2Z"/></g>' +
+        '</svg>';
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(sunShowerSvg);
+    }
+
     return this.OPENWEATHER_ICON_BASE_URL + '/' + safeIconCode + '@2x.png';
   }
 
