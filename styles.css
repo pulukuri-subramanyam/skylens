@@ -747,6 +747,21 @@ body {
   line-height: 1.3;
 }
 
+.forecast-rain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.forecast-rain i {
+  color: var(--accent-color);
+}
+
 /* Responsive Design */
 @media (min-width: 768px) {
   .app-container {
@@ -830,7 +845,7 @@ body {
 
 @media (min-width: 1200px) {
   .weather-details-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
