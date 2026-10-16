@@ -6,7 +6,8 @@
 
 ## Features
 
-- Current conditions, including temperature, feels-like temperature, humidity, wind, visibility, pressure, wind direction, UV index, sunrise, and sunset
+- Current conditions, including temperature, feels-like temperature, humidity, wind, visibility, pressure, wind direction, and UV index
+- Selected city's local time, sunrise, and sunset shown in that location's timezone
 - Seven-day forecast with daily rain chances and an hourly temperature trend chart
 - City search with live location suggestions
 - Current-location weather using the browser's location permission
