@@ -1027,7 +1027,19 @@ class WeatherApp {
     const safeIconCode = /^\d{2}[dn]$/.test(String(iconCode || ''))
       ? iconCode
       : '01d';
-    return `${this.OPENWEATHER_ICON_BASE_URL}/${safeIconCode}@2x.png`;
+
+    // Use a compact drawn sun instead of OpenWeather's large solid sun disc.
+    if (safeIconCode === '01d') {
+      const sunSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+        <g stroke="#e8892d" stroke-width="3.5" stroke-linecap="round">
+          <path d="M32 4v7M32 53v7M4 32h7M53 32h7M11.5 11.5l5 5M47 47l5.5 5.5M52.5 11.5 47 17M17 47l-5.5 5.5"/>
+        </g>
+        <circle cx="32" cy="32" r="13.5" fill="#f7aa43" stroke="#e8892d" stroke-width="2"/>
+      </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(sunSvg);
+    }
+
+    return this.OPENWEATHER_ICON_BASE_URL + '/' + safeIconCode + '@2x.png';
   }
 
   getWindDirection(degrees) {
