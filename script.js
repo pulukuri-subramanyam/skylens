@@ -1,6 +1,6 @@
 /**
- * WeatherPro - Advanced Weather Application
- * Enterprise-level weather app with real-time data integration
+ * Skylens - Weather Dashboard
+ * A student-built weather dashboard with real-time data.
  */
 
 class WeatherApp {
