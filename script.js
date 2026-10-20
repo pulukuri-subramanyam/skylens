@@ -1,6 +1,5 @@
 /**
  * Skylens - Weather Dashboard
- * A student-built weather dashboard with real-time data.
  */
 
 class WeatherApp {
