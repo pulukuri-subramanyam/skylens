@@ -2469,7 +2469,6 @@ body {
 
 
 /* Usability upgrades: saved-city management, sharing, AQI, daylight, and install. */
-.install-btn,
 .share-weather-btn {
   display: inline-flex;
   align-items: center;
@@ -2484,7 +2483,6 @@ body {
   padding: 8px 11px;
   cursor: pointer;
 }
-.install-btn:hover,
 .share-weather-btn:hover:not(:disabled) {
   border-color: var(--accent-color);
   color: var(--accent-color);
@@ -2571,9 +2569,7 @@ body {
 .sun-progress.is-night .sun-progress-fill { background: #7898b4; }
 .sun-progress.is-night .sun-progress-marker { color: #698aa7; }
 @media (max-width: 600px) {
-  .install-btn span,
   .share-weather-btn span { display: none; }
-  .install-btn,
   .share-weather-btn { width: 36px; height: 36px; justify-content: center; padding: 0; }
   .saved-city-control { width: 25px; }
   .saved-city-chip { max-width: 100%; }
