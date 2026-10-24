@@ -30,7 +30,6 @@ class WeatherApp {
     this.currentWeatherData = null;
     this.forecastData = null;
     this.lastAirQuality = null;
-    this.deferredInstallPrompt = null;
     
     this.initializeApp();
     this.bindEvents();
@@ -58,7 +57,6 @@ class WeatherApp {
       saveCityBtn: document.getElementById('saveCityBtn'),
       shareWeatherBtn: document.getElementById('shareWeatherBtn'),
       refreshBtn: document.getElementById('refreshBtn'),
-      installBtn: document.getElementById('installBtn'),
       dataFreshness: document.getElementById('dataFreshness'),
       celsiusBtn: document.getElementById('celsiusBtn'),
       fahrenheitBtn: document.getElementById('fahrenheitBtn'),
@@ -133,18 +131,7 @@ class WeatherApp {
     });
     this.elements.saveCityBtn.addEventListener('click', () => this.toggleSavedCurrentCity());
     this.elements.shareWeatherBtn.addEventListener('click', () => this.shareCurrentWeather());
-    this.elements.installBtn.addEventListener('click', () => this.installApp());
     this.elements.refreshBtn.addEventListener('click', () => this.refreshCurrentWeather());
-
-    window.addEventListener('beforeinstallprompt', (event) => {
-      event.preventDefault();
-      this.deferredInstallPrompt = event;
-      this.elements.installBtn.hidden = false;
-    });
-    window.addEventListener('appinstalled', () => {
-      this.deferredInstallPrompt = null;
-      this.elements.installBtn.hidden = true;
-    });
 
     // Temperature unit toggle
     this.elements.celsiusBtn.addEventListener('click', () => this.setTemperatureUnit('C'));
@@ -1119,14 +1106,6 @@ class WeatherApp {
     }
   }
 
-  async installApp() {
-    if (!this.deferredInstallPrompt) return;
-    this.deferredInstallPrompt.prompt();
-    await this.deferredInstallPrompt.userChoice;
-    this.deferredInstallPrompt = null;
-    this.elements.installBtn.hidden = true;
-  }
-
   registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}), { once: true });
@@ -1299,8 +1278,8 @@ class WeatherApp {
         pressure_mb: Number(currentPoint.pressure),
         vis_km: Number(currentPoint.visibility || 0) / 1000,
         uv: Number(currentPoint.uvi || 0),
-        sunrise: currentPoint.sunrise ?? null,
-        sunset: currentPoint.sunset ?? null,
+        sunrise: currentPoint.sunrise ? toIso(currentPoint.sunrise) : null,
+        sunset: currentPoint.sunset ? toIso(currentPoint.sunset) : null,
         is_day: isDay ? 1 : 0
       }
     };
