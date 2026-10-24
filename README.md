@@ -14,7 +14,7 @@
 - Saved and recently viewed cities, with controls to remove or reorder saved places
 - Air-quality label and PM2.5 reading for the selected city
 - Sunrise-to-sunset daylight progress, local time, and a one-click weather share summary
-- Offline-friendly last-result cache, plus installable PWA support
+- Offline-friendly last-result cache, plus installable PWA support (use the Install button when your browser offers it)
 - Celsius/Fahrenheit toggle, light/dark themes, and manual refresh
 - Responsive layout, weather-themed backgrounds, and loading/error states
 
