@@ -2575,7 +2575,6 @@ body {
   .share-weather-btn span { display: none; }
   .install-btn,
   .share-weather-btn { width: 36px; height: 36px; justify-content: center; padding: 0; }
-  .saved-city-controls { display: none; }
-  .saved-city-chip { overflow: visible; border: 0; background: transparent; }
-  .saved-city-chip .city-chip { border: 1px solid var(--border-color); border-radius: 999px; }
+  .saved-city-control { width: 25px; }
+  .saved-city-chip { max-width: 100%; }
 }
