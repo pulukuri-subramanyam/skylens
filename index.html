@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#24788a">
 </head>
 <body>
     <!-- Animated Background -->
@@ -33,6 +35,10 @@
                         <button type="button" class="unit-option is-active" id="celsiusBtn" aria-label="Use Celsius" aria-pressed="true">°C</button>
                         <button type="button" class="unit-option" id="fahrenheitBtn" aria-label="Use Fahrenheit" aria-pressed="false">°F</button>
                     </div>
+                    <button class="install-btn" id="installBtn" type="button" hidden>
+                        <i class="fas fa-download" aria-hidden="true"></i>
+                        <span>Install</span>
+                    </button>
                     <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                         <i class="fas fa-moon"></i>
                     </button>
@@ -124,6 +130,10 @@
                                 <i class="fas fa-star" aria-hidden="true"></i>
                                 <span>Save</span>
                             </button>
+                            <button type="button" class="share-weather-btn" id="shareWeatherBtn" aria-label="Share weather" disabled>
+                                <i class="fas fa-share-nodes" aria-hidden="true"></i>
+                                <span>Share</span>
+                            </button>
                         </div>
                         <p class="city-local-time">
                             <i class="fas fa-clock" aria-hidden="true"></i>
@@ -202,6 +212,13 @@
                         </div>
                     </div>
                     <div class="detail-item">
+                        <i class="fas fa-lungs detail-icon" aria-hidden="true"></i>
+                        <div class="detail-content">
+                            <span class="detail-label">Air quality</span>
+                            <span class="detail-value" id="airQuality">—</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
                         <i class="fas fa-sun detail-icon" aria-hidden="true"></i>
                         <div class="detail-content">
                             <span class="detail-label">Sunrise</span>
@@ -214,6 +231,16 @@
                             <span class="detail-label">Sunset</span>
                             <span class="detail-value" id="sunsetTime">—</span>
                         </div>
+                    </div>
+                </div>
+                <div class="sun-progress" id="sunProgress" aria-label="Daylight progress">
+                    <div class="sun-progress-copy">
+                        <span>Daylight</span>
+                        <span id="sunProgressLabel">—</span>
+                    </div>
+                    <div class="sun-progress-track" aria-hidden="true">
+                        <span class="sun-progress-fill" id="sunProgressFill"></span>
+                        <i class="fas fa-sun sun-progress-marker" id="sunProgressMarker"></i>
                     </div>
                 </div>
             </section>
