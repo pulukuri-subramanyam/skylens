@@ -5,7 +5,8 @@ const ROUTES = {
   reverse: { path: '/geo/1.0/reverse', maxAge: 3600 },
   current: { path: '/data/4.0/onecall/current', maxAge: 300 },
   hourly: { path: '/data/4.0/onecall/timeline/1h', maxAge: 900 },
-  daily: { path: '/data/4.0/onecall/timeline/1day', maxAge: 1800 }
+  daily: { path: '/data/4.0/onecall/timeline/1day', maxAge: 1800 },
+  air: { path: '/data/2.5/air_pollution', maxAge: 1800 }
 };
 
 function getString(query, name) {
