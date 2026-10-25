@@ -214,30 +214,7 @@
                             <span class="detail-value" id="airQuality">—</span>
                         </div>
                     </div>
-                    <div class="detail-item">
-                        <i class="fas fa-sun detail-icon" aria-hidden="true"></i>
-                        <div class="detail-content">
-                            <span class="detail-label">Sunrise</span>
-                            <span class="detail-value" id="sunriseTime">—</span>
-                        </div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-moon detail-icon" aria-hidden="true"></i>
-                        <div class="detail-content">
-                            <span class="detail-label">Sunset</span>
-                            <span class="detail-value" id="sunsetTime">—</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="sun-progress" id="sunProgress" aria-label="Daylight progress">
-                    <div class="sun-progress-copy">
-                        <span>Daylight</span>
-                        <span id="sunProgressLabel">—</span>
-                    </div>
-                    <div class="sun-progress-track" aria-hidden="true">
-                        <span class="sun-progress-fill" id="sunProgressFill"></span>
-                        <i class="fas fa-sun sun-progress-marker" id="sunProgressMarker"></i>
-                    </div>
+
                 </div>
             </section>
 
@@ -257,6 +234,11 @@
                     <i class="fas fa-chart-line"></i>
                     Hourly Temperature Trend
                 </h3>
+                <div class="chart-sun-times" id="chartSunTimes" aria-label="Daylight times" hidden>
+                    <span><i class="fas fa-sun" aria-hidden="true"></i> Sunrise <time id="chartSunriseTime">—</time></span>
+                    <span class="chart-sun-divider" aria-hidden="true"></span>
+                    <span><i class="fas fa-moon" aria-hidden="true"></i> Sunset <time id="chartSunsetTime">—</time></span>
+                </div>
                 <div class="chart-container">
                     <canvas id="temperatureChart"></canvas>
                 </div>
