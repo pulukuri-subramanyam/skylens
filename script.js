@@ -29,6 +29,7 @@ class WeatherApp {
     this.temperatureUnit = localStorage.getItem('weatherapp-temperature-unit') || 'C';
     this.currentWeatherData = null;
     this.forecastData = null;
+    this.lastAirQuality = null;
     
     this.initializeApp();
     this.bindEvents();
@@ -54,6 +55,7 @@ class WeatherApp {
       recentCitiesList: document.getElementById('recentCitiesList'),
       cityShortcutStatus: document.getElementById('cityShortcutStatus'),
       saveCityBtn: document.getElementById('saveCityBtn'),
+      shareWeatherBtn: document.getElementById('shareWeatherBtn'),
       refreshBtn: document.getElementById('refreshBtn'),
       dataFreshness: document.getElementById('dataFreshness'),
       celsiusBtn: document.getElementById('celsiusBtn'),
@@ -88,6 +90,11 @@ class WeatherApp {
       uvIndex: document.getElementById('uvIndex'),
       sunriseTime: document.getElementById('sunriseTime'),
       sunsetTime: document.getElementById('sunsetTime'),
+      airQuality: document.getElementById('airQuality'),
+      sunProgress: document.getElementById('sunProgress'),
+      sunProgressLabel: document.getElementById('sunProgressLabel'),
+      sunProgressFill: document.getElementById('sunProgressFill'),
+      sunProgressMarker: document.getElementById('sunProgressMarker'),
       
       // Chart and forecast
       temperatureChart: document.getElementById('temperatureChart'),
@@ -101,6 +108,8 @@ class WeatherApp {
     this.updateUnitToggle();
     this.renderCityShortcuts();
     this.updateSaveCityButton();
+    this.restoreCachedWeather();
+    this.registerServiceWorker();
 
     // Auto-detect location on app load
     this.autoDetectLocation();
@@ -121,6 +130,7 @@ class WeatherApp {
       this.getCurrentLocation().catch(() => {});
     });
     this.elements.saveCityBtn.addEventListener('click', () => this.toggleSavedCurrentCity());
+    this.elements.shareWeatherBtn.addEventListener('click', () => this.shareCurrentWeather());
     this.elements.refreshBtn.addEventListener('click', () => this.refreshCurrentWeather());
 
     // Temperature unit toggle
@@ -728,7 +738,7 @@ class WeatherApp {
     };
   }
 
-  createCityChip(city, kind) {
+  createCityChip(city, kind, index = 0) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'city-chip';
@@ -745,7 +755,33 @@ class WeatherApp {
       this.elements.cityShortcutStatus.textContent = 'Loading weather for ' + city.label + '.';
       await this.fetchWeatherData(city.query);
     });
-    return button;
+
+    if (kind !== 'saved') return button;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'saved-city-chip';
+    wrapper.appendChild(button);
+
+    const controls = document.createElement('span');
+    controls.className = 'saved-city-controls';
+    const makeControl = (icon, label, handler, disabled) => {
+      const control = document.createElement('button');
+      control.type = 'button';
+      control.className = 'saved-city-control';
+      control.title = label;
+      control.setAttribute('aria-label', label);
+      control.disabled = disabled;
+      control.innerHTML = '<i class="fas ' + icon + '" aria-hidden="true"></i>';
+      control.addEventListener('click', handler);
+      return control;
+    };
+    controls.append(
+      makeControl('fa-arrow-left', 'Move ' + city.label + ' earlier', () => this.moveSavedCity(index, -1), index === 0),
+      makeControl('fa-arrow-right', 'Move ' + city.label + ' later', () => this.moveSavedCity(index, 1), index === this.savedCities.length - 1),
+      makeControl('fa-xmark', 'Remove ' + city.label + ' from saved cities', () => this.removeSavedCity(city.id), false)
+    );
+    wrapper.appendChild(controls);
+    return wrapper;
   }
 
   renderCityShortcuts() {
@@ -754,8 +790,8 @@ class WeatherApp {
     this.elements.savedCitiesList.replaceChildren();
     this.elements.recentCitiesList.replaceChildren();
 
-    savedCities.forEach((city) => {
-      this.elements.savedCitiesList.appendChild(this.createCityChip(city, 'saved'));
+    savedCities.forEach((city, index) => {
+      this.elements.savedCitiesList.appendChild(this.createCityChip(city, 'saved', index));
     });
     recentCities.forEach((city) => {
       this.elements.recentCitiesList.appendChild(this.createCityChip(city, 'recent'));
@@ -764,6 +800,26 @@ class WeatherApp {
     this.elements.savedCitySection.hidden = savedCities.length === 0;
     this.elements.recentCitySection.hidden = recentCities.length === 0;
     this.elements.cityShortcuts.hidden = savedCities.length === 0 && recentCities.length === 0;
+  }
+
+  moveSavedCity(index, direction) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= this.savedCities.length) return;
+    [this.savedCities[index], this.savedCities[targetIndex]] = [this.savedCities[targetIndex], this.savedCities[index]];
+    this.persistCityList('weatherapp-saved-cities', this.savedCities);
+    this.renderCityShortcuts();
+    this.elements.cityShortcutStatus.textContent = 'Saved city order updated.';
+  }
+
+  removeSavedCity(cityId) {
+    const removed = this.savedCities.find((city) => city.id === cityId);
+    this.savedCities = this.savedCities.filter((city) => city.id !== cityId);
+    const persisted = this.persistCityList('weatherapp-saved-cities', this.savedCities);
+    this.renderCityShortcuts();
+    this.updateSaveCityButton();
+    this.elements.cityShortcutStatus.textContent = persisted
+      ? (removed ? removed.label + ' removed from saved cities.' : 'Saved city removed.')
+      : 'Could not save this change on this device.';
   }
 
   rememberRecentCity(city) {
@@ -792,6 +848,7 @@ class WeatherApp {
     const isSaved = Boolean(this.currentCity && this.savedCities.some((city) => city.id === this.currentCity.id));
     const cityLabel = this.currentCity ? this.currentCity.label : 'current city';
     this.elements.saveCityBtn.disabled = !this.currentCity;
+    this.elements.shareWeatherBtn.disabled = !this.currentCity;
     this.elements.saveCityBtn.setAttribute('aria-pressed', String(isSaved));
     this.elements.saveCityBtn.setAttribute('aria-label', (isSaved ? 'Remove ' + cityLabel + ' from saved cities' : 'Save ' + cityLabel + ' to saved cities'));
     this.elements.saveCityBtn.classList.toggle('is-saved', isSaved);
@@ -1019,6 +1076,74 @@ class WeatherApp {
     return `/api/weather?${query.toString()}`;
   }
 
+  getAqiDetails(payload) {
+    const data = payload && Array.isArray(payload.list) ? payload.list[0] : null;
+    if (!data || !Number.isFinite(Number(data.main?.aqi))) return null;
+    const labels = ['', 'Good', 'Fair', 'Moderate', 'Poor', 'Very poor'];
+    return {
+      index: Number(data.main.aqi),
+      label: labels[Number(data.main.aqi)] || 'Unknown',
+      pm25: Number(data.components?.pm2_5)
+    };
+  }
+
+  async shareCurrentWeather() {
+    if (!this.currentWeatherData || !this.currentCity) return;
+    const current = this.currentWeatherData.current;
+    const unitKey = this.temperatureUnit.toLowerCase();
+    const summary = `${this.currentCity.label}: ${Math.round(current[`temp_${unitKey}`])}°${this.temperatureUnit}, ${current.condition.text}. Check it on Skylens: ${window.location.origin}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Skylens weather', text: summary, url: window.location.href });
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(summary);
+        this.elements.cityShortcutStatus.textContent = 'Weather summary copied to your clipboard.';
+      } else {
+        window.prompt('Copy this weather summary:', summary);
+      }
+    } catch (error) {
+      if (error?.name !== 'AbortError') this.elements.cityShortcutStatus.textContent = 'Could not share weather right now.';
+    }
+  }
+
+  registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}), { once: true });
+    }
+  }
+
+  cacheWeatherData() {
+    if (!this.currentWeatherData || !this.forecastData || !this.currentCity) return;
+    try {
+      localStorage.setItem('weatherapp-last-weather', JSON.stringify({
+        currentWeatherData: this.currentWeatherData,
+        forecastData: this.forecastData,
+        currentCity: this.currentCity,
+        lastAirQuality: this.lastAirQuality,
+        lastFetchedAt: this.lastFetchedAt
+      }));
+    } catch (error) {}
+  }
+
+  restoreCachedWeather() {
+    try {
+      const cached = JSON.parse(localStorage.getItem('weatherapp-last-weather') || 'null');
+      if (!cached?.currentWeatherData || !cached?.forecastData || !cached?.currentCity) return;
+      this.currentWeatherData = cached.currentWeatherData;
+      this.forecastData = cached.forecastData;
+      this.currentCity = cached.currentCity;
+      this.lastAirQuality = cached.lastAirQuality || null;
+      this.lastFetchedAt = Number(cached.lastFetchedAt) || null;
+      this.updateCurrentWeather(this.currentWeatherData);
+      this.updateHourlyChart(this.forecastData);
+      this.updateForecast(this.forecastData);
+      this.updateBackground(this.currentWeatherData.current);
+      this.showWeatherContent();
+      this.updateSaveCityButton();
+      this.elements.cityShortcutStatus.textContent = 'Showing the last saved weather while Skylens reconnects.';
+    } catch (error) {}
+  }
+
   async fetchJson(url, requestOptions = {}) {
     const response = await fetch(url, requestOptions);
     const payload = await response.json().catch(() => ({}));
@@ -1127,8 +1252,10 @@ class WeatherApp {
       text: readableText(point.weather?.[0]),
       iconCode: this.getOpenWeatherIconCode(point.weather?.[0])
     });
-    const isDay = currentPoint.sunrise && currentPoint.sunset
-      ? currentPoint.dt >= currentPoint.sunrise && currentPoint.dt <= currentPoint.sunset
+    const sunriseTimestamp = currentPoint.sunrise ?? dailyPayload.data?.[0]?.sunrise ?? null;
+    const sunsetTimestamp = currentPoint.sunset ?? dailyPayload.data?.[0]?.sunset ?? null;
+    const isDay = sunriseTimestamp && sunsetTimestamp
+      ? currentPoint.dt >= sunriseTimestamp && currentPoint.dt <= sunsetTimestamp
       : true;
 
     const currentData = {
@@ -1153,8 +1280,8 @@ class WeatherApp {
         pressure_mb: Number(currentPoint.pressure),
         vis_km: Number(currentPoint.visibility || 0) / 1000,
         uv: Number(currentPoint.uvi || 0),
-        sunrise: currentPoint.sunrise ?? null,
-        sunset: currentPoint.sunset ?? null,
+        sunrise: sunriseTimestamp ? toIso(sunriseTimestamp) : null,
+        sunset: sunsetTimestamp ? toIso(sunsetTimestamp) : null,
         is_day: isDay ? 1 : 0
       }
     };
@@ -1219,10 +1346,11 @@ class WeatherApp {
         lat: String(location.lat),
         lon: String(location.lon)
       };
-      const [currentPayload, hourlyPayload, dailyPayload] = await Promise.all([
+      const [currentPayload, hourlyPayload, dailyPayload, airPayload] = await Promise.all([
         this.fetchJson(this.getWeatherApiUrl('current', coordinates)),
         this.fetchJson(this.getWeatherApiUrl('hourly', coordinates)),
-        this.fetchJson(this.getWeatherApiUrl('daily', coordinates))
+        this.fetchJson(this.getWeatherApiUrl('daily', coordinates)),
+        this.fetchJson(this.getWeatherApiUrl('air', coordinates)).catch(() => null)
       ]);
 
       if (requestId !== this.weatherRequestId) return;
@@ -1236,6 +1364,7 @@ class WeatherApp {
 
       this.currentWeatherData = currentData;
       this.forecastData = forecastData;
+      this.lastAirQuality = this.getAqiDetails(airPayload);
       this.currentCity = this.createCityShortcut(currentData.location);
       if (this.currentCity) {
         this.rememberRecentCity(this.currentCity);
@@ -1249,6 +1378,7 @@ class WeatherApp {
       this.updateHourlyChart(forecastData);
       this.updateForecast(forecastData);
       this.updateBackground(currentData.current);
+      this.cacheWeatherData();
       this.showWeatherContent();
       this.elements.cityShortcutStatus.textContent = 'Weather loaded for ' + (this.currentCity ? this.currentCity.label : 'the selected city') + '.';
       this.elements.cityInput.value = '';
@@ -1259,6 +1389,9 @@ class WeatherApp {
         this.lastRefreshError = error;
         this.updateFreshness();
         this.elements.cityShortcutStatus.textContent = 'Refresh failed. Showing the last successful weather data.';
+      } else if (this.currentWeatherData && this.forecastData) {
+        this.elements.cityShortcutStatus.textContent = 'You appear to be offline. Showing the last successful weather data.';
+        this.showWeatherContent();
       } else {
         this.showError(this.getErrorMessage(error));
       }
@@ -1308,8 +1441,31 @@ class WeatherApp {
     this.elements.pressure.textContent = `${current.pressure_mb} hPa`;
     this.elements.windDirection.textContent = current.wind_dir;
     this.elements.uvIndex.textContent = current.uv;
+    this.elements.airQuality.textContent = this.lastAirQuality
+      ? this.lastAirQuality.label + (Number.isFinite(this.lastAirQuality.pm25) ? ' · PM2.5 ' + Math.round(this.lastAirQuality.pm25) : '')
+      : 'Unavailable';
     this.elements.sunriseTime.textContent = this.formatLocationTime(current.sunrise, location.timezone);
     this.elements.sunsetTime.textContent = this.formatLocationTime(current.sunset, location.timezone);
+    this.updateSunProgress(current, location);
+  }
+
+  updateSunProgress(current, location) {
+    const sunrise = Date.parse(current.sunrise);
+    const sunset = Date.parse(current.sunset);
+    const now = Date.now();
+    if (!Number.isFinite(sunrise) || !Number.isFinite(sunset) || sunset <= sunrise) {
+      this.elements.sunProgress.hidden = true;
+      return;
+    }
+    const progress = Math.max(0, Math.min(1, (now - sunrise) / (sunset - sunrise)));
+    const isDaylight = now >= sunrise && now <= sunset;
+    this.elements.sunProgress.hidden = false;
+    this.elements.sunProgressFill.style.width = (progress * 100) + '%';
+    this.elements.sunProgressMarker.style.left = (progress * 100) + '%';
+    this.elements.sunProgress.classList.toggle('is-night', !isDaylight);
+    this.elements.sunProgressLabel.textContent = isDaylight
+      ? Math.round(progress * 100) + '% through daylight'
+      : (now < sunrise ? 'Sunrise at ' + this.formatLocationTime(current.sunrise, location.timezone) : 'Sunset at ' + this.formatLocationTime(current.sunset, location.timezone));
   }
 
   getWeatherSummary(current) {
@@ -1612,10 +1768,15 @@ class WeatherApp {
   }
 
   // Utility Functions
-  formatLocationTime(unixSeconds, timeZone) {
-    if (unixSeconds == null || !Number.isFinite(Number(unixSeconds))) return '—';
+  formatLocationTime(value, timeZone) {
+    if (value == null) return '—';
 
-    const date = new Date(Number(unixSeconds) * 1000);
+    const timestamp = typeof value === 'number'
+      ? value * 1000
+      : Date.parse(value);
+    if (!Number.isFinite(timestamp)) return '—';
+
+    const date = new Date(timestamp);
     const options = { hour: 'numeric', minute: '2-digit' };
     if (timeZone) options.timeZone = timeZone;
 

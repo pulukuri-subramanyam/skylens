@@ -1,0 +1,17 @@
+{
+  "name": "Skylens Weather",
+  "short_name": "Skylens",
+  "description": "Live conditions, made clear.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef3f4",
+  "theme_color": "#24788a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

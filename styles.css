@@ -2466,3 +2466,111 @@ body {
     border-radius: 12px;
   }
 }
+
+
+/* Usability upgrades: saved-city management, sharing, AQI, daylight, and install. */
+.share-weather-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+.share-weather-btn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+.share-weather-btn:disabled {
+  cursor: not-allowed;
+  opacity: .52;
+}
+.location-heading-row {
+  flex-wrap: wrap;
+}
+.city-chip-list {
+  align-items: center;
+}
+.saved-city-chip {
+  display: inline-flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--glass-bg);
+}
+.saved-city-chip .city-chip {
+  border: 0;
+  border-radius: 0;
+}
+.saved-city-controls {
+  display: inline-flex;
+  align-items: center;
+  border-left: 1px solid var(--border-color);
+}
+.saved-city-control {
+  width: 28px;
+  height: 100%;
+  min-height: 32px;
+  border: 0;
+  border-right: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.saved-city-control:last-child { border-right: 0; }
+.saved-city-control:hover:not(:disabled) { color: var(--accent-color); background: var(--secondary-bg); }
+.saved-city-control:disabled { cursor: not-allowed; opacity: .35; }
+.sun-progress {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+.sun-progress[hidden] { display: none; }
+.sun-progress-copy {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 9px;
+  color: var(--text-muted);
+  font-size: .76rem;
+  font-weight: 600;
+}
+.sun-progress-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-color) 12%, var(--secondary-bg));
+}
+.sun-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #e8aa3d;
+  transition: width 300ms ease;
+}
+.sun-progress-marker {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  color: #d38b20;
+  font-size: .82rem;
+  transform: translate(-50%, -50%);
+  transition: left 300ms ease;
+}
+.sun-progress.is-night .sun-progress-fill { background: #7898b4; }
+.sun-progress.is-night .sun-progress-marker { color: #698aa7; }
+@media (max-width: 600px) {
+  .share-weather-btn span { display: none; }
+  .share-weather-btn { width: 36px; height: 36px; justify-content: center; padding: 0; }
+  .saved-city-control { width: 25px; }
+  .saved-city-chip { max-width: 100%; }
+}
