@@ -2574,3 +2574,11 @@ body {
   .saved-city-control { width: 25px; }
   .saved-city-chip { max-width: 100%; }
 }
+
+
+/* Sunrise and sunset are presented only beside the hourly graph. */
+.chart-sun-times { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:-8px 0 18px; color:var(--text-secondary); font-size:.82rem; font-weight:600; }
+.chart-sun-times[hidden] { display:none; }
+.chart-sun-times i { color:var(--accent-color); margin-right:4px; }
+.chart-sun-times time { color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.chart-sun-divider { width:4px; height:4px; border-radius:50%; background:var(--text-muted); }
