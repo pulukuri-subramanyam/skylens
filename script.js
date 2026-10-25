@@ -88,10 +88,13 @@ class WeatherApp {
       pressure: document.getElementById('pressure'),
       windDirection: document.getElementById('windDirection'),
       uvIndex: document.getElementById('uvIndex'),
+      sunriseTime: document.getElementById('sunriseTime'),
+      sunsetTime: document.getElementById('sunsetTime'),
       airQuality: document.getElementById('airQuality'),
-      chartSunTimes: document.getElementById('chartSunTimes'),
-      chartSunriseTime: document.getElementById('chartSunriseTime'),
-      chartSunsetTime: document.getElementById('chartSunsetTime'),
+      sunProgress: document.getElementById('sunProgress'),
+      sunProgressLabel: document.getElementById('sunProgressLabel'),
+      sunProgressFill: document.getElementById('sunProgressFill'),
+      sunProgressMarker: document.getElementById('sunProgressMarker'),
       
       // Chart and forecast
       temperatureChart: document.getElementById('temperatureChart'),
@@ -1441,19 +1444,28 @@ class WeatherApp {
     this.elements.airQuality.textContent = this.lastAirQuality
       ? this.lastAirQuality.label + (Number.isFinite(this.lastAirQuality.pm25) ? ' · PM2.5 ' + Math.round(this.lastAirQuality.pm25) : '')
       : 'Unavailable';
-    this.updateChartSunTimes(current, location);
+    this.elements.sunriseTime.textContent = this.formatLocationTime(current.sunrise, location.timezone);
+    this.elements.sunsetTime.textContent = this.formatLocationTime(current.sunset, location.timezone);
+    this.updateSunProgress(current, location);
   }
 
-  updateChartSunTimes(current, location) {
-    const sunrise = this.formatLocationTime(current.sunrise, location.timezone);
-    const sunset = this.formatLocationTime(current.sunset, location.timezone);
-    const hasTimes = sunrise !== '—' && sunset !== '—';
-    this.elements.chartSunTimes.hidden = !hasTimes;
-    if (!hasTimes) return;
-    this.elements.chartSunriseTime.textContent = sunrise;
-    this.elements.chartSunsetTime.textContent = sunset;
-    this.elements.chartSunriseTime.dateTime = current.sunrise;
-    this.elements.chartSunsetTime.dateTime = current.sunset;
+  updateSunProgress(current, location) {
+    const sunrise = Date.parse(current.sunrise);
+    const sunset = Date.parse(current.sunset);
+    const now = Date.now();
+    if (!Number.isFinite(sunrise) || !Number.isFinite(sunset) || sunset <= sunrise) {
+      this.elements.sunProgress.hidden = true;
+      return;
+    }
+    const progress = Math.max(0, Math.min(1, (now - sunrise) / (sunset - sunrise)));
+    const isDaylight = now >= sunrise && now <= sunset;
+    this.elements.sunProgress.hidden = false;
+    this.elements.sunProgressFill.style.width = (progress * 100) + '%';
+    this.elements.sunProgressMarker.style.left = (progress * 100) + '%';
+    this.elements.sunProgress.classList.toggle('is-night', !isDaylight);
+    this.elements.sunProgressLabel.textContent = isDaylight
+      ? Math.round(progress * 100) + '% through daylight'
+      : (now < sunrise ? 'Sunrise at ' + this.formatLocationTime(current.sunrise, location.timezone) : 'Sunset at ' + this.formatLocationTime(current.sunset, location.timezone));
   }
 
   getWeatherSummary(current) {
