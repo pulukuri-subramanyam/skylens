@@ -1768,10 +1768,15 @@ class WeatherApp {
   }
 
   // Utility Functions
-  formatLocationTime(unixSeconds, timeZone) {
-    if (unixSeconds == null || !Number.isFinite(Number(unixSeconds))) return '—';
+  formatLocationTime(value, timeZone) {
+    if (value == null) return '—';
 
-    const date = new Date(Number(unixSeconds) * 1000);
+    const timestamp = typeof value === 'number'
+      ? value * 1000
+      : Date.parse(value);
+    if (!Number.isFinite(timestamp)) return '—';
+
+    const date = new Date(timestamp);
     const options = { hour: 'numeric', minute: '2-digit' };
     if (timeZone) options.timeZone = timeZone;
 
