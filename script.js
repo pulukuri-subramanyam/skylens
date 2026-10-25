@@ -1252,8 +1252,10 @@ class WeatherApp {
       text: readableText(point.weather?.[0]),
       iconCode: this.getOpenWeatherIconCode(point.weather?.[0])
     });
-    const isDay = currentPoint.sunrise && currentPoint.sunset
-      ? currentPoint.dt >= currentPoint.sunrise && currentPoint.dt <= currentPoint.sunset
+    const sunriseTimestamp = currentPoint.sunrise ?? dailyPayload.data?.[0]?.sunrise ?? null;
+    const sunsetTimestamp = currentPoint.sunset ?? dailyPayload.data?.[0]?.sunset ?? null;
+    const isDay = sunriseTimestamp && sunsetTimestamp
+      ? currentPoint.dt >= sunriseTimestamp && currentPoint.dt <= sunsetTimestamp
       : true;
 
     const currentData = {
@@ -1278,8 +1280,8 @@ class WeatherApp {
         pressure_mb: Number(currentPoint.pressure),
         vis_km: Number(currentPoint.visibility || 0) / 1000,
         uv: Number(currentPoint.uvi || 0),
-        sunrise: currentPoint.sunrise ? toIso(currentPoint.sunrise) : null,
-        sunset: currentPoint.sunset ? toIso(currentPoint.sunset) : null,
+        sunrise: sunriseTimestamp ? toIso(sunriseTimestamp) : null,
+        sunset: sunsetTimestamp ? toIso(sunsetTimestamp) : null,
         is_day: isDay ? 1 : 0
       }
     };
