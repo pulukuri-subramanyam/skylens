@@ -7,6 +7,9 @@ class WeatherApp {
     this.PHOTON_BASE_URL = 'https://photon.komoot.io';
     this.OPENWEATHER_ICON_BASE_URL = 'https://openweathermap.org/img/wn';
     this.currentChart = null;
+    this.chartMetric = 'temperature';
+    this.savedWeather = new Map();
+    this.savedWeatherRequests = new Set();
     this.currentLocation = null;
     this.lastSearchQuery = '';
     this.lastActionType = 'default';
@@ -37,6 +40,7 @@ class WeatherApp {
     window.setInterval(() => {
       this.updateFreshness();
       this.updateLocationLocalTime();
+      if (this.currentWeatherData) this.updateSunProgress(this.currentWeatherData.current, this.currentWeatherData.location);
     }, 60000);
   }
 
@@ -79,6 +83,8 @@ class WeatherApp {
       lastUpdated: document.getElementById('lastUpdated'),
       currentWeatherIcon: document.getElementById('currentWeatherIcon'),
       currentTemp: document.getElementById('currentTemp'),
+      todayHigh: document.getElementById('todayHigh'),
+      todayLow: document.getElementById('todayLow'),
       currentCondition: document.getElementById('currentCondition'),
       feelsLike: document.getElementById('feelsLike'),
       weatherSummary: document.getElementById('weatherSummary'),
@@ -91,6 +97,7 @@ class WeatherApp {
       sunriseTime: document.getElementById('sunriseTime'),
       sunsetTime: document.getElementById('sunsetTime'),
       airQuality: document.getElementById('airQuality'),
+      airPm25: document.getElementById('airPm25'),
       sunProgress: document.getElementById('sunProgress'),
       sunProgressLabel: document.getElementById('sunProgressLabel'),
       sunProgressFill: document.getElementById('sunProgressFill'),
@@ -98,6 +105,9 @@ class WeatherApp {
       
       // Chart and forecast
       temperatureChart: document.getElementById('temperatureChart'),
+      chartTemperatureBtn: document.getElementById('chartTemperatureBtn'),
+      chartRainBtn: document.getElementById('chartRainBtn'),
+      chartNote: document.getElementById('chartNote'),
       forecastGrid: document.getElementById('forecastGrid'),
       
       // Background elements
@@ -132,6 +142,12 @@ class WeatherApp {
     this.elements.saveCityBtn.addEventListener('click', () => this.toggleSavedCurrentCity());
     this.elements.shareWeatherBtn.addEventListener('click', () => this.shareCurrentWeather());
     this.elements.refreshBtn.addEventListener('click', () => this.refreshCurrentWeather());
+    for (const [button, metric] of [[this.elements.chartTemperatureBtn, 'temperature'], [this.elements.chartRainBtn, 'rain']]) {
+      button.addEventListener('click', () => {
+        this.chartMetric = metric;
+        if (this.forecastData) this.updateHourlyChart(this.forecastData);
+      });
+    }
 
     // Temperature unit toggle
     this.elements.celsiusBtn.addEventListener('click', () => this.setTemperatureUnit('C'));
@@ -743,6 +759,28 @@ class WeatherApp {
     button.type = 'button';
     button.className = 'city-chip';
     button.textContent = city.label;
+    if (kind === 'saved') {
+      button.textContent = '';
+      const name = document.createElement('span');
+      name.className = 'city-chip-name';
+      name.textContent = city.name || city.label;
+      name.title = city.label;
+      const weather = this.savedWeather.get(city.id);
+      if (weather) {
+        const icon = document.createElement('img');
+        icon.className = 'city-chip-icon';
+        icon.src = this.getOpenWeatherIconUrl(weather.iconCode);
+        icon.alt = '';
+        button.appendChild(icon);
+      }
+      button.appendChild(name);
+      if (weather) {
+        const temp = document.createElement('strong');
+        const value = this.temperatureUnit === 'F' ? weather.temp * 9 / 5 + 32 : weather.temp;
+        temp.textContent = Math.round(value) + '°';
+        button.appendChild(temp);
+      }
+    }
     button.setAttribute('aria-label', 'Show weather for ' + city.label);
     if (this.currentCity && this.currentCity.id === city.id) {
       button.classList.add('is-current');
@@ -800,6 +838,26 @@ class WeatherApp {
     this.elements.savedCitySection.hidden = savedCities.length === 0;
     this.elements.recentCitySection.hidden = recentCities.length === 0;
     this.elements.cityShortcuts.hidden = savedCities.length === 0 && recentCities.length === 0;
+    this.loadSavedWeather();
+  }
+
+  // Fetch only current conditions for saved chips, at most once per 15 minutes.
+  loadSavedWeather() {
+    this.savedCities.slice(0, 8).forEach(async city => {
+      const cached = this.savedWeather.get(city.id);
+      if (cached && Date.now() - cached.checkedAt < 15 * 60 * 1000) return;
+      if (!Number.isFinite(city.lat) || !Number.isFinite(city.lon) || this.savedWeatherRequests.has(city.id)) return;
+      this.savedWeatherRequests.add(city.id);
+      try {
+        const payload = await this.fetchJson(this.getWeatherApiUrl('current', { lat: city.lat, lon: city.lon }));
+        const point = payload.data?.[0];
+        if (point && Number.isFinite(Number(point.temp))) {
+          this.savedWeather.set(city.id, { temp: Number(point.temp), iconCode: this.getOpenWeatherIconCode(point.weather?.[0]), checkedAt: Date.now() });
+          this.renderCityShortcuts();
+        }
+      } catch { /* Saved cities remain usable when their optional weather request fails. */ }
+      finally { this.savedWeatherRequests.delete(city.id); }
+    });
   }
 
   moveSavedCity(index, direction) {
@@ -923,6 +981,7 @@ class WeatherApp {
     this.updateUnitToggle();
 
     if (!this.currentWeatherData || !this.forecastData) return;
+    this.renderCityShortcuts();
     this.updateCurrentWeather(this.currentWeatherData);
     this.updateHourlyChart(this.forecastData);
     this.updateForecast(this.forecastData);
@@ -1292,7 +1351,9 @@ class WeatherApp {
       .map(point => ({
         time: toIso(point.dt),
         temp_c: Number(point.temp),
-        temp_f: toFahrenheit(point.temp)
+        temp_f: toFahrenheit(point.temp),
+        precipitation_probability_percent: point.pop == null || !Number.isFinite(Number(point.pop))
+          ? null : Math.max(0, Math.min(100, Math.round(Number(point.pop) * 100)))
       }));
 
     const forecastDays = (dailyPayload.data || []).slice(0, 7).map(point => ({
@@ -1367,6 +1428,7 @@ class WeatherApp {
       this.lastAirQuality = this.getAqiDetails(airPayload);
       this.currentCity = this.createCityShortcut(currentData.location);
       if (this.currentCity) {
+        this.savedWeather.set(this.currentCity.id, { temp: currentData.current.temp_c, iconCode: currentData.current.condition.iconCode, checkedAt: Date.now() });
         this.rememberRecentCity(this.currentCity);
         this.updateSaveCityButton();
       }
@@ -1432,6 +1494,9 @@ class WeatherApp {
     this.elements.currentTemp.textContent = `${Math.round(current[`temp_${unitKey}`])}°${this.temperatureUnit}`;
     this.elements.currentCondition.textContent = current.condition.text;
     this.elements.feelsLike.textContent = `${Math.round(current[`feelslike_${unitKey}`])}°${this.temperatureUnit}`;
+    const today = this.forecastData?.forecast?.forecastday?.[0]?.day;
+    this.elements.todayHigh.textContent = Number.isFinite(today?.[`maxtemp_${unitKey}`]) ? Math.round(today[`maxtemp_${unitKey}`]) + '°' : 'Unavailable';
+    this.elements.todayLow.textContent = Number.isFinite(today?.[`mintemp_${unitKey}`]) ? Math.round(today[`mintemp_${unitKey}`]) + '°' : 'Unavailable';
     this.elements.weatherSummary.textContent = this.getWeatherSummary(current);
 
     // Weather details
@@ -1441,9 +1506,11 @@ class WeatherApp {
     this.elements.pressure.textContent = `${current.pressure_mb} hPa`;
     this.elements.windDirection.textContent = current.wind_dir;
     this.elements.uvIndex.textContent = current.uv;
-    this.elements.airQuality.textContent = this.lastAirQuality
-      ? this.lastAirQuality.label + (Number.isFinite(this.lastAirQuality.pm25) ? ' · PM2.5 ' + Math.round(this.lastAirQuality.pm25) : '')
-      : 'Unavailable';
+    this.elements.airQuality.textContent = this.lastAirQuality?.label || 'Unavailable';
+    this.elements.airQuality.title = Number.isFinite(this.lastAirQuality?.pm25)
+      ? 'OpenWeather air quality scale. PM2.5: ' + Math.round(this.lastAirQuality.pm25) + ' µg/m³' : '';
+    this.elements.airPm25.textContent = Number.isFinite(this.lastAirQuality?.pm25)
+      ? 'PM2.5 ' + Math.round(this.lastAirQuality.pm25) + ' µg/m³' : '';
     this.elements.sunriseTime.textContent = this.formatLocationTime(current.sunrise, location.timezone);
     this.elements.sunsetTime.textContent = this.formatLocationTime(current.sunset, location.timezone);
     this.updateSunProgress(current, location);
@@ -1454,12 +1521,15 @@ class WeatherApp {
     const sunset = Date.parse(current.sunset);
     const now = Date.now();
     if (!Number.isFinite(sunrise) || !Number.isFinite(sunset) || sunset <= sunrise) {
-      this.elements.sunProgress.hidden = true;
+      this.elements.sunProgress.hidden = false;
+      this.elements.sunProgress.classList.add('is-unavailable');
+      this.elements.sunProgressLabel.textContent = 'Daylight information unavailable';
       return;
     }
     const progress = Math.max(0, Math.min(1, (now - sunrise) / (sunset - sunrise)));
     const isDaylight = now >= sunrise && now <= sunset;
     this.elements.sunProgress.hidden = false;
+    this.elements.sunProgress.classList.remove('is-unavailable');
     this.elements.sunProgressFill.style.width = (progress * 100) + '%';
     this.elements.sunProgressMarker.style.left = (progress * 100) + '%';
     this.elements.sunProgress.classList.toggle('is-night', !isDaylight);
@@ -1469,18 +1539,8 @@ class WeatherApp {
   }
 
   getWeatherSummary(current) {
-    const condition = current.condition.text.toLowerCase();
     const wind = Math.round(current.wind_kph);
-    const uv = Number(current.uv);
-    const comfort = wind > 25 ? 'A breezy' : 'A calm';
-
-    if (condition.includes('rain') || condition.includes('shower') || condition.includes('drizzle')) {
-      return 'Rain is in the picture. Keep an umbrella close. UV index ' + uv + '.';
-    }
-    if (condition.includes('sun') || condition.includes('clear')) {
-      return comfort + ' ' + current.condition.text.toLowerCase() + ' day. UV index ' + uv + '; plan sun protection if needed.';
-    }
-    return comfort + ' ' + current.condition.text.toLowerCase() + ' day with ' + wind + ' km/h winds.';
+    return current.condition.text + '. Wind ' + wind + ' km/h.';
   }
 
   getChartPalette() {
@@ -1502,6 +1562,11 @@ class WeatherApp {
     const chartPalette = this.getChartPalette();
     const unitKey = this.temperatureUnit.toLowerCase();
     const temperatureUnit = this.temperatureUnit;
+    const isRain = this.chartMetric === 'rain';
+    const timeZone = this.currentWeatherData?.location?.timezone;
+    this.elements.chartTemperatureBtn.setAttribute('aria-pressed', String(!isRain));
+    this.elements.chartRainBtn.setAttribute('aria-pressed', String(isRain));
+    this.elements.temperatureChart.setAttribute('aria-label', isRain ? 'Hourly rain probability, percent' : 'Hourly temperature, degrees ' + temperatureUnit);
     
     // Destroy existing chart
     if (this.currentChart) {
@@ -1513,15 +1578,13 @@ class WeatherApp {
       .flatMap(day => day.hour || [])
       .slice(0, 24);
     
-    const labels = hourlyData.map(hour => {
-      const time = new Date(hour.time);
-      return time.getHours() === 0 ? '12 AM' : 
-             time.getHours() === 12 ? '12 PM' :
-             time.getHours() > 12 ? `${time.getHours() - 12} PM` :
-             `${time.getHours()} AM`;
-    });
+    const labels = hourlyData.map(hour => this.formatLocationTime(hour.time, timeZone));
     
-    const temperatures = hourlyData.map(hour => Math.round(hour[`temp_${unitKey}`]));
+    const temperatures = hourlyData.map(hour => isRain
+      ? (Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null)
+      : Math.round(hour[`temp_${unitKey}`]));
+    this.elements.chartNote.hidden = !isRain || temperatures.some(value => value != null);
+    this.elements.chartNote.textContent = 'Hourly rain probability is unavailable. Refresh to check for newer data.';
     
     // Chart configuration
     const config = {
@@ -1529,17 +1592,17 @@ class WeatherApp {
       data: {
         labels: labels,
         datasets: [{
-          label: `Temperature (°${temperatureUnit})`,
+          label: isRain ? 'Rain chance (%)' : `Temperature (°${temperatureUnit})`,
           data: temperatures,
           borderColor: chartPalette.line,
           backgroundColor: chartPalette.fill,
           borderWidth: 3,
           fill: true,
-          tension: 0.4,
+          tension: 0.2,
           pointBackgroundColor: chartPalette.line,
           pointBorderColor: chartPalette.pointBorder,
           pointBorderWidth: 2,
-          pointRadius: 5,
+          pointRadius: 3,
           pointHoverRadius: 7
         }]
       },
@@ -1565,11 +1628,12 @@ class WeatherApp {
                 return time.toLocaleString('en-US', { 
                   weekday: 'short', 
                   hour: 'numeric', 
-                  hour12: true 
+                  hour12: true,
+                  ...(timeZone ? { timeZone } : {})
                 });
               },
               label: function(context) {
-                return `${context.parsed.y}°${temperatureUnit}`;
+                return isRain ? context.parsed.y + '% rain chance' : `${context.parsed.y}°${temperatureUnit}`;
               }
             }
           }
@@ -1588,6 +1652,7 @@ class WeatherApp {
             }
           },
           y: {
+            ...(isRain ? { min: 0, max: 100 } : {}),
             grid: {
               color: chartPalette.grid,
               borderDash: [2, 2]
@@ -1595,7 +1660,7 @@ class WeatherApp {
             ticks: {
               color: chartPalette.text,
               callback: function(value) {
-                return `${value}°${temperatureUnit}`;
+                return isRain ? value + '%' : `${value}°${temperatureUnit}`;
               }
             },
             border: {
@@ -1623,26 +1688,37 @@ class WeatherApp {
     const forecastDays = data.forecast.forecastday;
     const unitKey = this.temperatureUnit.toLowerCase();
     this.elements.forecastGrid.innerHTML = '';
+    const lows = forecastDays.map(day => day.day[`mintemp_${unitKey}`]).filter(Number.isFinite);
+    const highs = forecastDays.map(day => day.day[`maxtemp_${unitKey}`]).filter(Number.isFinite);
+    const weekLow = Math.min(...lows);
+    const weekSpan = Math.max(1, Math.max(...highs) - weekLow);
+    const timeZone = this.currentWeatherData?.location?.timezone;
     
     forecastDays.forEach((day, index) => {
       const date = new Date(day.date);
       const isToday = index === 0;
-      const dayName = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' });
-      const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const dayName = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short', ...(timeZone ? { timeZone } : {}) });
+      const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(timeZone ? { timeZone } : {}) });
       
       const forecastItem = document.createElement('div');
       forecastItem.className = `forecast-item${isToday ? ' is-today' : ''}`;
       const rainChance = day.day.precipitation_probability_percent;
       const rainMarkup = Number.isFinite(rainChance)
-        ? `<p class="forecast-rain"><i class="fas fa-droplet" aria-hidden="true"></i><span>${rainChance}% rain chance</span></p>`
-        : '';
+        ? `<p class="forecast-rain" aria-label="${rainChance}% rain chance"><i class="fas fa-droplet" aria-hidden="true"></i><span>${rainChance}%</span></p>`
+        : '<p class="forecast-rain" aria-label="Rain chance unavailable">N/A</p>';
+      const low = Math.round(day.day[`mintemp_${unitKey}`]);
+      const high = Math.round(day.day[`maxtemp_${unitKey}`]);
+      const rangeStart = Math.max(0, Math.min(100, (day.day[`mintemp_${unitKey}`] - weekLow) / weekSpan * 100));
+      const rangeWidth = Math.max(2, Math.min(100 - rangeStart, (day.day[`maxtemp_${unitKey}`] - day.day[`mintemp_${unitKey}`]) / weekSpan * 100));
+      forecastItem.setAttribute('aria-label', `${dayName}, ${monthDay}. ${day.day.condition.text}. Low ${low}, high ${high} degrees ${this.temperatureUnit}.`);
       
       forecastItem.innerHTML = `
         <div class="forecast-date">${dayName}<br><small>${monthDay}</small></div>
         <img class="forecast-icon" src="${this.getOpenWeatherIconUrl(day.day.condition.iconCode)}" alt="" aria-hidden="true" loading="lazy" decoding="async">
         <div class="forecast-temps">
-          <span class="temp-max">${Math.round(day.day[`maxtemp_${unitKey}`])}°</span>
-          <span class="temp-min">${Math.round(day.day[`mintemp_${unitKey}`])}°</span>
+          <span class="temp-min">${low}°</span>
+          <span class="forecast-range" aria-hidden="true"><span style="left:${rangeStart}%;width:${rangeWidth}%"></span></span>
+          <span class="temp-max">${high}°</span>
         </div>
         <div class="forecast-condition">${day.day.condition.text}</div>
         ${rainMarkup}
