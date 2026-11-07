@@ -16,6 +16,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preload" href="/assets/fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="dashboard.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="manifest" href="/site.webmanifest">
@@ -38,7 +39,6 @@
                         <i class="fas fa-cloud-sun"></i>
                         skylens
                     </h1>
-                    <p class="app-kicker">Live conditions, made clear</p>
                 </div>
                 <div class="header-controls">
                     <div class="unit-toggle" role="group" aria-label="Temperature units">
@@ -157,20 +157,21 @@
                             </button>
                         </div>
                     </div>
-                    <div class="weather-icon-container">
-                        <img class="weather-icon" id="currentWeatherIcon" alt="" aria-hidden="true" decoding="async">
-                    </div>
                 </div>
 
                 <div class="temperature-section">
+                    <div class="weather-icon-container">
+                        <img class="weather-icon" id="currentWeatherIcon" alt="" aria-hidden="true" decoding="async">
+                    </div>
                     <div class="main-temperature">
                         <span class="temperature" id="currentTemp">22°C</span>
+                    </div>
+                    <div class="condition-copy">
                         <span class="condition" id="currentCondition">Partly Cloudy</span>
+                        <div class="feels-like">Feels like <span id="feelsLike">25°C</span></div>
+                        <p class="today-range">High <span id="todayHigh">Unavailable</span> / Low <span id="todayLow">Unavailable</span></p>
                     </div>
-                    <div class="feels-like">
-                        <span>Feels like <span id="feelsLike">25°C</span></span>
-                    </div>
-                    <p class="weather-summary" id="weatherSummary">A calm, comfortable day ahead.</p>
+                    <p class="weather-summary" id="weatherSummary"></p>
                 </div>
 
                 <!-- Weather Details Grid -->
@@ -193,7 +194,7 @@
                         <i class="fas fa-wind detail-icon"></i>
                         <div class="detail-content">
                             <span class="detail-label">Wind</span>
-                            <span class="detail-value" id="windSpeed">15 km/h</span>
+                            <span class="detail-value"><span id="windSpeed">15 km/h</span> <small id="windDirection">NE</small></span>
                         </div>
                     </div>
                     <div class="detail-item">
@@ -201,13 +202,6 @@
                         <div class="detail-content">
                             <span class="detail-label">Pressure</span>
                             <span class="detail-value" id="pressure">1013 hPa</span>
-                        </div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-compass detail-icon"></i>
-                        <div class="detail-content">
-                            <span class="detail-label">Wind Direction</span>
-                            <span class="detail-value" id="windDirection">NE</span>
                         </div>
                     </div>
                     <div class="detail-item">
@@ -222,32 +216,18 @@
                         <div class="detail-content">
                             <span class="detail-label">Air quality</span>
                             <span class="detail-value" id="airQuality">Unavailable</span>
-                        </div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-sun detail-icon" aria-hidden="true"></i>
-                        <div class="detail-content">
-                            <span class="detail-label">Sunrise</span>
-                            <span class="detail-value" id="sunriseTime">Unavailable</span>
-                        </div>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-moon detail-icon" aria-hidden="true"></i>
-                        <div class="detail-content">
-                            <span class="detail-label">Sunset</span>
-                            <span class="detail-value" id="sunsetTime">Unavailable</span>
+                            <small class="air-pm25" id="airPm25"></small>
                         </div>
                     </div>
                 </div>
                 <div class="sun-progress" id="sunProgress" aria-label="Daylight progress">
-                    <div class="sun-progress-copy">
-                        <span>Daylight</span>
-                        <span id="sunProgressLabel">Unavailable</span>
-                    </div>
+                    <p class="sun-time"><i class="fas fa-sun" aria-hidden="true"></i> Sunrise <span id="sunriseTime">Unavailable</span></p>
                     <div class="sun-progress-track" aria-hidden="true">
                         <span class="sun-progress-fill" id="sunProgressFill"></span>
                         <i class="fas fa-sun sun-progress-marker" id="sunProgressMarker"></i>
                     </div>
+                    <p class="sun-time"><i class="fas fa-moon" aria-hidden="true"></i> Sunset <span id="sunsetTime">Unavailable</span></p>
+                    <span class="sun-progress-caption" id="sunProgressLabel">Unavailable</span>
                 </div>
             </section>
 
@@ -263,13 +243,20 @@
             </section>
             <!-- 24-Hour Forecast Chart -->
             <section class="chart-section glassmorphism">
+                <div class="chart-heading">
                 <h3 class="section-title">
                     <i class="fas fa-chart-line"></i>
-                    Hourly Temperature Trend
+                    Hourly Forecast
                 </h3>
-                <div class="chart-container">
-                    <canvas id="temperatureChart"></canvas>
+                <div class="chart-toggle" role="group" aria-label="Hourly forecast metric">
+                    <button type="button" id="chartTemperatureBtn" aria-pressed="true">Temperature</button>
+                    <button type="button" id="chartRainBtn" aria-pressed="false">Rain chance</button>
                 </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="temperatureChart" role="img" aria-label="Hourly temperature forecast"></canvas>
+                </div>
+                <p class="chart-note" id="chartNote" hidden></p>
             </section>
 
         </main>
