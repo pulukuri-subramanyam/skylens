@@ -902,10 +902,10 @@ class WeatherApp {
     const relativeTime = this.formatTime(new Date(this.lastFetchedAt).toISOString());
     const isStale = age >= 15 * 60 * 1000;
     if (this.lastRefreshError) {
-      freshness.textContent = 'Refresh failed — showing data checked ' + relativeTime;
+      freshness.textContent = 'Refresh failed. Showing data checked ' + relativeTime;
       freshness.title = this.getErrorMessage(this.lastRefreshError);
     } else if (isStale) {
-      freshness.textContent = 'May be outdated — checked ' + relativeTime;
+      freshness.textContent = 'May be outdated. Checked ' + relativeTime;
       freshness.title = 'Refresh to check for newer weather data.';
     } else {
       freshness.textContent = 'Checked ' + relativeTime;
@@ -1475,7 +1475,7 @@ class WeatherApp {
     const comfort = wind > 25 ? 'A breezy' : 'A calm';
 
     if (condition.includes('rain') || condition.includes('shower') || condition.includes('drizzle')) {
-      return 'Rain is in the picture — keep an umbrella close. UV index ' + uv + '.';
+      return 'Rain is in the picture. Keep an umbrella close. UV index ' + uv + '.';
     }
     if (condition.includes('sun') || condition.includes('clear')) {
       return comfort + ' ' + current.condition.text.toLowerCase() + ' day. UV index ' + uv + '; plan sun protection if needed.';
@@ -1769,12 +1769,12 @@ class WeatherApp {
 
   // Utility Functions
   formatLocationTime(value, timeZone) {
-    if (value == null) return '—';
+    if (value == null) return 'Unavailable';
 
     const timestamp = typeof value === 'number'
       ? value * 1000
       : Date.parse(value);
-    if (!Number.isFinite(timestamp)) return '—';
+    if (!Number.isFinite(timestamp)) return 'Unavailable';
 
     const date = new Date(timestamp);
     const options = { hour: 'numeric', minute: '2-digit' };
