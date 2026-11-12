@@ -25,7 +25,7 @@ export function DailyForecast({ days, unit, timeZone }) {
             <span className="relative h-[5px] min-w-3 flex-1 overflow-hidden rounded-full bg-line min-[761px]:hidden" aria-hidden="true"><span className="absolute inset-y-0 rounded-full bg-accent" style={{ left: start + '%', width: width + '%' }}/></span>
             <span className="temp-max w-[23px] shrink-0 text-xs font-semibold min-[761px]:w-auto min-[761px]:text-[15px]">{formatTemperature(day.maxtemp_c, unit)}</span>
           </div>
-          <p className="forecast-rain col-start-3 row-start-1 flex items-center gap-1 text-[11px] text-secondary min-[761px]:order-2 min-[761px]:text-xs" aria-label={Number.isFinite(rain) ? `${rain}% rain chance` : 'Rain chance unavailable'}><Icon name="drop" className="h-3 w-3 text-sky-600"/>{Number.isFinite(rain) ? rain + '%' : 'N/A'}</p>
+          <p className="forecast-rain col-start-3 row-start-1 flex items-center gap-1 text-[11px] text-secondary min-[761px]:order-2 min-[761px]:text-xs" aria-label={Number.isFinite(rain) ? `${rain}% rain chance` : 'Rain chance unavailable'}><Icon name="drop" className="h-3 w-3 text-[#309ac6]"/>{Number.isFinite(rain) ? rain + '%' : 'N/A'}</p>
         </div>;
       })}
     </div>

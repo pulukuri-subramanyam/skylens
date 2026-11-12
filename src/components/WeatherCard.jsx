@@ -11,12 +11,12 @@ function DaylightBar({ current, timeZone, now }) {
   const night = valid && (now < sunrise || now > sunset);
   const label = !valid ? 'Daylight information unavailable' : now < sunrise ? 'Sunrise at ' + service.formatLocationTime(current.sunrise, timeZone) : now > sunset ? 'Sunset at ' + service.formatLocationTime(current.sunset, timeZone) : Math.round(progress * 100) + '% through daylight';
   return <div className="mt-[18px] grid grid-cols-2 items-center gap-x-4 gap-y-3 border-t border-line pt-4 min-[600px]:grid-cols-[auto_1fr_auto] min-[600px]:gap-x-8" aria-label="Daylight progress">
-    <p className="flex items-center gap-1 text-[10px] text-secondary sm:gap-2 sm:text-xs"><Icon name="sun" className="h-[18px] w-[18px] shrink-0 text-orange-500"/>Sunrise <span id="sunriseTime" className="font-semibold text-ink">{service.formatLocationTime(current.sunrise, timeZone)}</span></p>
+    <p className="flex items-center gap-1 text-[10px] text-secondary sm:gap-2 sm:text-xs"><Icon name="sun" className="h-[18px] w-[18px] shrink-0 text-[#dc9129]"/>Sunrise <span id="sunriseTime" className="font-semibold text-ink">{service.formatLocationTime(current.sunrise, timeZone)}</span></p>
     <div className={`relative col-span-2 row-start-2 h-[5px] rounded-full bg-line min-[600px]:col-span-1 min-[600px]:col-start-2 min-[600px]:row-start-1 ${!valid ? 'opacity-30' : ''}`} aria-hidden="true">
       <span className={`absolute inset-y-0 left-0 rounded-full ${night ? 'bg-slate-400' : 'bg-accent'}`} style={{ width: progress * 100 + '%' }}/>
       {valid && <Icon name="sun" className={`absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 ${night ? 'text-slate-400' : 'text-accent'}`} style={{ left: progress * 100 + '%' }}/>}
     </div>
-    <p className="flex items-center justify-end gap-1 text-[10px] text-secondary sm:gap-2 sm:text-xs"><Icon name="moon" className="h-[18px] w-[18px] shrink-0 text-orange-500"/>Sunset <span id="sunsetTime" className="font-semibold text-ink">{service.formatLocationTime(current.sunset, timeZone)}</span></p>
+    <p className="flex items-center justify-end gap-1 text-[10px] text-secondary sm:gap-2 sm:text-xs"><Icon name="moon" className="h-[18px] w-[18px] shrink-0 text-[#dc9129]"/>Sunset <span id="sunsetTime" className="font-semibold text-ink">{service.formatLocationTime(current.sunset, timeZone)}</span></p>
     <span className="col-span-2 text-center text-[10px] text-muted min-[600px]:col-span-1 min-[600px]:col-start-2" id="sunProgressLabel">{label}</span>
   </div>;
 }
@@ -25,12 +25,12 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
   const { currentWeatherData: { current, location }, forecastData, lastAirQuality: aqi, currentCity, lastFetchedAt } = weather;
   const today = forecastData.forecast.forecastday[0].day;
   const metrics = [
-    ['Humidity', current.humidity + '%', 'drop', 'text-sky-600', 'humidity'],
+    ['Humidity', current.humidity + '%', 'drop', 'text-[#309ac6]', 'humidity'],
     ['Wind', current.wind_kph + ' km/h', 'wind', 'text-accent', 'windSpeed'],
     ['Visibility', current.vis_km + ' km', 'eye', 'text-accent', 'visibility'],
     ['Pressure', current.pressure_mb + ' hPa', 'pressure', 'text-accent', 'pressure'],
-    ['UV Index', current.uv, 'sun', 'text-orange-500', 'uvIndex'],
-    ['Air quality', aqi?.label || 'Unavailable', 'air', 'text-green-600', 'airQuality']
+    ['UV Index', current.uv, 'sun', 'text-[#dc9129]', 'uvIndex'],
+    ['Air quality', aqi?.label || 'Unavailable', 'air', 'text-[#438154]', 'airQuality']
   ];
   let localTime = 'Unavailable';
   try { if (location.timezone) localTime = new Intl.DateTimeFormat(undefined, { timeZone: location.timezone, hour: 'numeric', minute: '2-digit' }).format(now); } catch { /* Unknown provider time zone. */ }
