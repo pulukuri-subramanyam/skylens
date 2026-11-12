@@ -2830,4 +2830,41 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--accent-color); o
 .app-footer { visibility:visible; opacity:1; }
 .panel { @apply min-w-0 rounded-xl border bg-surface; border-color:var(--border-color); }
 .control { @apply inline-flex items-center gap-1.5 rounded-lg border bg-surface text-secondary; border-color:var(--border-color); }
+
+/* Restore the existing decorative layers behind opaque dashboard panels. */
+body { isolation:isolate; }
+.background-container { display:block; z-index:-1; pointer-events:none; }
+.weather-particles { display:block !important; z-index:1; opacity:.3; }
+.background-animation.clear-day {
+  background: linear-gradient(135deg, #1a2a37 0%, #253f50 55%, #315565 100%);
+}
+.background-animation.clear-night {
+  background: linear-gradient(135deg, #0b1220 0%, #111e30 55%, #172940 100%);
+}
+.background-animation.cloudy {
+  background: linear-gradient(135deg, #283544 0%, #394a5c 100%);
+}
+.background-animation.rainy {
+  background: linear-gradient(135deg, #112a40 0%, #1c405b 55%, #25394d 100%);
+}
+.background-animation.snowy {
+  background: linear-gradient(135deg, #27394c 0%, #354e64 55%, #435d73 100%);
+}
+[data-theme="light"] .background-animation.clear-day {
+  background: linear-gradient(135deg, #f4ebd5 0%, #e9dfd1 55%, #d8e1e5 100%);
+}
+[data-theme="light"] .background-animation.clear-night {
+  background: linear-gradient(135deg, #d9e3ef 0%, #c7d4e3 55%, #b6c8da 100%);
+}
+[data-theme="light"] .background-animation.cloudy {
+  background: linear-gradient(135deg, #e7edf3 0%, #d3dde7 100%);
+}
+[data-theme="light"] .background-animation.rainy {
+  background: linear-gradient(135deg, #dce9f4 0%, #c8dceb 55%, #b9cbdc 100%);
+}
+[data-theme="light"] .background-animation.snowy {
+  background: linear-gradient(135deg, #e8eef5 0%, #d9e3ed 55%, #c9d7e5 100%);
+}
+@media (prefers-reduced-motion:reduce) { .weather-particles { display:none !important; } }
+@media print { .background-container { display:none; } }
 }

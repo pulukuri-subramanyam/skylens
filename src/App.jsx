@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useState } from 'react';
 import { Header } from './components/Header';
+import { WeatherBackground } from './components/WeatherBackground';
 import { SearchBar } from './components/SearchBar';
 import { SavedCities } from './components/SavedCities';
 import { WeatherCard } from './components/WeatherCard';
@@ -68,6 +69,7 @@ export default function App() {
   };
 
   return <div className="app-container">
+    <WeatherBackground current={weather?.currentWeatherData.current}/>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={loading}/>
     <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
