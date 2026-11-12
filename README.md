@@ -10,7 +10,8 @@ A weather dashboard with current conditions, a seven-day forecast, an hourly tem
 - Vite for development and production builds
 - Tailwind CSS with the original design rules preserved in its component layer
 - Chart.js for the hourly chart
-- OpenWeather for forecasts, geocoding and air quality; Photon supplements city suggestions
+- Open-Meteo for current weather and seven days of daily/hourly forecasts (free non-commercial endpoint; attribution in footer)
+- OpenWeather for geocoding and air quality; Photon supplements city suggestions
 - A Vercel Function in `api/weather.mjs` keeps the OpenWeather key on the server
 - Browser storage for saved/recent cities, preferences and the last weather result
 

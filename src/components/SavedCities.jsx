@@ -1,3 +1,4 @@
+import { forecastUrl, condition } from '../lib/openMeteo';
 import { useEffect, useRef, useState } from 'react';
 import { weatherService as service } from '../lib/weather';
 import { formatTemperature } from '../lib/storage';
@@ -16,9 +17,9 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
         if (city.lat == null || city.lon == null || !Number.isFinite(Number(city.lat)) || !Number.isFinite(Number(city.lon))) return;
         if (Date.now() - (cache.current.get(city.id)?.checkedAt || 0) < 900000) return;
         try {
-          const payload = await service.fetchJson(service.getWeatherApiUrl('current', { lat: city.lat, lon: city.lon }), { signal: controller.signal });
-          const point = payload.data?.[0];
-          if (!controller.signal.aborted && Number.isFinite(Number(point?.temp))) cache.current.set(city.id, { temp: Number(point.temp), icon: service.getOpenWeatherIconCode(point.weather?.[0]), checkedAt: Date.now() });
+          const payload = await service.fetchJson(forecastUrl(city.lat,city.lon,true), { signal: controller.signal });
+          const point = payload.current;
+          if (!controller.signal.aborted && Number.isFinite(Number(point?.temperature_2m))) cache.current.set(city.id, { temp: Number(point.temperature_2m), icon: condition(point.weather_code,point.is_day===1).icon, checkedAt: Date.now() });
         } catch { /* The saved-city button still works when its optional reading is unavailable. */ }
       }));
       if (!controller.signal.aborted) setReadings(Object.fromEntries(cache.current));

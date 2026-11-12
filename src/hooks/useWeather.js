@@ -1,3 +1,4 @@
+import { forecastUrl, normalizeMeteo } from '../lib/openMeteo';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { readCities, readWeatherCache, writeStorage } from '../lib/storage';
 import { weatherService as service } from '../lib/weather';
@@ -33,18 +34,22 @@ export function useWeather() {
       if (id !== sequence.current) return;
       const coordinates = { lat: location.lat, lon: location.lon };
       const request = type => service.fetchJson(service.getWeatherApiUrl(type, coordinates), { signal: controller.signal });
-      const [conditions, hourly, daily, air] = await Promise.all([
-        request('current'), request('hourly'), request('daily'), request('air').catch(() => null)
-      ]);
+      const airRequest = request('air').catch(() => null);
+      const payload = await service.fetchJson(forecastUrl(location.lat,location.lon), {signal:controller.signal});
       if (id !== sequence.current) return;
-      const { currentData, forecastData } = service.normalizeOpenWeatherData(location, conditions, hourly, daily);
+      const { currentData, forecastData } = normalizeMeteo(service,location,payload);
       const currentCity = service.createCityShortcut(currentData.location);
-      const next = { currentWeatherData: currentData, forecastData, currentCity, lastAirQuality: service.getAqiDetails(air), lastFetchedAt: Date.now() };
+      const next = { currentWeatherData: currentData, forecastData, currentCity, lastAirQuality: null, weatherProvider: 'open-meteo', lastFetchedAt: Date.now() };
       current.current = next;
       setWeather(next);
       writeStorage('weatherapp-last-weather', next);
       setRecent(cities => [currentCity, ...cities.filter(city => city.id !== currentCity.id)].slice(0, 5));
       setStatus('Weather loaded for ' + currentCity.label + '.');
+      airRequest.then(air => {
+        if (id !== sequence.current) return;
+        const updated = {...next,lastAirQuality:service.getAqiDetails(air)};
+        current.current=updated;setWeather(updated);writeStorage('weatherapp-last-weather',updated);
+      });
     } catch (cause) {
       if (id !== sequence.current || cause.name === 'AbortError') return;
       const message = cause.message.includes('No matching') ? 'City not found. Check the spelling or choose a suggestion.'
