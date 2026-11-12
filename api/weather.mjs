@@ -84,7 +84,7 @@ export default async function handler(request, response) {
       let next = payload.next;
       for (let page = 0; page < 2 && next && points.length < 48; page++) {
         const cursor = new URL(next, OPENWEATHER_BASE_URL);
-        if (cursor.origin !== OPENWEATHER_BASE_URL || cursor.pathname !== route.path) break;
+        if (cursor.hostname !== 'api.openweathermap.org' || !['http:', 'https:'].includes(cursor.protocol) || cursor.pathname !== route.path) break;
         const start = cursor.searchParams.get('start');
         if (!start || !/^\d+$/.test(start)) break;
         const pageUrl = new URL(upstreamUrl);
