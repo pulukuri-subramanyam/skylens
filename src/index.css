@@ -2906,4 +2906,14 @@ body { isolation:isolate; }
 @keyframes mist-drift { from { transform:translateX(-4%); opacity:.5; } to { transform:translateX(4%); opacity:.9; } }
 @keyframes storm-breathe { from { opacity:.25; } to { opacity:.7; } }
 @media (prefers-reduced-motion:reduce) { .weather-atmosphere { animation:none !important; } }
+
+/* Overcast skies have dense charcoal cloud banks, distinct from fair-weather clouds. */
+[data-theme="light"] .weather-backdrop.dark-clouds .background-animation { background:linear-gradient(145deg,#8b9eae,#b1bfcc 52%,#7c91a4); }
+[data-theme="dark"] .weather-backdrop.dark-clouds .background-animation { background:linear-gradient(145deg,#111d2b,#293b4c 52%,#162535); }
+.weather-backdrop.dark-clouds::before,.weather-backdrop.dark-clouds::after {
+  background:radial-gradient(ellipse 36% 20% at 8% 20%,#30445999,transparent 78%),radial-gradient(ellipse 38% 24% at 85% 42%,#24394e99,transparent 78%),radial-gradient(ellipse 42% 20% at 30% 82%,#40546b99,transparent 80%);
+  opacity:.85; filter:blur(22px); animation-duration:42s;
+}
+.weather-backdrop.dark-clouds::after { opacity:.55; animation-direction:alternate-reverse; }
+[data-theme="dark"] .weather-backdrop.dark-clouds::before,[data-theme="dark"] .weather-backdrop.dark-clouds::after { opacity:.7; background:radial-gradient(ellipse 36% 22% at 12% 25%,#070e19cc,transparent 80%),radial-gradient(ellipse 40% 25% at 85% 55%,#0b1420cc,transparent 80%); }
 }
