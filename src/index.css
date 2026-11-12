@@ -2867,4 +2867,23 @@ body { isolation:isolate; }
 }
 @media (prefers-reduced-motion:reduce) { .weather-particles { display:none !important; } }
 @media print { .background-container { display:none; } }
+
+/* Visible cloud banks stay behind the opaque dashboard surfaces. */
+.weather-backdrop.cloudy::before, .weather-backdrop.cloudy::after,
+.weather-backdrop.rainy::before, .weather-backdrop.rainy::after,
+.weather-backdrop.snowy::before, .weather-backdrop.snowy::after {
+  content:''; position:absolute; inset:-12%; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse 30% 15% at 12% 18%,rgba(255,255,255,.65),transparent 80%),radial-gradient(ellipse 25% 18% at 76% 38%,rgba(255,255,255,.5),transparent 80%),radial-gradient(ellipse 38% 15% at 30% 80%,rgba(255,255,255,.55),transparent 80%);
+  filter:blur(18px); animation:cloud-drift 32s ease-in-out infinite alternate;
+}
+.weather-backdrop::after { transform:rotate(180deg); animation-delay:-16s !important; opacity:.65; }
+[data-theme="light"] .weather-backdrop.cloudy .background-animation { background:linear-gradient(135deg,#b8cddd,#d2dfe9 50%,#a6bfd3); }
+[data-theme="dark"] .weather-backdrop::before, [data-theme="dark"] .weather-backdrop::after { opacity:.18; }
+.weather-backdrop .weather-particles { z-index:2; opacity:.65; }
+.weather-backdrop .weather-particles.rain::before { height:calc(100% + 200px); animation:rain-drift 1.8s linear infinite; }
+.weather-backdrop .weather-particles.snow::before { height:calc(100% + 100px); animation:snow-drift 9s linear infinite; }
+@keyframes cloud-drift { from { translate:-3% -1%; } to { translate:3% 2%; } }
+@keyframes rain-drift { from { transform:translateY(-100px); } to { transform:translateY(0); } }
+@keyframes snow-drift { from { transform:translate(-10px,-100px); } to { transform:translate(10px,0); } }
+@media (prefers-reduced-motion:reduce) { .weather-backdrop::before,.weather-backdrop::after { animation:none !important; } }
 }
