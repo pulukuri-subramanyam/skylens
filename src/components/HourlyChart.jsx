@@ -18,15 +18,15 @@ export function HourlyChart({ days, unit, theme, timeZone }) {
       type: 'line',
       data: {
         labels: data.map(hour => weatherService.formatLocationTime(hour.time, timeZone)),
-        datasets: [{ label: rain ? 'Rain chance (%)' : `Temperature (�${unit})`, data: data.map(hour => rain ? Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null : Math.round(unit === 'F' ? hour.temp_f : hour.temp_c)), borderColor: line, backgroundColor: theme === 'dark' ? 'rgba(110,212,202,.1)' : 'rgba(0,141,135,.09)', borderWidth: 2.5, fill: true, tension: .2, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: line, pointBorderColor: theme === 'dark' ? '#152330' : '#fff', pointBorderWidth: 1.5 }]
+        datasets: [{ label: rain ? 'Rain chance (%)' : `Temperature (°${unit})`, data: data.map(hour => rain ? Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null : Math.round(unit === 'F' ? hour.temp_f : hour.temp_c)), borderColor: line, backgroundColor: theme === 'dark' ? 'rgba(110,212,202,.1)' : 'rgba(0,141,135,.09)', borderWidth: 2.5, fill: true, tension: .2, pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: line, pointBorderColor: theme === 'dark' ? '#152330' : '#fff', pointBorderWidth: 1.5 }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         interaction: { intersect: false, mode: 'index' },
-        plugins: { tooltip: { displayColors: false, callbacks: { label: context => rain ? `${context.parsed.y}% rain chance` : `${context.parsed.y}�${unit}` } } },
+        plugins: { tooltip: { displayColors: false, callbacks: { label: context => rain ? `${context.parsed.y}% rain chance` : `${context.parsed.y}°${unit}` } } },
         scales: {
           x: { grid: { display: false }, border: { display: false }, ticks: { color: text, maxTicksLimit: 8, font: { family: 'Inter, sans-serif', size: 11 } } },
-          y: { ...(rain ? { min: 0, max: 100 } : {}), grid: { color: theme === 'dark' ? 'rgba(213,228,232,.12)' : 'rgba(23,38,56,.1)' }, border: { display: false }, ticks: { color: text, callback: value => rain ? value + '%' : value + '�' + unit, font: { family: 'Inter, sans-serif', size: 11 } } }
+          y: { ...(rain ? { min: 0, max: 100 } : {}), grid: { color: theme === 'dark' ? 'rgba(213,228,232,.12)' : 'rgba(23,38,56,.1)' }, border: { display: false }, ticks: { color: text, callback: value => rain ? value + '%' : value + '°' + unit, font: { family: 'Inter, sans-serif', size: 11 } } }
         }
       }
     });

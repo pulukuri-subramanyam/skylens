@@ -27,8 +27,8 @@ test('normalizes provider data, including sunrise fallback, hourly rain and miss
 });
 
 test('formats units and invalid times without inventing missing data', () => {
-  assert.equal(formatTemperature(0, 'F'), '32�');
-  assert.equal(formatTemperature(25, 'C'), '25�');
+  assert.equal(formatTemperature(0, 'F'), '32°');
+  assert.equal(formatTemperature(25, 'C'), '25°');
   assert.equal(formatTemperature(NaN, 'C'), 'Unavailable');
   assert.equal(service.formatLocationTime(null, 'Asia/Kolkata'), 'Unavailable');
   assert.equal(service.formatLocationTime('bad date', 'Asia/Kolkata'), 'Unavailable');

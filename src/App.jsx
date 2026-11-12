@@ -77,7 +77,7 @@ export default function App() {
     {loading || (!weather && !error) ? <LoadingWeather/> : weather ? <main className="grid gap-5" id="weatherContent">
       <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onShare={share} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
       <DailyForecast days={weather.forecastData.forecast.forecastday} unit={unit} timeZone={weather.currentWeatherData.location.timezone}/>
-      <Suspense fallback={<section className="panel min-h-[280px] p-5" aria-label="Hourly forecast loading"><p className="text-sm text-muted">Loading hourly chart�</p></section>}><HourlyChart days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/></Suspense>
+      <Suspense fallback={<section className="panel min-h-[280px] p-5" aria-label="Hourly forecast loading"><p className="text-sm text-muted">Loading hourly chart…</p></section>}><HourlyChart days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/></Suspense>
     </main> : null}
     {!loading && (weather || error) && <Footer/>}
   </div>;

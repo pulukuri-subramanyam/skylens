@@ -25,5 +25,5 @@ export function readPreference(key, allowed, fallback) {
 }
 
 export function formatTemperature(value, unit) {
-  return Number.isFinite(value) ? Math.round(unit === 'F' ? value * 9 / 5 + 32 : value) + '�' : 'Unavailable';
+  return Number.isFinite(value) ? Math.round(unit === 'F' ? value * 9 / 5 + 32 : value) + '°' : 'Unavailable';
 }

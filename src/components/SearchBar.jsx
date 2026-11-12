@@ -31,13 +31,13 @@ export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
       <button id="searchBtn" type="submit" aria-label="Search" className="absolute top-[7px] right-[7px] flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-on-accent"><Icon name="search" className="h-[18px] w-[18px]"/></button>
       {visible && <div ref={list} id="citySuggestions" role="listbox" aria-label="City suggestions" className="absolute top-full z-20 mt-2 max-h-80 w-full overflow-y-auto rounded-xl border border-line bg-surface p-1 shadow-lg" onPointerDown={event => event.preventDefault()}>
         {locations.map((location, index) => <div key={`${location.lat},${location.lon},${location.name}`} id={`city-suggestion-${index}`} role="option" aria-selected={active === index} onClick={() => choose(location)} className={`cursor-pointer rounded-lg px-3 py-2 text-sm hover:bg-canvas ${active === index ? 'bg-canvas' : ''}`}>
-          <span className="block font-semibold">{location.name}</span><span className="block text-xs text-muted">{weatherService.formatCitySuggestionDetails(location)}{location.source ? ` � ${location.source}` : ''}</span>
+          <span className="block font-semibold">{location.name}</span><span className="block text-xs text-muted">{weatherService.formatCitySuggestionDetails(location)}{location.source ? ` · ${location.source}` : ''}</span>
         </div>)}
-        <p role="status" className="px-3 py-2 text-xs text-muted">{loading ? locations.length ? 'Finding more places�' : 'Searching places�' : locations.length ? 'Choose a place or refine your search.' : 'No suggestions found. Try a city and state.'}</p>
+        <p role="status" className="px-3 py-2 text-xs text-muted">{loading ? locations.length ? 'Finding more places…' : 'Searching places…' : locations.length ? 'Choose a place or refine your search.' : 'No suggestions found. Try a city and state.'}</p>
       </div>}
     </div>
     <button type="button" id="locationBtn" onClick={onLocate} aria-label="Use my current location" title="Use current location" className="flex min-h-[50px] min-w-[46px] items-center justify-center gap-2 rounded-[10px] border border-accent bg-surface px-3 text-sm font-medium text-accent sm:px-[18px]" disabled={locating}>
-      <Icon name="location" className="h-5 w-5"/><span className="hidden sm:inline">{locating ? 'Locating�' : 'Current Location'}</span>
+      <Icon name="location" className="h-5 w-5"/><span className="hidden sm:inline">{locating ? 'Locating…' : 'Current Location'}</span>
     </button>
   </form>;
 }

@@ -46,7 +46,7 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
         <p className="mt-[7px] text-xs text-secondary">Local time <time id="cityLocalTime" dateTime={new Date(now).toISOString()}>{localTime}</time></p>
         <div className="mt-[5px] flex flex-wrap items-center gap-[10px]">
           <p className="text-xs text-muted" id="lastUpdated">Last updated: {service.formatTime(current.last_updated)}</p>
-          <button id="refreshBtn" type="button" onClick={onRefresh} disabled={refreshing} className="control px-2 py-1 text-xs" aria-label={refreshing ? 'Refreshing weather' : 'Refresh weather'}><Icon name="refresh" className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`}/>{refreshing ? 'Refreshing�' : 'Refresh'}</button>
+          <button id="refreshBtn" type="button" onClick={onRefresh} disabled={refreshing} className="control px-2 py-1 text-xs" aria-label={refreshing ? 'Refreshing weather' : 'Refresh weather'}><Icon name="refresh" className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`}/>{refreshing ? 'Refreshing…' : 'Refresh'}</button>
         </div>
         <p id="dataFreshness" className={`${error || stale ? 'mt-2 text-xs text-muted' : 'sr-only'}`}>{error ? 'Refresh failed. Showing the last successful weather.' : stale ? 'May be outdated. Checked ' + service.formatTime(new Date(lastFetchedAt).toISOString()) : 'Checked ' + service.formatTime(new Date(lastFetchedAt).toISOString())}</p>
         <div className="mt-6 grid grid-cols-[54px_auto_minmax(0,1fr)] items-center gap-2 sm:grid-cols-[70px_auto_minmax(0,1fr)] sm:gap-3 lg:mt-8 lg:grid-cols-[80px_auto_minmax(0,1fr)]">
@@ -63,7 +63,7 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
       <div className="grid grid-cols-2 gap-2 sm:gap-[10px] min-[761px]:border-l min-[761px]:border-line min-[761px]:pl-5">
         {metrics.map(([label, value, icon, color, id]) => <div key={id} className="flex min-h-[58px] min-w-0 items-center gap-2 rounded-[9px] border border-line px-2 py-2 sm:gap-[10px] sm:px-3 sm:py-[10px]">
           <Icon name={icon} className={`h-5 w-5 shrink-0 ${color}`}/><div className="min-w-0"><span className="block text-[11px] leading-snug text-muted">{label}</span><span className="block text-sm leading-snug font-semibold sm:text-[15px]" id={id}>{value}{id === 'windSpeed' && <small className="ml-1 text-[10px] font-normal text-muted" id="windDirection">{current.wind_dir}</small>}</span>
-          {id === 'airQuality' && Number.isFinite(aqi?.pm25) && <small className="block text-[9px] text-muted" id="airPm25">PM2.5 {Math.round(aqi.pm25)} �g/m�</small>}</div>
+          {id === 'airQuality' && Number.isFinite(aqi?.pm25) && <small className="block text-[9px] text-muted" id="airPm25">PM2.5 {Math.round(aqi.pm25)} µg/m³</small>}</div>
         </div>)}
       </div>
     </div>
