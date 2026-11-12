@@ -2926,4 +2926,9 @@ body { isolation:isolate; }
 .forecast-detail-heading button { padding:6px 10px; cursor:pointer; }
 .forecast-detail-values { display:flex; flex-wrap:wrap; gap:12px 24px; margin-top:10px; font-size:13px; color:var(--text-secondary); }
 
+
+/* Keep the sliding indicator and keyboard focus inside the segmented control. */
+.unit-toggle { overflow:hidden; }
+.unit-option { border-radius:7px; }
+.unit-option:focus-visible { outline-offset:-3px; outline-color:var(--text-primary); }
 }
