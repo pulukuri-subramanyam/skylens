@@ -22,7 +22,7 @@ export default function App() {
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#101923' : '#eaf0f5');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#101a28' : '#eaf0f5');
     try { localStorage.setItem('weatherapp-theme', theme); } catch { /* Storage can be disabled by the browser. */ }
   }, [theme]);
   useEffect(() => { try { localStorage.setItem('weatherapp-temperature-unit', unit); } catch { /* Keep the session preference. */ } }, [unit]);
@@ -67,14 +67,14 @@ export default function App() {
     } catch (cause) { if (cause.name !== 'AbortError') { setShareText(summary); setStatus('Select and copy this weather summary.'); } }
   };
 
-  return <div className="mx-auto w-full max-w-[1200px] px-3 py-4 text-ink sm:px-5 sm:py-5 lg:px-8 lg:py-6">
+  return <div className="app-container">
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={loading}/>
     <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
     <p className="sr-only" role="status" aria-live="polite">{status}</p>
     {shareText && <div className="panel mb-5 p-4"><label className="block text-sm font-medium" htmlFor="shareSummary">Copy weather summary</label><textarea id="shareSummary" readOnly value={shareText} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-line bg-canvas p-2 text-sm"/><button type="button" onClick={() => setShareText('')} className="control mt-2 px-3 py-1 text-xs">Close</button></div>}
-    {error && <div role="alert" className="panel mb-5 flex flex-wrap items-center gap-3 p-4 text-sm"><Icon name="warning" className="h-5 w-5 shrink-0 text-orange-500"/><p className="flex-1" id="errorMessage">{error}</p><button type="button" id="retryBtn" onClick={retry} className="control px-3 py-2 text-xs">Try Again</button></div>}
-    {loading || (!weather && !error) ? <LoadingWeather/> : weather ? <main className="grid gap-5" id="weatherContent">
+    {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Oops! Something went wrong</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
+    {loading || (!weather && !error) ? <LoadingWeather/> : weather ? <main className="weather-content" id="weatherContent">
       <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onShare={share} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
       <DailyForecast days={weather.forecastData.forecast.forecastday} unit={unit} timeZone={weather.currentWeatherData.location.timezone}/>
       <Suspense fallback={<section className="panel min-h-[280px] p-5" aria-label="Hourly forecast loading"><p className="text-sm text-muted">Loading hourly chart…</p></section>}><HourlyChart days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/></Suspense>

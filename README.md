@@ -8,7 +8,7 @@ A weather dashboard with current conditions, a seven-day forecast, an hourly tem
 
 - React for components and state
 - Vite for development and production builds
-- Tailwind CSS for responsive layouts, colours and themes
+- Tailwind CSS with the original design rules preserved in its component layer
 - Chart.js for the hourly chart
 - OpenWeather for forecasts, geocoding and air quality; Photon supplements city suggestions
 - A Vercel Function in `api/weather.mjs` keeps the OpenWeather key on the server
@@ -46,13 +46,14 @@ npm run preview
 src/components/    Search, saved cities, weather card, forecasts, chart and footer
 src/hooks/         Weather loading and city-suggestion state
 src/lib/           Provider normalization, location ranking, storage and weather icons
-src/index.css      Tailwind import, theme variables and shared controls
-src/loader.css     Original weather loading animation
+src/index.css      Tailwind layers, original themes, responsive rules and loading animation
 public/           Manifest, favicon, self-hosted font and sharing image
 api/weather.mjs   Server-only OpenWeather proxy
 build/            Generates the service worker with Vite's hashed asset names
 tests/            Location ranking and weather-data normalization checks
 ```
+
+This is a stack migration, not a redesign. The existing CSS cascade is retained in Tailwind's component layer, including its breakpoints, typography, animations and themes. Tailwind utilities are available without its reset changing the original appearance. React owns the component rendering and interaction state.
 
 ## Deployment
 
