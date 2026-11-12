@@ -1,60 +1,77 @@
-# skylens
+# Skylens
 
-**Live conditions, made clear.** Skylens is a responsive weather dashboard for checking current conditions and upcoming weather at a glance.
+A weather dashboard with current conditions, a seven-day forecast, an hourly temperature/rain chart, city suggestions, saved cities, air quality and daylight progress.
 
-[Open Skylens](https://skylens.live)
+[Open Skylens](https://www.skylens.live)
 
-## Features
+## Stack
 
-- Current conditions, including temperature, feels-like temperature, humidity, wind, visibility, pressure, wind direction, and UV index
-- Selected city's local time, sunrise, and sunset shown in that location's timezone
-- Seven-day forecast with daily rain chances and an hourly temperature trend chart
-- City search with live location suggestions
-- Current-location weather using the browser's location permission
-- Saved and recently viewed cities, with controls to remove or reorder saved places
-- Air-quality label and PM2.5 reading for the selected city
-- Sunrise-to-sunset daylight progress, local time, and a one-click weather share summary
-- Offline-friendly last-result cache, plus installable PWA support (use the Install button when your browser offers it)
-- Celsius/Fahrenheit toggle, light/dark themes, and manual refresh
-- Responsive layout, weather-themed backgrounds, and loading/error states
-
-## Built with
-
-- HTML, CSS, and vanilla JavaScript
-- OpenWeather One Call 4.0 and Geocoding APIs
-- Photon for location suggestions
+- React for components and state
+- Vite for development and production builds
+- Tailwind CSS with the original design rules preserved in its component layer
 - Chart.js for the hourly chart
-- Font Awesome icons and the Inter font, loaded from CDNs
+- Open-Meteo for current weather and seven days of daily/hourly forecasts (free non-commercial endpoint; attribution in footer)
+- OpenWeather for geocoding and air quality; Photon supplements city suggestions
+- A Vercel Function in `api/weather.mjs` keeps the OpenWeather key on the server
+- Browser storage for saved/recent cities, preferences and the last weather result
 
 ## Run locally
 
-Skylens is a static website with a small Vercel Function for weather requests.
+Use Node.js 22.12 or newer in the Node 22 release line, or Node 24+.
 
-1. Install the [Vercel CLI](https://vercel.com/docs/cli) and open the repository folder.
-2. Link the folder to the Skylens Vercel project with `vercel link`.
-3. Add `OPENWEATHER_API_KEY` as a **Secret** in Vercel Project Settings → Environment Variables for Development, Preview, and Production. For local-only work, put it in `.env.local` (never commit that file).
-4. Run `vercel dev` and open the local URL it prints. A plain static server such as `python -m http.server` cannot run the API Function.
+```sh
+npm ci
+```
 
-## API key security
+Copy `.env.example` to `.env.local` and set `OPENWEATHER_API_KEY` there. Do not prefix the key with `VITE_`, and never commit `.env.local`.
 
-The browser calls the same-origin `/api/weather` function; only that server-side function reads `OPENWEATHER_API_KEY`. The function accepts a small set of weather/geocoding request types and validates its inputs. Never add the key to `script.js`, a browser-exposed variable such as `VITE_*`, or a committed environment file.
+```sh
+npm run dev
+```
 
-If a key has ever been committed or shared, rotate it with OpenWeather and replace it in Vercel. Removing a key from the current source does not remove it from earlier Git history, so revoke the old key rather than relying on source cleanup.
+Vite serves the React app and runs the existing weather handler through a local development middleware. Both the local app and production use `/api/weather`. Without a key, the page runs but weather requests return a configuration error.
 
-## Quick manual checks
+## Build and check
 
-- Search for a city and choose a suggestion; confirm the weather and location label update.
-- Try current location with permission allowed and denied; confirm success or a helpful retry message.
-- Switch between °C and °F; confirm current and forecast temperatures update.
-- Check the forecast rain chance and sunrise/sunset for a city, then compare the display with its local time.
-- Reload the page and confirm saved cities and display preferences remain available.
-- Check the page at desktop, tablet, and phone widths; confirm the forecast cards remain readable without horizontal overflow.
+```sh
+npm test
+npm run build
+npm run preview
+```
+
+`preview` serves the production frontend only. Use `npm run dev` for the local weather API, or test the built app in a Vercel preview.
+
+## Project layout
+
+```text
+src/components/    Search, saved cities, weather card, forecasts, chart and footer
+src/hooks/         Weather loading and city-suggestion state
+src/lib/           Provider normalization, location ranking, storage and weather icons
+src/index.css      Tailwind layers, original themes, responsive rules and loading animation
+public/           Manifest, favicon, self-hosted font and sharing image
+api/weather.mjs   Server-only OpenWeather proxy
+build/            Generates the service worker with Vite's hashed asset names
+tests/            Location ranking and weather-data normalization checks
+```
+
+This is a stack migration, not a redesign. The existing CSS cascade is retained in Tailwind's component layer, including its breakpoints, typography, animations and themes. Tailwind utilities are available without its reset changing the original appearance. React owns the component rendering and interaction state.
 
 ## Deployment
 
-The project is connected to Vercel. Pull requests create preview deployments; changes merged into `main` deploy to production.
+Vercel runs `npm run build` and serves `dist/`; `api/weather.mjs` stays a Vercel Function. Set `OPENWEATHER_API_KEY` as a Secret for Production and the relevant Preview branches. A new branch can need its own Preview variable if keys are branch-scoped.
+
+Upgrades are developed on a separate branch and reviewed in a preview. Merge into `main` only after the owner's explicit approval.
+
+## Offline behaviour
+
+The production service worker caches the built application and self-hosted font. The last successful weather result remains available offline with its update time and a failed-refresh message. API responses are not cached by the service worker, so a stale API response cannot silently look fresh. Weather readings still require an internet connection for updates.
+
+Saved cities and preferences keep their existing storage keys during migration. PWA installation uses the browser's native install interface when supported.
+
+## API key security
+
+Only the server reads `OPENWEATHER_API_KEY`. Browser code calls `/api/weather` without the key. Rotate any key that has been exposed in earlier code or shared publicly; removing it from the current source does not erase Git history.
 
 ## Author
 
-Built by [Subramanyam Pulukuri](https://github.com/pulukuri-subramanyam).
-
+[Subramanyam Pulukuri](https://github.com/pulukuri-subramanyam)
