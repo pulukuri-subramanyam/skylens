@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/assets/fonts/inter-variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@theme inline {
+  --font-sans: 'Inter', sans-serif;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-line: var(--line);
+}
+
+:root {
+  --canvas: #eaf0f5;
+  --surface: #fff;
+  --ink: #142136;
+  --secondary: #41546a;
+  --muted: #607389;
+  --accent: #008d87;
+  --on-accent: #fff;
+  --line: #cbd7e1;
+}
+[data-theme="dark"] {
+  --canvas: #101923;
+  --surface: #152330;
+  --ink: #edf3f5;
+  --secondary: #c0cdd3;
+  --muted: #8fa0aa;
+  --accent: #6ed4ca;
+  --on-accent: #101923;
+  --line: #324451;
+}
+@layer base {
+  body { @apply m-0 min-h-screen bg-canvas font-sans text-ink antialiased; }
+  button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), a { cursor: pointer; }
+  button:disabled { cursor: wait; }
+  button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  [hidden] { display: none !important; }
+}
+@layer components {
+  .panel { @apply min-w-0 rounded-xl border border-line bg-surface; }
+  .control { @apply inline-flex min-h-8 items-center gap-1.5 rounded-lg border border-line bg-surface text-secondary transition-colors hover:border-accent hover:text-accent disabled:opacity-50; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
