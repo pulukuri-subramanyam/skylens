@@ -426,9 +426,9 @@ export class WeatherService {
 
     const hourly = (hourlyPayload.data || [])
       .filter(point => Number(point.dt) * 1000 >= Date.now())
-      .slice(0, 24)
       .map(point => ({
         time: toIso(point.dt),
+        wind_kph: point.wind_speed == null ? null : Math.round(toKph(point.wind_speed)),
         temp_c: Number(point.temp),
         temp_f: toFahrenheit(point.temp),
         precipitation_probability_percent: point.pop == null || !Number.isFinite(Number(point.pop))
@@ -439,6 +439,7 @@ export class WeatherService {
       date: toIso(point.dt),
       day: {
         condition: conditionFor(point),
+        wind_kph: point.wind_speed == null ? null : Math.round(toKph(point.wind_speed)),
         maxtemp_c: Number(point.temp?.max ?? point.temp?.day),
         maxtemp_f: toFahrenheit(point.temp?.max ?? point.temp?.day),
         mintemp_c: Number(point.temp?.min ?? point.temp?.night),
@@ -458,10 +459,11 @@ export class WeatherService {
       currentData,
       forecastData: {
         forecast: {
-          forecastday: [{
-            ...forecastDays[0],
-            hour: hourly
-          }, ...forecastDays.slice(1)]
+          forecastday: forecastDays.map(day => ({...day, hour: hourly.filter(hour => {
+            const zone = currentData.location.timezone;
+            const dateKey = value => new Intl.DateTimeFormat('en-CA', {year:'numeric',month:'2-digit',day:'2-digit',...(zone ? {timeZone:zone} : {timeZone:'UTC'})}).format(new Date(value));
+            return dateKey(hour.time) === dateKey(day.date);
+          })}))
         }
       }
     };

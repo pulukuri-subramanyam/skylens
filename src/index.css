@@ -2916,4 +2916,13 @@ body { isolation:isolate; }
 }
 .weather-backdrop.dark-clouds::after { opacity:.55; animation-direction:alternate-reverse; }
 [data-theme="dark"] .weather-backdrop.dark-clouds::before,[data-theme="dark"] .weather-backdrop.dark-clouds::after { opacity:.7; background:radial-gradient(ellipse 36% 22% at 12% 25%,#070e19cc,transparent 80%),radial-gradient(ellipse 40% 25% at 85% 55%,#0b1420cc,transparent 80%); }
+
+.forecast-item[role="button"] { cursor:pointer; }
+.forecast-item[role="button"]:focus-visible { outline:2px solid var(--accent-color); outline-offset:3px; }
+[data-theme] .forecast-item.is-selected { outline:2px solid var(--accent-color); outline-offset:-2px; background:color-mix(in srgb,var(--accent-color) 9%,var(--glass-bg)); }
+.forecast-day-details { padding:20px; color:var(--text-primary); }
+.forecast-detail-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.forecast-detail-heading h3 { font-size:18px; }
+.forecast-detail-heading button { padding:6px 10px; cursor:pointer; }
+.forecast-detail-values { display:flex; flex-wrap:wrap; gap:12px 24px; margin-top:10px; font-size:13px; color:var(--text-secondary); }
 }

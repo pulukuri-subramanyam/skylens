@@ -1,17 +1,17 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { WeatherBackground } from './components/WeatherBackground';
 import { SearchBar } from './components/SearchBar';
 import { SavedCities } from './components/SavedCities';
 import { WeatherCard } from './components/WeatherCard';
-import { DailyForecast } from './components/DailyForecast';
+import { ForecastExplorer } from './components/ForecastExplorer';
 import { LoadingWeather } from './components/LoadingWeather';
 import { Footer } from './components/Footer';
 import { Icon } from './components/Icon';
 import { useWeather } from './hooks/useWeather';
 import { formatTemperature, readCities, readPreference, writeStorage } from './lib/storage';
 
-const HourlyChart = lazy(() => import('./components/HourlyChart').then(module => ({ default: module.HourlyChart })));
+
 
 export default function App() {
   const [unit, setUnit] = useState(() => readPreference('weatherapp-temperature-unit', ['C', 'F'], 'C'));
@@ -78,8 +78,7 @@ export default function App() {
     {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Oops! Something went wrong</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
     {loading || (!weather && !error) ? <LoadingWeather/> : weather ? <main className="weather-content" id="weatherContent">
       <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onShare={share} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
-      <DailyForecast days={weather.forecastData.forecast.forecastday} unit={unit} timeZone={weather.currentWeatherData.location.timezone}/>
-      <Suspense fallback={<section className="panel min-h-[280px] p-5" aria-label="Hourly forecast loading"><p className="text-sm text-muted">Loading hourly chart…</p></section>}><HourlyChart days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/></Suspense>
+      <ForecastExplorer key={weather.currentCity.id} days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/>
     </main> : null}
     {!loading && (weather || error) && <Footer/>}
   </div>;
