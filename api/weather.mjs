@@ -79,6 +79,28 @@ export default async function handler(request, response) {
         .json({ message: payload.message || 'Weather provider request failed.' });
     }
 
+    if (type === 'hourly' && Array.isArray(payload.data)) {
+      const points = [...payload.data];
+      let next = payload.next;
+      for (let page = 0; page < 2 && next && points.length < 48; page++) {
+        const cursor = new URL(next, OPENWEATHER_BASE_URL);
+        if (cursor.origin !== OPENWEATHER_BASE_URL || cursor.pathname !== route.path) break;
+        const start = cursor.searchParams.get('start');
+        if (!start || !/^\d+$/.test(start)) break;
+        const pageUrl = new URL(upstreamUrl);
+        pageUrl.searchParams.set('start', start);
+        const pageResponse = await fetch(pageUrl);
+        if (!pageResponse.ok) break;
+        const pagePayload = await pageResponse.json();
+        if (!Array.isArray(pagePayload.data)) break;
+        points.push(...pagePayload.data);
+        next = pagePayload.next;
+      }
+      payload.data = [...new Map(points.map(point => [point.dt, point])).values()].sort((a,b)=>a.dt-b.dt).slice(0,48);
+    }
+    // Provider pagination URLs can contain the server key. Never return them.
+    delete payload.next;
+    delete payload.prev;
     response.setHeader(
       'Cache-Control',
       `public, max-age=0, s-maxage=${route.maxAge}, stale-while-revalidate=600`

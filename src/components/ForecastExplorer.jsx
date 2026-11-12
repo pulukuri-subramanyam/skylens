@@ -15,6 +15,6 @@ export function ForecastExplorer({ days, unit, theme, timeZone }) {
       <p>{selected.day.condition.text}</p>
       <div className="forecast-detail-values"><span>High {formatTemperature(selected.day.maxtemp_c,unit)}{unit} / Low {formatTemperature(selected.day.mintemp_c,unit)}{unit}</span><span>Rain chance: {Number.isFinite(selected.day.precipitation_probability_percent) ? selected.day.precipitation_probability_percent+'%' : 'Unavailable'}</span><span>Wind: {Number.isFinite(selected.day.wind_kph) ? selected.day.wind_kph+' km/h' : 'Unavailable'}</span></div>
     </section>}
-    {hours.length ? <Suspense fallback={<section className="panel p-5">Loading hourly chart...</section>}><HourlyChart days={[{hour:hours}]} unit={unit} theme={theme} timeZone={timeZone} title={selected ? `Hourly Forecast · ${dateLabel}` : 'Hourly Forecast'}/></Suspense> : <section className="panel forecast-day-details" role="status">Hourly data is not available for {dateLabel}. The daily forecast above is still available.</section>}
+    {hours.length ? <Suspense fallback={<section className="panel p-5">Loading hourly chart...</section>}><HourlyChart days={[{hour:hours}]} unit={unit} theme={theme} timeZone={timeZone} title={selected ? `Hourly Forecast · ${dateLabel}` : 'Hourly Forecast'}/></Suspense> : <p className="chart-note" role="status">OpenWeather provides hourly forecasts for the next 48 hours. For {dateLabel}, use the daily details above.</p>}
   </>;
 }
