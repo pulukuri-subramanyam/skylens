@@ -49,5 +49,6 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
     </div>
     <div className="weather-details-grid">{metrics.map(([label,value,icon,color,id])=><div key={id} className="detail-item"><Icon name={icon} className="detail-icon"/><div className="detail-content"><span className="detail-label">{label}</span><span className="detail-value"><span id={id}>{value}</span>{id==='windSpeed'&&<> <small id="windDirection">{current.wind_dir}</small></>}</span>{id==='airQuality'&&Number.isFinite(aqi?.pm25)&&<small className="air-pm25" id="airPm25">PM2.5 {Math.round(aqi.pm25)} {'\u00b5'}g/m{'\u00b3'}</small>}</div></div>)}</div>
     <DaylightBar current={current} timeZone={location.timezone} now={now}/>
+    <details className="weather-data-sources"><summary>Data sources</summary><p>Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>, adapted for Skylens. <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Air quality by <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer">OpenWeather</a>.</p></details>
   </section>;
 }
