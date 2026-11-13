@@ -12,7 +12,7 @@ function DaylightBar({ current, timeZone, now }) {
   const label = !valid ? 'Daylight information unavailable' : now < sunrise ? 'Sunrise at ' + service.formatLocationTime(current.sunrise, timeZone) : now > sunset ? 'Sunset at ' + service.formatLocationTime(current.sunset, timeZone) : Math.round(progress * 100) + '% through daylight';
   return <div className={`sun-progress ${!valid ? 'is-unavailable' : night ? 'is-night' : ''}`} id="sunProgress" aria-label="Daylight progress">
     <p className="sun-time"><Icon name="sun"/> Sunrise <span id="sunriseTime">{service.formatLocationTime(current.sunrise,timeZone)}</span></p>
-    <div className="sun-progress-track" aria-hidden="true"><span className="sun-progress-fill" id="sunProgressFill" style={{width:progress*100+'%'}}/><Icon name="sun" className="sun-progress-marker" id="sunProgressMarker" style={{left:progress*100+'%'}}/></div>
+    <div className="sun-progress-track" aria-hidden="true"><span className="sun-progress-fill" id="sunProgressFill" style={{width:progress*100+'%'}}/><Icon name={night ? "moon" : "sun"} className="sun-progress-marker" id="sunProgressMarker" style={{left:progress*100+'%'}}/></div>
     <p className="sun-time"><Icon name="moon"/> Sunset <span id="sunsetTime">{service.formatLocationTime(current.sunset,timeZone)}</span></p>
     <span className="sun-progress-caption" id="sunProgressLabel">{label}</span>
   </div>;

@@ -1,11 +1,11 @@
 import { forecastUrl, normalizeMeteo } from '../lib/openMeteo';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { readCities, readWeatherCache, writeStorage } from '../lib/storage';
+import { readCities, readWeatherCache, writeStorage, uniqueRecentCities } from '../lib/storage';
 import { weatherService as service } from '../lib/weather';
 
 export function useWeather() {
   const [weather, setWeather] = useState(readWeatherCache);
-  const [recent, setRecent] = useState(() => readCities('weatherapp-recent-cities'));
+  const [recent, setRecent] = useState(() => uniqueRecentCities(readCities('weatherapp-recent-cities')));
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -43,7 +43,7 @@ export function useWeather() {
       current.current = next;
       setWeather(next);
       writeStorage('weatherapp-last-weather', next);
-      setRecent(cities => [currentCity, ...cities.filter(city => city.id !== currentCity.id)].slice(0, 5));
+      setRecent(cities => uniqueRecentCities([currentCity, ...cities]));
       setStatus('Weather loaded for ' + currentCity.label + '.');
       airRequest.then(air => {
         if (id !== sequence.current) return;
