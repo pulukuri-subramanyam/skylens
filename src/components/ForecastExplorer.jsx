@@ -9,6 +9,6 @@ export function ForecastExplorer({ days, unit, theme, timeZone }) {
   const hours = selected ? selected.hour || [] : days.flatMap(day => day.hour || []).filter(hour=>Date.parse(hour.time)>=Date.now()-3600000).slice(0,24);
   return <>
     <DailyForecast days={days} unit={unit} timeZone={timeZone} selectedDate={selectedDate} onSelect={date=>setSelectedDate(previous=>previous===date?null:date)}/>
-    {hours.length ? <Suspense fallback={<section className="panel p-5">Loading hourly chart...</section>}><HourlyChart days={[{hour:hours}]} unit={unit} theme={theme} timeZone={timeZone} title={selected ? `Hourly Forecast · ${dateLabel}` : 'Hourly Forecast · Next 24 hours'}/></Suspense> : <p className="chart-note" role="status">Hourly data is temporarily unavailable for {dateLabel}. Refresh to try again.</p>}
+    {hours.length ? <Suspense fallback={<section className="panel p-5">Loading hourly chart...</section>}><HourlyChart days={[{hour:hours}]} unit={unit} theme={theme} timeZone={timeZone} title={selected ? `Hourly Forecast - ${dateLabel}` : 'Hourly Forecast'}/></Suspense> : <p className="chart-note" role="status">Hourly data is temporarily unavailable for {dateLabel}. Refresh to try again.</p>}
   </>;
 }
