@@ -767,8 +767,6 @@ body {
   color: var(--text-muted);
 }
 
-
-
 .forecast-rain {
   display: flex;
   align-items: center;
@@ -789,26 +787,26 @@ body {
   .app-container {
     padding: 40px;
   }
-  
+
   .search-container {
     flex-direction: row;
     align-items: center;
     gap: 20px;
   }
-  
+
   .search-input-container {
     flex: 1;
   }
-  
+
   .location-btn {
     flex-shrink: 0;
     min-width: 180px;
   }
-  
+
   .weather-content {
     grid-template-columns: 1fr;
   }
-  
+
   .weather-details-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -819,18 +817,18 @@ body {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
-  
+
   .current-weather-card,
   .chart-section,
   .forecast-section {
     grid-column: 1 / -1;
   }
-  
+
   .forecast-grid {
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 12px;
   }
-  
+
   .forecast-item {
     display: flex;
     flex-direction: column;
@@ -839,28 +837,27 @@ body {
     padding: 14px 8px;
     gap: 0;
   }
-  
+
   .forecast-date {
     min-width: 0;
     margin-bottom: 6px;
     font-size: 12px;
   }
-  
+
   .forecast-icon {
     width: 42px;
     height: 42px;
     margin: 0 auto 6px;
     flex-shrink: 0;
   }
-  
+
   .forecast-temps {
     margin: 0;
     flex-direction: row;
     align-items: center;
     gap: 8px;
   }
-  
-  
+
 }
 
 @media (min-width: 1200px) {
@@ -874,38 +871,38 @@ body {
   .app-container {
     padding: 15px;
   }
-  
+
   .current-weather-card {
     padding: 20px;
   }
-  
+
   .current-weather-header {
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 20px;
   }
-  
+
   .main-temperature {
     flex-direction: column;
     align-items: center;
     text-align: center;
     gap: 10px;
   }
-  
+
   .weather-details-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .forecast-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .chart-section,
   .forecast-section {
     padding: 20px;
   }
-  
+
   .section-title {
     font-size: 1.1rem;
   }
@@ -928,7 +925,7 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   .weather-particles::before {
     animation: none;
   }
@@ -980,12 +977,12 @@ input:focus {
   .error-container {
     display: none !important;
   }
-  
+
   .app-container {
     max-width: none;
     padding: 0;
   }
-  
+
   .glassmorphism {
     background: white;
     color: black;
@@ -1013,7 +1010,6 @@ input:focus {
 .app-footer { display: flex; justify-content: center; gap: 10px; padding: 32px 0 10px; color: var(--text-muted); font-size: 0.82rem; }
 @media (min-width: 768px) { .search-container { gap: 8px; } .location-btn { min-width: auto; } }
 @media (max-width: 480px) {  .current-weather-card::before { margin: -20px -20px 20px; }  .app-footer { flex-wrap: wrap; padding-top: 24px; } }
-
 
 /* Footer credit and linked social profiles */
 .app-footer {
@@ -1059,18 +1055,15 @@ input:focus {
   outline-offset: 3px;
 }
 
-
 /* Keep the author footer out of the initial loading state; retain it after first data load. */
 body.loading:not(.has-weather-data) .app-footer {
   display: none;
 }
 
-
 .footer-brand {
   color: var(--text-primary);
   font-weight: 700;
 }
-
 
 /* Subtle divider between weather content and the footer */
 .app-footer {
@@ -1078,7 +1071,6 @@ body.loading:not(.has-weather-data) .app-footer {
   border-top: 1px solid var(--border-color);
   padding-top: 24px;
 }
-
 
 /* Match the reference's icon-and-label social links */
 .footer-social-links {
@@ -1103,8 +1095,6 @@ body.loading:not(.has-weather-data) .app-footer {
   border-color: transparent;
   transform: none;
 }
-
-
 
 /* Refined surfaces, contrast, and theme-aware condition backdrops */
 [data-theme="light"] .background-animation.clear-day {
@@ -1182,7 +1172,6 @@ body.loading:not(.has-weather-data) .app-footer {
   background: linear-gradient(90deg, var(--accent-color), transparent);
 }
 
-
 /* Compact Celsius/Fahrenheit segmented control with a sliding active thumb */
 .unit-toggle {
   position: relative;
@@ -1247,7 +1236,6 @@ body.loading:not(.has-weather-data) .app-footer {
   outline: 2px solid var(--accent-color);
   outline-offset: 2px;
 }
-
 
 /* Saved and recent city shortcuts */
 .city-shortcuts[hidden],
@@ -1336,8 +1324,6 @@ body.loading:not(.has-weather-data) .app-footer {
   font-size: 0.875rem;
   font-weight: 500;
 }
-
-
 
 .city-local-time time {
   color: var(--text-primary);
@@ -1431,7 +1417,6 @@ body.loading:not(.has-weather-data) .app-footer {
     text-align: center;
   }
 }
-
 
 /* Fluid refinements for phones, tablets, and wide screens */
 .app-container {
@@ -1604,7 +1589,6 @@ body.loading:not(.has-weather-data) .app-footer {
   }
 }
 
-
 /* Keyboard-accessible city suggestions */
 .search-section {
   position: relative;
@@ -1700,7 +1684,6 @@ body.loading:not(.has-weather-data) .app-footer {
   font-weight: 600;
   line-height: 1.2;
 }
-
 
 .city-suggestion-status {
   padding: 9px 14px;
@@ -1818,8 +1801,6 @@ body {
 .app-title i {
   color: var(--accent-color);
 }
-
-
 
 .header-controls {
   gap: 12px;
@@ -1947,8 +1928,6 @@ body {
   color: var(--text-secondary);
   font-size: 0.95rem;
 }
-
-
 
 .weather-details-grid {
   grid-column: 2;
@@ -2107,8 +2086,6 @@ body {
   font-size: 0.93rem;
   font-weight: 500;
 }
-
-
 
 .forecast-rain {
   margin-top: 7px;
@@ -2305,8 +2282,6 @@ body {
     font-size: 0.84rem;
   }
 
-  
-
   .chart-container {
     height: 240px;
   }
@@ -2330,8 +2305,6 @@ body {
     padding-inline: 4px;
   }
 }
-
-
 
 /* Swipeable forecast strip for tablet and mobile: keep all seven days in one row. */
 @media (max-width: 900px) {
@@ -2469,7 +2442,6 @@ body {
     border-radius: 12px;
   }
 }
-
 
 /* Usability upgrades: saved-city management, sharing, AQI, daylight, and install. */
 .share-weather-btn {
@@ -2769,7 +2741,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--accent-color); o
   .condition-copy { padding-left:10px; }
   .condition { font-size:12px; }
   .feels-like, .today-range { font-size:11px; }
-  
+
   .weather-details-grid { gap:8px; }
   .detail-item, .detail-item:nth-last-child(-n+2) { min-height:54px; padding:8px; gap:8px; }
   .detail-icon { font-size:18px; flex-basis:20px; }
@@ -2778,7 +2750,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--accent-color); o
   .sun-time { font-size:10px; gap:4px; }
   .sun-time:last-of-type { justify-content:flex-end; }
   .sun-progress-track { grid-column:1/-1; grid-row:2; }
-  
+
   .forecast-section, .chart-section { padding:16px; }
   .section-title { font-size:17px; margin-bottom:10px; }
   .forecast-item, .forecast-item:last-child { grid-template-columns:56px 28px 44px minmax(0,1fr); gap:6px; padding:10px 0; }
@@ -2798,7 +2770,6 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--accent-color); o
 @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } }
 
 /* React controls use the original icon geometry and inherited colour. */
-
 
 .weather-content { display:grid; }
 .loader-container { display:flex; }
@@ -2896,12 +2867,6 @@ body { isolation:isolate; }
 .forecast-item[role="button"] { cursor:pointer; }
 .forecast-item[role="button"]:focus-visible { outline:2px solid var(--accent-color); outline-offset:3px; }
 [data-theme] .forecast-item.is-selected { outline:2px solid var(--accent-color); outline-offset:-2px; background:color-mix(in srgb,var(--accent-color) 9%,var(--glass-bg)); }
-
-
-
-
-
-
 
 /* Keep the sliding indicator and keyboard focus inside the segmented control. */
 .unit-toggle { overflow:hidden; }
