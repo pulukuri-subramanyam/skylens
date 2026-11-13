@@ -19,7 +19,7 @@ export default function App() {
   const [saved, setSaved] = useState(() => readCities('weatherapp-saved-cities'));
   const [now, setNow] = useState(Date.now);
   const [shareText, setShareText] = useState('');
-  const { weather, recent, loading, refreshing, error, status, setStatus, load, locate, retry } = useWeather();
+  const { weather, recent, loading, refreshing, error, status, setStatus, load, locate, retry, requestLabel } = useWeather();
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
@@ -75,8 +75,8 @@ export default function App() {
     <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
     <p className="sr-only" role="status" aria-live="polite">{status}</p>
     {shareText && <div className="panel mb-5 p-4"><label className="block text-sm font-medium" htmlFor="shareSummary">Copy weather summary</label><textarea id="shareSummary" readOnly value={shareText} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-line bg-canvas p-2 text-sm"/><button type="button" onClick={() => setShareText('')} className="control mt-2 px-3 py-1 text-xs">Close</button></div>}
-    {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Oops! Something went wrong</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
-    {loading || (!weather && !error) ? <LoadingWeather/> : weather ? <main className="weather-content" id="weatherContent">
+    {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
+    {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent">
       <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onShare={share} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
       <ForecastExplorer key={weather.currentCity.id} days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/>
     </main> : null}
