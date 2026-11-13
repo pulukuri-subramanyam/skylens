@@ -10,11 +10,10 @@ function DaylightBar({ current, timeZone, now }) {
   const progress = valid ? Math.max(0, Math.min(1, (now - sunrise) / (sunset - sunrise))) : 0;
   const night = valid && (now < sunrise || now > sunset);
   const label = !valid ? 'Daylight information unavailable' : now < sunrise ? 'Sunrise at ' + service.formatLocationTime(current.sunrise, timeZone) : now > sunset ? 'Sunset at ' + service.formatLocationTime(current.sunset, timeZone) : Math.round(progress * 100) + '% through daylight';
-  return <div className={`sun-progress ${!valid ? 'is-unavailable' : night ? 'is-night' : ''}`} id="sunProgress" aria-label="Daylight progress">
+  return <div className={`sun-progress ${!valid ? 'is-unavailable' : night ? 'is-night' : ''}`} id="sunProgress" aria-label={`Daylight progress: ${label}`}>
     <p className="sun-time"><Icon name="sun"/> Sunrise <span id="sunriseTime">{service.formatLocationTime(current.sunrise,timeZone)}</span></p>
-    <div className="sun-progress-track" aria-hidden="true"><span className="sun-progress-fill" id="sunProgressFill" style={{width:progress*100+'%'}}/><Icon name="sun" className="sun-progress-marker" id="sunProgressMarker" style={{left:progress*100+'%'}}/></div>
+    <div className="sun-progress-track" aria-hidden="true"><span className="sun-progress-fill" id="sunProgressFill" style={{width:progress*100+'%'}}/><Icon name={night ? "moon" : "sun"} className="sun-progress-marker" id="sunProgressMarker" style={{left:progress*100+'%'}}/></div>
     <p className="sun-time"><Icon name="moon"/> Sunset <span id="sunsetTime">{service.formatLocationTime(current.sunset,timeZone)}</span></p>
-    <span className="sun-progress-caption" id="sunProgressLabel">{label}</span>
   </div>;
 }
 
@@ -24,9 +23,9 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
   const metrics = [
     ['Humidity', current.humidity + '%', 'drop', 'text-[#309ac6]', 'humidity'],
     ['Wind', current.wind_kph + ' km/h', 'wind', 'text-accent', 'windSpeed'],
-    ['Visibility', current.vis_km + ' km', 'eye', 'text-accent', 'visibility'],
-    ['Pressure', current.pressure_mb + ' hPa', 'pressure', 'text-accent', 'pressure'],
-    ['UV Index', current.uv, 'sun', 'text-[#dc9129]', 'uvIndex'],
+    ['Visibility', (Number.isFinite(current.vis_km) ? Number(current.vis_km.toFixed(1)) + ' km' : 'Unavailable'), 'eye', 'text-accent', 'visibility'],
+    ['Pressure', (Number.isFinite(current.pressure_mb) ? Math.round(current.pressure_mb) + ' hPa' : 'Unavailable'), 'pressure', 'text-accent', 'pressure'],
+    ['UV Index', Number.isFinite(current.uv) ? Number(current.uv.toFixed(1)) : 'Unavailable', 'sun', 'text-[#dc9129]', 'uvIndex'],
     ['Air quality', aqi?.label || 'Unavailable', 'air', 'text-[#438154]', 'airQuality']
   ];
   let localTime = 'Unavailable';
@@ -45,7 +44,6 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
     <div className="temperature-section"><div className="weather-icon-container"><img className="weather-icon" id="currentWeatherIcon" src={weatherIconUrl(current.condition.iconCode)} alt=""/></div>
       <div className="main-temperature"><span className="temperature" id="currentTemp">{formatTemperature(current.temp_c,unit) + unit}</span></div>
       <div className="condition-copy"><span className="condition" id="currentCondition">{current.condition.text}</span><div className="feels-like">Feels like <span id="feelsLike">{formatTemperature(current.feelslike_c,unit) + unit}</span></div><p className="today-range">High <span id="todayHigh">{formatTemperature(today.maxtemp_c,unit)}</span> / Low <span id="todayLow">{formatTemperature(today.mintemp_c,unit)}</span></p></div>
-      <p className="weather-summary" id="weatherSummary">{current.condition.text + '. Wind ' + Math.round(current.wind_kph) + ' km/h.'}</p>
     </div>
     <div className="weather-details-grid">{metrics.map(([label,value,icon,color,id])=><div key={id} className="detail-item"><Icon name={icon} className="detail-icon"/><div className="detail-content"><span className="detail-label">{label}</span><span className="detail-value"><span id={id}>{value}</span>{id==='windSpeed'&&<> <small id="windDirection">{current.wind_dir}</small></>}</span>{id==='airQuality'&&Number.isFinite(aqi?.pm25)&&<small className="air-pm25" id="airPm25">PM2.5 {Math.round(aqi.pm25)} {'\u00b5'}g/m{'\u00b3'}</small>}</div></div>)}</div>
     <DaylightBar current={current} timeZone={location.timezone} now={now}/>
