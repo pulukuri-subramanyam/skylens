@@ -2874,10 +2874,7 @@ body { isolation:isolate; }
 .unit-option:focus-visible { outline-offset:-3px; outline-color:var(--text-primary); }
 
 /* Quieter supporting readings and a consistent interface-icon scale. */
-.detail-item.metric-primary { background:color-mix(in srgb,var(--accent-color) 4%,var(--glass-bg)); }
-.detail-item.metric-primary .detail-value { font-size:17px; }
-.detail-item.metric-secondary { border-color:color-mix(in srgb,var(--border-color) 65%,var(--glass-bg)); }
-.detail-item.metric-secondary .detail-value { font-weight:550; }
+
 .detail-icon { width:22px; flex:0 0 22px; font-size:18px; line-height:1; text-align:center; }
 .save-city-btn i,.share-weather-btn i,.refresh-btn i { width:14px; font-size:12px; text-align:center; }
 .forecast-icon { object-fit:contain; }
@@ -2888,5 +2885,11 @@ body { isolation:isolate; }
 .weather-backdrop.cloudy:not(.dark-clouds)::after { opacity:.4; }
 .weather-atmosphere.starlight { background-size:100% 100%; background-repeat:no-repeat; }
 .weather-atmosphere.sunlight { animation-duration:22s; }
-@media(max-width:480px) { .detail-item.metric-primary .detail-value { font-size:15px; } .detail-icon { font-size:17px; } }
+@media(max-width:480px) {  .detail-icon { font-size:17px; } }
+
+/* All weather readings share the same tile geometry and visual weight. */
+.weather-details-grid { grid-auto-rows:1fr; }
+.weather-details-grid .detail-item { min-height:68px; height:100%; box-sizing:border-box; background:transparent; border-color:var(--border-color); }
+.weather-details-grid .detail-value { font-size:15px; font-weight:650; }
+@media(max-width:480px) { .weather-details-grid .detail-item { min-height:64px; } .weather-details-grid .detail-value { font-size:14px; } }
 }
