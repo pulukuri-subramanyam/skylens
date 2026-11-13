@@ -565,11 +565,6 @@ body {
   transition: var(--transition-smooth);
 }
 
-.current-weather-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px var(--shadow-dark);
-}
-
 .current-weather-header {
   display: flex;
   justify-content: space-between;
@@ -2410,8 +2405,7 @@ body {
   box-shadow: 0 4px 14px var(--shadow-dark);
 }
 
-.current-weather-card,
-.current-weather-card:hover {
+.current-weather-card {
   border-radius: 20px;
   box-shadow: 0 10px 26px var(--shadow-dark);
   transform: none;
