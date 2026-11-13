@@ -252,7 +252,6 @@ body {
 }
 
 .theme-toggle:hover {
-  transform: translateY(-2px) scale(1.05);
   box-shadow: 0 10px 30px var(--shadow-dark);
 }
 
@@ -346,7 +345,6 @@ body {
 }
 
 .location-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 10px 30px var(--shadow-dark);
   border-color: var(--accent-color);
 }
@@ -2712,7 +2710,7 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--accent-color); o
   .unit-option { width:32px; min-width:32px; flex-basis:32px; height:29px; font-size:11px; }
   .unit-toggle::before { width:32px; height:29px; }
   .unit-toggle[data-unit="F"]::before { transform:translateX(34px); }
-  .theme-toggle { width:36px; height:36px; font-size:16px; }
+  .theme-toggle { width:36px; min-width:36px; height:36px; font-size:16px; }
   .search-container { flex-direction:row; gap:8px; align-items:stretch; }
   .search-input-container { flex:1; width:auto; }
   .search-input { font-size:13px; min-height:44px; height:44px; padding-left:35px; padding-right:42px; }
