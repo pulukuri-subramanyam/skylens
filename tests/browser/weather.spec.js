@@ -66,6 +66,7 @@ test('both themes have no serious accessibility violations or page overflow', as
     const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
     expect(results.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
+    expect(await page.evaluate(()=>document.documentElement.scrollHeight <= Math.max(innerHeight,document.querySelector('footer').getBoundingClientRect().bottom+scrollY+80))).toBe(true);
     await page.locator('#themeToggle').click();
   }
 });
