@@ -1,3 +1,4 @@
+import { fetchJson } from './request.js';
 /** Provider normalization and location ranking retained from the original Skylens app. */
 export class WeatherService {
   constructor(savedCities = [], recentCities = []) {
@@ -300,7 +301,7 @@ export class WeatherService {
     return uniqueDetails.join(', ');
   }
 
-  async resolveLocation(query) {
+  async resolveLocation(query, signal) {
     const queryText = String(query).trim();
     const coordinateMatch = queryText.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
     const type = coordinateMatch ? 'reverse' : 'geocode';
@@ -308,14 +309,17 @@ export class WeatherService {
       ? { lat: coordinateMatch[1], lon: coordinateMatch[2] }
       : { q: queryText };
 
-    const response = await this.fetchJson(this.getWeatherApiUrl(type, params));
-    const matches = Array.isArray(response) ? response : [];
+    const response = await this.fetchJson(this.getWeatherApiUrl(type, params), { signal });
+    const matches = Array.isArray(response) ? response.filter(place=>place && typeof place.name==='string' && Number.isFinite(place.lat) && Math.abs(place.lat)<=90 && Number.isFinite(place.lon) && Math.abs(place.lon)<=180) : [];
     let match = coordinateMatch
       ? matches[0]
       : this.rankCityLocations(matches, queryText)[0];
 
     if (!coordinateMatch && !match) {
-      const mapMatches = await this.fetchPhotonCitySuggestions(queryText).catch(() => []);
+      const mapMatches = await this.fetchPhotonCitySuggestions(queryText, '', signal).catch(cause => {
+        if (signal?.aborted) throw cause;
+        return [];
+      });
       match = this.rankCityLocations(mapMatches, queryText)[0];
     }
     if (!match) {
@@ -343,24 +347,17 @@ export class WeatherService {
 
   getAqiDetails(payload) {
     const data = payload && Array.isArray(payload.list) ? payload.list[0] : null;
-    if (!data || !Number.isFinite(Number(data.main?.aqi))) return null;
+    if (!data || !Number.isInteger(data.main?.aqi) || data.main.aqi < 1 || data.main.aqi > 5) return null;
     const labels = ['', 'Good', 'Fair', 'Moderate', 'Poor', 'Very poor'];
     return {
       index: Number(data.main.aqi),
       label: labels[Number(data.main.aqi)] || 'Unknown',
-      pm25: Number(data.components?.pm2_5)
+      pm25: Number.isFinite(data.components?.pm2_5) && data.components.pm2_5 >= 0 ? data.components.pm2_5 : null
     };
   }
 
   async fetchJson(url, requestOptions = {}) {
-    const response = await fetch(url, requestOptions);
-    const payload = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(payload.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return payload;
+    return fetchJson(url, requestOptions);
   }
 
   getOpenWeatherIconCode(weather) {
@@ -369,6 +366,7 @@ export class WeatherService {
   }
 
   getWindDirection(degrees) {
+    if (!Number.isFinite(degrees)) return 'Unavailable';
     const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     return directions[Math.round((Number(degrees || 0) % 360) / 45) % 8];
   }
@@ -379,8 +377,9 @@ export class WeatherService {
       throw new Error('Weather data was not available');
     }
 
-    const toFahrenheit = value => (Number(value) * 9) / 5 + 32;
-    const toKph = value => Number(value || 0) * 3.6;
+    const number = value => Number.isFinite(value) ? value : null;
+    const toFahrenheit = value => Number.isFinite(value) ? value * 9 / 5 + 32 : null;
+    const toKph = value => Number.isFinite(value) ? value * 3.6 : null;
     const toIso = timestamp => new Date(Number(timestamp) * 1000).toISOString();
     const readableText = weather => {
       const value = weather?.description || 'Unknown conditions';
@@ -410,14 +409,14 @@ export class WeatherService {
         condition: conditionFor(currentPoint),
         temp_c: Number(currentPoint.temp),
         temp_f: toFahrenheit(currentPoint.temp),
-        feelslike_c: Number(currentPoint.feels_like),
+        feelslike_c: number(currentPoint.feels_like),
         feelslike_f: toFahrenheit(currentPoint.feels_like),
-        humidity: Number(currentPoint.humidity),
-        wind_kph: Math.round(toKph(currentPoint.wind_speed)),
+        humidity: number(currentPoint.humidity),
+        wind_kph: Number.isFinite(currentPoint.wind_speed) ? Math.round(toKph(currentPoint.wind_speed)) : null,
         wind_dir: this.getWindDirection(currentPoint.wind_deg),
-        pressure_mb: Number(currentPoint.pressure),
-        vis_km: Number(currentPoint.visibility || 0) / 1000,
-        uv: Number(currentPoint.uvi || 0),
+        pressure_mb: number(currentPoint.pressure),
+        vis_km: Number.isFinite(currentPoint.visibility) ? currentPoint.visibility / 1000 : null,
+        uv: number(currentPoint.uvi),
         sunrise: sunriseTimestamp ? toIso(sunriseTimestamp) : null,
         sunset: sunsetTimestamp ? toIso(sunsetTimestamp) : null,
         is_day: isDay ? 1 : 0
@@ -440,9 +439,9 @@ export class WeatherService {
       day: {
         condition: conditionFor(point),
         wind_kph: point.wind_speed == null ? null : Math.round(toKph(point.wind_speed)),
-        maxtemp_c: Number(point.temp?.max ?? point.temp?.day),
+        maxtemp_c: number(point.temp?.max ?? point.temp?.day),
         maxtemp_f: toFahrenheit(point.temp?.max ?? point.temp?.day),
-        mintemp_c: Number(point.temp?.min ?? point.temp?.night),
+        mintemp_c: number(point.temp?.min ?? point.temp?.night),
         mintemp_f: toFahrenheit(point.temp?.min ?? point.temp?.night),
         precipitation_probability_percent: point.pop == null || !Number.isFinite(Number(point.pop))
           ? null

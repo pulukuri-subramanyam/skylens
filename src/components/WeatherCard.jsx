@@ -2,6 +2,8 @@ import { Icon } from './Icon';
 import { weatherService as service } from '../lib/weather';
 import { weatherIconUrl } from '../lib/weatherIcons';
 import { formatTemperature } from '../lib/storage';
+import { useRef } from 'react';
+import { useReadingFade } from '../hooks/useReadingFade';
 
 function DaylightBar({ current, timeZone, now }) {
   const sunrise = Date.parse(current.sunrise);
@@ -17,12 +19,14 @@ function DaylightBar({ current, timeZone, now }) {
   </div>;
 }
 
-export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefresh, refreshing, error }) {
+export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refreshing, error }) {
+  const card = useRef(null);
+  useReadingFade(card, weather, unit);
   const { currentWeatherData: { current, location }, forecastData, lastAirQuality: aqi, currentCity, lastFetchedAt } = weather;
   const today = forecastData.forecast.forecastday[0].day;
   const metrics = [
-    ['Humidity', current.humidity + '%', 'drop', 'text-[#309ac6]', 'humidity'],
-    ['Wind', current.wind_kph + ' km/h', 'wind', 'text-accent', 'windSpeed'],
+    ['Humidity', Number.isFinite(current.humidity) ? current.humidity + '%' : 'Unavailable', 'drop', 'text-[#309ac6]', 'humidity'],
+    ['Wind', Number.isFinite(current.wind_kph) ? current.wind_kph + ' km/h' : 'Unavailable', 'wind', 'text-accent', 'windSpeed'],
     ['Visibility', (Number.isFinite(current.vis_km) ? Number(current.vis_km.toFixed(1)) + ' km' : 'Unavailable'), 'eye', 'text-accent', 'visibility'],
     ['Pressure', (Number.isFinite(current.pressure_mb) ? Math.round(current.pressure_mb) + ' hPa' : 'Unavailable'), 'pressure', 'text-accent', 'pressure'],
     ['UV Index', Number.isFinite(current.uv) ? Number(current.uv.toFixed(1)) : 'Unavailable', 'sun', 'text-[#dc9129]', 'uvIndex'],
@@ -31,11 +35,10 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
   let localTime = 'Unavailable';
   try { if (location.timezone) localTime = new Intl.DateTimeFormat(undefined, { timeZone: location.timezone, hour: 'numeric', minute: '2-digit' }).format(now); } catch { /* Unknown provider time zone. */ }
   const stale = now - lastFetchedAt >= 900000;
-  return <section className="current-weather-card glassmorphism" aria-label="Current weather">
+  return <section ref={card} className="current-weather-card glassmorphism" aria-label="Current weather">
     <div className="current-weather-header"><div className="location-info"><div className="location-heading-row">
       <h2 id="locationName" className="location-name">{currentCity.label}</h2>
       <button id="saveCityBtn" type="button" onClick={onSave} aria-label={saved ? `Remove ${currentCity.label} from saved cities` : `Save ${currentCity.label} to saved cities`} aria-pressed={saved} className={`save-city-btn ${saved?'is-saved':''}`}><Icon name="star"/><span>{saved?'Saved':'Save'}</span></button>
-      <button id="shareWeatherBtn" type="button" aria-label="Share weather" onClick={onShare} className="share-weather-btn"><Icon name="share"/><span>Share</span></button>
     </div><p className="city-local-time"><span>Local time</span><time id="cityLocalTime" dateTime={new Date(now).toISOString()}>{localTime}</time></p>
     <div className="location-meta-row"><div className="location-meta-copy"><p className="last-updated" id="lastUpdated">Last updated: {service.formatTime(current.last_updated)}</p>
       <span id="dataFreshness" className={`data-freshness ${error||stale?'is-stale':''}`}>{error?'Refresh failed. Showing the last successful weather.':(stale?'May be outdated. Checked ':'Checked ')+service.formatTime(new Date(lastFetchedAt).toISOString())}</span></div>
@@ -43,9 +46,9 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
     </div></div></div>
     <div className="temperature-section"><div className="weather-icon-container"><img className="weather-icon" id="currentWeatherIcon" src={weatherIconUrl(current.condition.iconCode)} alt=""/></div>
       <div className="main-temperature"><span className="temperature" id="currentTemp">{formatTemperature(current.temp_c,unit) + unit}</span></div>
-      <div className="condition-copy"><span className="condition" id="currentCondition">{current.condition.text}</span><div className="feels-like">Feels like <span id="feelsLike">{formatTemperature(current.feelslike_c,unit) + unit}</span></div><p className="today-range">High <span id="todayHigh">{formatTemperature(today.maxtemp_c,unit)}</span> / Low <span id="todayLow">{formatTemperature(today.mintemp_c,unit)}</span></p></div>
+      <div className="condition-copy"><span className="condition" id="currentCondition">{current.condition.text}</span><div className="feels-like">Feels like <span id="feelsLike">{Number.isFinite(current.feelslike_c) ? formatTemperature(current.feelslike_c,unit) + unit : 'Unavailable'}</span></div><p className="today-range">High <span id="todayHigh">{formatTemperature(today.maxtemp_c,unit)}</span> / Low <span id="todayLow">{formatTemperature(today.mintemp_c,unit)}</span></p></div>
     </div>
-    <div className="weather-details-grid">{metrics.map(([label,value,icon,color,id])=><div key={id} className="detail-item"><Icon name={icon} className="detail-icon"/><div className="detail-content"><span className="detail-label">{label}</span><span className="detail-value"><span id={id}>{value}</span>{id==='windSpeed'&&<> <small id="windDirection">{current.wind_dir}</small></>}</span>{id==='airQuality'&&Number.isFinite(aqi?.pm25)&&<small className="air-pm25" id="airPm25">PM2.5 {Math.round(aqi.pm25)} {'\u00b5'}g/m{'\u00b3'}</small>}</div></div>)}</div>
+    <div className="weather-details-grid">{metrics.map(([label,value,icon,color,id])=><div key={id} className="detail-item"><Icon name={icon} className="detail-icon"/><div className="detail-content"><span className="detail-label">{label}</span><span className="detail-value"><span id={id}>{value}</span>{id==='windSpeed'&&Number.isFinite(current.wind_kph)&&<> <small id="windDirection">{current.wind_dir}</small></>}</span>{id==='airQuality'&&Number.isFinite(aqi?.pm25)&&<small className="air-pm25" id="airPm25">PM2.5 {Math.round(aqi.pm25)} {'\u00b5'}g/m{'\u00b3'}</small>}</div></div>)}</div>
     <DaylightBar current={current} timeZone={location.timezone} now={now}/>
   </section>;
 }

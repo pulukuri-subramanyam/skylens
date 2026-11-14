@@ -19,7 +19,7 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
       type: 'line',
       data: {
         labels: data.map(hour => weatherService.formatLocationTime(hour.time, timeZone)),
-        datasets: [{ label: rain ? 'Rain chance (%)' : `Temperature (\u00b0${unit})`, data: data.map(hour => rain ? Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null : Math.round(unit === 'F' ? hour.temp_f : hour.temp_c)), borderColor: line, backgroundColor: styles.getPropertyValue('--chart-fill-color').trim(), borderWidth: 3, fill: true, tension: .2, pointRadius: 3, pointHoverRadius: 7, pointBackgroundColor: line, pointBorderColor: styles.getPropertyValue('--chart-point-border').trim(), pointBorderWidth: 2 }]
+        datasets: [{ label: rain ? 'Rain chance (%)' : `Temperature (\u00b0${unit})`, data: data.map(hour => rain ? Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null : Number.isFinite(hour.temp_c) ? Math.round(unit === 'F' ? hour.temp_f : hour.temp_c) : null), borderColor: line, backgroundColor: styles.getPropertyValue('--chart-fill-color').trim(), borderWidth: 3, fill: true, tension: .2, pointRadius: 3, pointHoverRadius: 7, pointBackgroundColor: line, pointBorderColor: styles.getPropertyValue('--chart-point-border').trim(), pointBorderWidth: 2 }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
@@ -43,5 +43,6 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
     </div>
     <div className="chart-container"><canvas ref={canvas} id="temperatureChart" role="img" aria-label={metric === 'rain' ? 'Hourly rain probability, percent' : 'Hourly temperature, degrees ' + unit} data-metric={metric}/></div>
     {rainUnavailable && <p className="chart-note">Hourly rain probability is unavailable. Refresh to check for newer data.</p>}
+    <div className="sr-only"><table><caption>{title} readings</caption><thead><tr><th scope="col">Local time</th><th scope="col">Temperature</th><th scope="col">Rain chance</th></tr></thead><tbody>{hours.map(hour=><tr key={hour.time}><th scope="row">{weatherService.formatLocationTime(hour.time,timeZone)}</th><td>{Number.isFinite(hour.temp_c) ? Math.round(unit==='F'?hour.temp_f:hour.temp_c)+'°'+unit : 'Unavailable'}</td><td>{Number.isFinite(hour.precipitation_probability_percent)?hour.precipitation_probability_percent+'%':'Unavailable'}</td></tr>)}</tbody></table></div>
   </section>;
 }

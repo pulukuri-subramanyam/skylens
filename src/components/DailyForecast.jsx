@@ -3,8 +3,8 @@ import { formatTemperature } from '../lib/storage';
 import { Icon } from './Icon';
 
 export function DailyForecast({ days, unit, timeZone, selectedDate, onSelect }) {
-  const low = Math.min(...days.map(day => day.day.mintemp_c));
-  const range = Math.max(1, Math.max(...days.map(day => day.day.maxtemp_c)) - low);
+  const low = Math.min(...days.map(day => day.day.mintemp_c).filter(Number.isFinite));
+  const range = Math.max(1, Math.max(...days.map(day => day.day.maxtemp_c).filter(Number.isFinite)) - low);
   return <section className="forecast-section glassmorphism" aria-labelledby="dailyHeading">
     <h3 id="dailyHeading" className="section-title">7-Day Forecast</h3>
     <div id="forecastGrid" className="forecast-grid">
@@ -22,7 +22,7 @@ export function DailyForecast({ days, unit, timeZone, selectedDate, onSelect }) 
           <img className="forecast-icon" src={weatherIconUrl(day.condition.iconCode)} alt="" title={day.condition.text}/>
           <div className="forecast-temps">
             <span className="temp-min">{formatTemperature(day.mintemp_c, unit)}</span>
-            <span className="forecast-range" aria-hidden="true"><span className="forecast-range-fill" style={{ left: start + '%', width: width + '%' }}/></span>
+            <span className="forecast-range" aria-hidden="true">{Number.isFinite(day.mintemp_c) && Number.isFinite(day.maxtemp_c) && <span className="forecast-range-fill" style={{ left: start + '%', width: width + '%' }}/>}</span>
             <span className="temp-max">{formatTemperature(day.maxtemp_c, unit)}</span>
           </div>
           <p className="forecast-rain" aria-label={Number.isFinite(rain) ? `${rain}% rain chance` : 'Rain chance unavailable'}><Icon name="drop" className=""/>{Number.isFinite(rain) ? rain + '%' : 'N/A'}</p>

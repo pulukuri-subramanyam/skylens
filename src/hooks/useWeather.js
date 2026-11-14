@@ -2,6 +2,7 @@ import { forecastUrl, normalizeMeteo } from '../lib/openMeteo';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { readCities, readWeatherCache, writeStorage, uniqueRecentCities } from '../lib/storage';
 import { weatherService as service } from '../lib/weather';
+import { reportEvent } from '../lib/monitoring';
 
 export function useWeather() {
   const [weather, setWeather] = useState(readWeatherCache);
@@ -33,7 +34,7 @@ export function useWeather() {
         ...target,
         state: target.state || target.region || (target.label?.includes(',') ? target.label.slice(target.label.indexOf(',') + 1).trim() : ''),
         lat: Number(target.lat), lon: Number(target.lon)
-      } : await service.resolveLocation(typeof target === 'string' ? target : target.query);
+      } : await service.resolveLocation(typeof target === 'string' ? target : target.query, controller.signal);
       if (id !== sequence.current) return;
       const coordinates = { lat: location.lat, lon: location.lon };
       const request = type => service.fetchJson(service.getWeatherApiUrl(type, coordinates), { signal: controller.signal });
@@ -55,7 +56,10 @@ export function useWeather() {
       });
     } catch (cause) {
       if (id !== sequence.current || cause.name === 'AbortError') return;
-      const message = cause.message.includes('No matching') ? 'City not found. Check the spelling or choose a suggestion.'
+      reportEvent(keep ? 'refresh_failure' : 'weather_failure');
+      const message = cause.code === 'rate_limited' ? 'Too many requests. Wait a moment before trying again.'
+        : cause.code === 'timeout' ? 'The weather request timed out. Try again.'
+        : cause.message.includes('No matching') ? 'City not found. Check the spelling or choose a suggestion.'
         : !navigator.onLine ? 'You appear to be offline.' : `Couldn't load weather for ${targetName}. Try again in a moment.`;
       setError(keep ? 'Refresh failed. Showing the last successful weather.' : current.current ? message + ' Showing the last successful weather.' : message);
     } finally {
