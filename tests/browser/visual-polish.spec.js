@@ -41,19 +41,22 @@ test('hourly canvas stays inside its wrapper while desktop and mobile widths cha
     await page.evaluate(value=>document.documentElement.dataset.theme=value,theme);
     for(const width of [1440,768,390,320,768,1440]) {
       await page.setViewportSize({width,height:1000});
-      // Model a stale desktop canvas width before Chart.js receives its resize callback.
-      await page.locator('#temperatureChart').evaluate(canvas=>canvas.style.width='1400px');
-      const bounds=await page.locator('#temperatureChart').evaluate(canvas=>{
-        const child=canvas.getBoundingClientRect(),parent=canvas.parentElement.getBoundingClientRect();
-        return {right:child.right,parentRight:parent.right,width:child.width,parentWidth:parent.width};
-      });
-      expect(bounds.right).toBeLessThanOrEqual(bounds.parentRight+1);
-      expect(bounds.width).toBeLessThanOrEqual(bounds.parentWidth+1);
-      // Remove the artificial width and allow the real responsive chart to settle.
-      await page.locator('#temperatureChart').evaluate(canvas=>canvas.style.removeProperty('width'));
       await expect.poll(()=>page.locator('#temperatureChart').evaluate(canvas=>
         Math.abs(canvas.width/devicePixelRatio-canvas.parentElement.clientWidth)
       ),{message:`Chart backing size did not resize at ${width}px`}).toBeLessThanOrEqual(1);
+      // Check the width constraint without leaving Chart.js-managed styles altered.
+      const bounds=await page.locator('#temperatureChart').evaluate(canvas=>{
+        const original=canvas.style.width;
+        try {
+          canvas.style.width='1400px';
+          const child=canvas.getBoundingClientRect(),parent=canvas.parentElement.getBoundingClientRect();
+          return {right:child.right,parentRight:parent.right,width:child.width,parentWidth:parent.width};
+        } finally {
+          canvas.style.width=original;
+        }
+      });
+      expect(bounds.right).toBeLessThanOrEqual(bounds.parentRight+1);
+      expect(bounds.width).toBeLessThanOrEqual(bounds.parentWidth+1);
       await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(0);
     }
   }
