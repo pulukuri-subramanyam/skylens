@@ -26,14 +26,18 @@ The function allows only known request types and GET requests, validates coordin
 
 The code includes a bounded, per-instance burst guard (90 requests/minute/client for weather and 10/minute/client for error events). Warm instances do not share memory. This is **not a globally enforced quota** and does not stop distributed abuse. Origin/Fetch Metadata checks are browser protections, not authentication.
 
-Before a broad public launch, enable a Vercel Firewall rate-limit rule for `/api/weather` and `/api/events` grouped by IP. Test in Preview first, use a 429 response, and choose thresholds that allow normal typing and saved-city requests. The connected Vercel integration denied Firewall access during this change, so no platform-wide limit was activated. Restore Firewall access or use the Vercel dashboard. Plan availability and pricing should be checked before enabling a paid feature.
+Vercel Firewall is enabled with an active rule for `GET /api/weather`: a fixed window of **300 requests per 60 seconds per IP, per region**, with HTTP **429** for requests above the limit. The rule applies to Preview and Production; it does not match pages, static assets, `/api/health` or `/api/events`. It is configured in the Vercel project and is not created by this repository's deployment.
+
+The Firewall counter is shared across instances within each region, not across all regions. The application guard remains separate and may reject uncached requests earlier on a busy instance. `/api/events` currently has only its per-instance guard, not a Firewall rate-limit rule.
+
+The active Firewall configuration was read back as valid after enabling enforcement. Preview routing and production page/readiness checks passed, but a burst test of the 300-request threshold was not performed and Firewall traffic logs were not reviewed through the connector. Review matches in the Vercel Firewall dashboard before changing thresholds. Check current plan limits and pricing before adding rules or paid features.
 
 ## Incident response
 
 1. Check the production health workflow and Vercel logs for the failing release.
 2. For provider failures, verify the provider status, key configuration and usage quota. Do not paste credentials into logs or tickets.
 3. For a bad release, use Vercel's previous successful Production deployment to roll back, then prepare the code correction on a branch. Rolling back production requires the owner's instruction.
-4. For abuse, apply the tested Firewall rule; per-instance limits alone are insufficient.
+4. For abuse, review matches and blocked requests in Vercel Firewall. Adjust the rule only after checking legitimate traffic; per-instance limits alone are insufficient.
 5. Rotate an exposed provider key and update Production and the active Preview branch variables. Rebuild deployments after changing variables.
 
 ## Data and cache behavior
