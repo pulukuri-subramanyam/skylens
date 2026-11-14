@@ -19,7 +19,9 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps firefox
       - name: Repeat Firefox checks without retries
-        run: npx playwright test --project=firefox --repeat-each=5 --retries=0 --workers=2
+        env:
+          DEBUG: pw:browser
+        run: npx playwright test --project=firefox --grep "both themes|hourly canvas" --repeat-each=10 --retries=0 --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
