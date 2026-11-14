@@ -2,6 +2,8 @@ import { Icon } from './Icon';
 import { weatherService as service } from '../lib/weather';
 import { weatherIconUrl } from '../lib/weatherIcons';
 import { formatTemperature } from '../lib/storage';
+import { useRef } from 'react';
+import { useReadingFade } from '../hooks/useReadingFade';
 
 function DaylightBar({ current, timeZone, now }) {
   const sunrise = Date.parse(current.sunrise);
@@ -18,6 +20,8 @@ function DaylightBar({ current, timeZone, now }) {
 }
 
 export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refreshing, error }) {
+  const card = useRef(null);
+  useReadingFade(card, weather, unit);
   const { currentWeatherData: { current, location }, forecastData, lastAirQuality: aqi, currentCity, lastFetchedAt } = weather;
   const today = forecastData.forecast.forecastday[0].day;
   const metrics = [
@@ -31,7 +35,7 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refr
   let localTime = 'Unavailable';
   try { if (location.timezone) localTime = new Intl.DateTimeFormat(undefined, { timeZone: location.timezone, hour: 'numeric', minute: '2-digit' }).format(now); } catch { /* Unknown provider time zone. */ }
   const stale = now - lastFetchedAt >= 900000;
-  return <section className="current-weather-card glassmorphism" aria-label="Current weather">
+  return <section ref={card} className="current-weather-card glassmorphism" aria-label="Current weather">
     <div className="current-weather-header"><div className="location-info"><div className="location-heading-row">
       <h2 id="locationName" className="location-name">{currentCity.label}</h2>
       <button id="saveCityBtn" type="button" onClick={onSave} aria-label={saved ? `Remove ${currentCity.label} from saved cities` : `Save ${currentCity.label} to saved cities`} aria-pressed={saved} className={`save-city-btn ${saved?'is-saved':''}`}><Icon name="star"/><span>{saved?'Saved':'Save'}</span></button>
