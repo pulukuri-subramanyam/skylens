@@ -17,7 +17,7 @@ function DaylightBar({ current, timeZone, now }) {
   </div>;
 }
 
-export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefresh, refreshing, error }) {
+export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refreshing, error }) {
   const { currentWeatherData: { current, location }, forecastData, lastAirQuality: aqi, currentCity, lastFetchedAt } = weather;
   const today = forecastData.forecast.forecastday[0].day;
   const metrics = [
@@ -35,7 +35,6 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onShare, onRefr
     <div className="current-weather-header"><div className="location-info"><div className="location-heading-row">
       <h2 id="locationName" className="location-name">{currentCity.label}</h2>
       <button id="saveCityBtn" type="button" onClick={onSave} aria-label={saved ? `Remove ${currentCity.label} from saved cities` : `Save ${currentCity.label} to saved cities`} aria-pressed={saved} className={`save-city-btn ${saved?'is-saved':''}`}><Icon name="star"/><span>{saved?'Saved':'Save'}</span></button>
-      <button id="shareWeatherBtn" type="button" aria-label="Share weather" onClick={onShare} className="share-weather-btn"><Icon name="share"/><span>Share</span></button>
     </div><p className="city-local-time"><span>Local time</span><time id="cityLocalTime" dateTime={new Date(now).toISOString()}>{localTime}</time></p>
     <div className="location-meta-row"><div className="location-meta-copy"><p className="last-updated" id="lastUpdated">Last updated: {service.formatTime(current.last_updated)}</p>
       <span id="dataFreshness" className={`data-freshness ${error||stale?'is-stale':''}`}>{error?'Refresh failed. Showing the last successful weather.':(stale?'May be outdated. Checked ':'Checked ')+service.formatTime(new Date(lastFetchedAt).toISOString())}</span></div>

@@ -2418,29 +2418,7 @@ body {
   }
 }
 
-/* Usability upgrades: saved-city management, sharing, AQI, daylight, and install. */
-.share-weather-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-secondary);
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 650;
-  padding: 8px 11px;
-  cursor: pointer;
-}
-.share-weather-btn:hover:not(:disabled) {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-.share-weather-btn:disabled {
-  cursor: not-allowed;
-  opacity: .52;
-}
+/* Saved-city management, AQI, daylight, and install. */
 .location-heading-row {
   flex-wrap: wrap;
 }
@@ -2519,8 +2497,6 @@ body {
 .sun-progress.is-night .sun-progress-fill { background: #7898b4; }
 .sun-progress.is-night .sun-progress-marker { color: #698aa7; }
 @media (max-width: 600px) {
-  .share-weather-btn span { display: none; }
-  .share-weather-btn { width: 36px; height: 36px; justify-content: center; padding: 0; }
   .saved-city-control { width: 25px; }
   .saved-city-chip { max-width: 100%; }
 }
@@ -2579,7 +2555,7 @@ body { line-height:1.5; }
 .location-heading-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .location-name { font-size:26px; font-weight:650; line-height:1.25; margin:0 auto 0 0; letter-spacing:-.04em; overflow-wrap:anywhere; }
 .location-info { text-align:left; }
-.save-city-btn, .share-weather-btn, .refresh-btn { border-radius:8px; min-height:32px; padding:5px 9px; font-size:12px; gap:6px; background:transparent; }
+.save-city-btn, .refresh-btn { border-radius:8px; min-height:32px; padding:5px 9px; font-size:12px; gap:6px; background:transparent; }
 .city-local-time { margin:7px 0 0; font-size:12px; gap:5px; justify-content:flex-start; }
 
 .city-local-time time { font-weight:500; }
@@ -2708,8 +2684,8 @@ button:focus-visible, a:focus-visible { outline:2px solid var(--accent-color); o
   .current-weather-card { padding:16px; gap:14px; }
   .location-name { font-size:20px; }
   .location-heading-row { gap:6px; }
-  .save-city-btn, .share-weather-btn { min-width:32px; padding:6px; justify-content:center; }
-  .save-city-btn span, .share-weather-btn span { display:none; }
+  .save-city-btn { min-width:32px; padding:6px; justify-content:center; }
+  .save-city-btn span { display:none; }
   .temperature-section { grid-template-columns:54px auto minmax(100px,1fr); gap:8px; }
   .weather-icon { width:54px; height:54px; }
   .temperature { font-size:42px; }
@@ -2851,7 +2827,7 @@ body { isolation:isolate; }
 /* Quieter supporting readings and a consistent interface-icon scale. */
 
 .detail-icon { width:22px; flex:0 0 22px; font-size:18px; line-height:1; text-align:center; }
-.save-city-btn i,.share-weather-btn i,.refresh-btn i { width:14px; font-size:12px; text-align:center; }
+.save-city-btn i,.refresh-btn i { width:14px; font-size:12px; text-align:center; }
 .forecast-icon { object-fit:contain; }
 .weather-backdrop .weather-particles { opacity:.4; }
 .weather-backdrop.dark-clouds::before { opacity:.55; }

@@ -7,6 +7,7 @@ test.beforeEach(async ({page})=>{ await providers(page); });
 test('keyboard suggestions select exact places; units and all forecast days work', async ({page})=>{
   await page.goto('/');
   await expect(page.locator('#locationName')).toHaveText('London, England');
+  await expect(page.getByRole('button',{name:'Share weather'})).toHaveCount(0);
   const input = page.getByRole('combobox');
   await input.fill('Nandyal');
   await expect(page.getByRole('option').first()).toBeVisible();
