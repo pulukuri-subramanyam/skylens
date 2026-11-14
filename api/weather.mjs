@@ -1,3 +1,4 @@
+import { allowRequest, logEvent } from '../server/security.mjs';
 const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org';
 
 const ROUTES = {
@@ -24,13 +25,14 @@ function getCoordinate(query, name, min, max) {
 }
 
 export default async function handler(request, response) {
+  if (!allowRequest(request, response, 'weather')) return;
   if (request.method !== 'GET') {
     response.setHeader('Allow', 'GET');
     return response.status(405).json({ message: 'Method not allowed.' });
   }
 
-  const type = getString(request.query, 'type');
-  const route = ROUTES[type];
+  const type = getString(request.query || {}, 'type');
+  const route = Object.hasOwn(ROUTES, type) ? ROUTES[type] : null;
   if (!route) {
     return response.status(400).json({ message: 'Invalid weather request.' });
   }
@@ -70,14 +72,19 @@ export default async function handler(request, response) {
   upstreamUrl.search = params.toString();
 
   try {
-    const upstreamResponse = await fetch(upstreamUrl);
-    const payload = await upstreamResponse.json().catch(() => ({}));
+    const started = Date.now();
+    const signal = AbortSignal.timeout(8000);
+    const upstreamResponse = await fetch(upstreamUrl, { signal, redirect: 'error' });
+    const payload = await upstreamResponse.json();
 
     if (!upstreamResponse.ok) {
-      return response
-        .status(upstreamResponse.status)
-        .json({ message: payload.message || 'Weather provider request failed.' });
+      logEvent('weather_upstream_failed', { type, status: upstreamResponse.status });
+      if (upstreamResponse.status === 429) response.setHeader('Retry-After', '60');
+      return response.status(upstreamResponse.status === 429 ? 429 : 502)
+        .json({ message: 'Weather provider is temporarily unavailable.' });
     }
+
+    if (!payload || typeof payload !== 'object' || ((type === 'geocode' || type === 'reverse') ? !Array.isArray(payload) : type === 'air' ? !Array.isArray(payload.list) : !Array.isArray(payload.data))) throw new Error('Invalid provider response');
 
     if (type === 'hourly' && Array.isArray(payload.data)) {
       const points = [...payload.data];
@@ -89,7 +96,7 @@ export default async function handler(request, response) {
         if (!start || !/^\d+$/.test(start)) break;
         const pageUrl = new URL(upstreamUrl);
         pageUrl.searchParams.set('start', start);
-        const pageResponse = await fetch(pageUrl);
+        const pageResponse = await fetch(pageUrl, { signal, redirect: 'error' });
         if (!pageResponse.ok) break;
         const pagePayload = await pageResponse.json();
         if (!Array.isArray(pagePayload.data)) break;
@@ -101,13 +108,15 @@ export default async function handler(request, response) {
     // Provider pagination URLs can contain the server key. Never return them.
     delete payload.next;
     delete payload.prev;
+    logEvent('weather_request', { type, status: 200, durationMs: Date.now() - started });
     response.setHeader(
       'Cache-Control',
       `public, max-age=0, s-maxage=${route.maxAge}, stale-while-revalidate=600`
     );
     return response.status(200).json(payload);
   } catch (error) {
-    console.error('OpenWeather proxy request failed.', { type, errorName: error?.name || 'Error' });
-    return response.status(502).json({ message: 'Unable to retrieve weather data right now.' });
+    const timeout = error?.name === 'TimeoutError' || error?.name === 'AbortError';
+    logEvent('weather_request_failed', { type, reason: timeout ? 'timeout' : 'upstream' });
+    return response.status(timeout ? 504 : 502).json({ message: 'Unable to retrieve weather data right now.' });
   }
 }

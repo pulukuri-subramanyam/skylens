@@ -10,13 +10,17 @@ export function writeStorage(key, value) {
 
 export function readCities(key) {
   const cities = readStorage(key, []);
-  return Array.isArray(cities) ? cities.filter(city => city && ['id', 'name', 'label', 'query'].every(key => typeof city[key] === 'string')) : [];
+  return Array.isArray(cities) ? cities.filter(city => city && ['id', 'name', 'label', 'query'].every(key => typeof city[key] === 'string' && city[key].length <= 250)).slice(0,50) : [];
 }
 
 export function readWeatherCache() {
   const cached = readStorage('weatherapp-last-weather', null);
-  if (!cached?.currentCity || !cached?.currentWeatherData?.location || !cached?.forecastData?.forecast?.forecastday?.length) return null;
-  return Number.isFinite(cached.currentWeatherData.current?.temp_c) ? cached : null;
+  const days = cached?.forecastData?.forecast?.forecastday;
+  if (cached?.weatherProvider !== 'open-meteo' || !Number.isFinite(cached.lastFetchedAt) || cached.lastFetchedAt > Date.now() + 60000 || Date.now() - cached.lastFetchedAt > 7 * 86400000 || !cached.currentCity || !['id','name','label','query'].every(key=>typeof cached.currentCity[key] === 'string') || !cached.currentWeatherData?.location || !cached.currentWeatherData?.current?.condition || !Array.isArray(days) || !days.length || days.length > 7) return null;
+  if (!days.every(day=>Number.isFinite(Date.parse(day?.date)) && day.day?.condition && Array.isArray(day.hour) && day.hour.length <= 25 && day.hour.every(hour=>Number.isFinite(Date.parse(hour?.time))))) return null;
+  const validCondition = condition => typeof condition?.text === 'string' && /^\d{2}[dn]$/.test(condition.iconCode);
+  if (!validCondition(cached.currentWeatherData.current.condition) || !days.every(day=>validCondition(day.day.condition)) || (cached.lastAirQuality != null && typeof cached.lastAirQuality.label !== 'string')) return null;
+  return Number.isFinite(cached.currentWeatherData.current.temp_c) ? cached : null;
 }
 
 export function uniqueRecentCities(cities) {

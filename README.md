@@ -10,7 +10,7 @@ A weather dashboard with current conditions, a seven-day forecast, an hourly tem
 - Vite for development and production builds
 - Tailwind CSS with the original design rules preserved in its component layer
 - Chart.js for the hourly chart
-- Open-Meteo for current weather and seven days of daily/hourly forecasts (free non-commercial endpoint; attribution in footer)
+- Open-Meteo for current weather and seven days of daily/hourly forecasts
 - OpenWeather for geocoding and air quality; Photon supplements city suggestions
 - A Vercel Function in `api/weather.mjs` keeps the OpenWeather key on the server
 - Browser storage for saved/recent cities, preferences and the last weather result
@@ -40,6 +40,10 @@ npm run preview
 ```
 
 `preview` serves the production frontend only. Use `npm run dev` for the local weather API, or test the built app in a Vercel preview.
+
+Run `npx playwright install chromium firefox` once, then `npm run test:e2e` for browser and accessibility checks. Tests mock provider data and do not require a provider key. `npm run monitor` checks the deployed production site and providers.
+
+See [operations and release checklist](docs/operations.md) for security limits, monitoring, rollback and account settings that still require configuration. JavaScript is retained; TypeScript is not required.
 
 ## Project layout
 

@@ -35,6 +35,12 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
+    const update = () => { document.documentElement.dataset.pageHidden = String(document.hidden); };
+    update();
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
+  useEffect(() => {
     if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return;
     const register = () => navigator.serviceWorker.register('/sw.js').catch(() => {});
     if (document.readyState === 'complete') register();
@@ -69,6 +75,7 @@ export default function App() {
   };
 
   return <div className="app-container">
+    <a className="skip-link" href="#weatherContent">Skip to weather</a>
     <WeatherBackground current={weather?.currentWeatherData.current}/>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={loading}/>
@@ -76,7 +83,7 @@ export default function App() {
     <p className="sr-only" role="status" aria-live="polite">{status}</p>
     {shareText && <div className="panel mb-5 p-4"><label className="block text-sm font-medium" htmlFor="shareSummary">Copy weather summary</label><textarea id="shareSummary" readOnly value={shareText} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-line bg-canvas p-2 text-sm"/><button type="button" onClick={() => setShareText('')} className="control mt-2 px-3 py-1 text-xs">Close</button></div>}
     {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
-    {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent">
+    {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent" tabIndex={-1}>
       <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onShare={share} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
       <ForecastExplorer key={weather.currentCity.id} days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/>
     </main> : null}

@@ -5,7 +5,7 @@ export function serviceWorkerPlugin() {
   return {
     name: 'skylens-service-worker',
     generateBundle(_options, bundle) {
-      const assets = Object.keys(bundle).filter(name => /\.(?:js|css)$/.test(name)).map(name => '/' + name);
+      const assets = Object.keys(bundle).filter(name => /\.(?:js|css|woff2)$/.test(name)).map(name => '/' + name);
       const revision = createHash('sha256').update(assets.join(',')).digest('hex').slice(0, 12);
       const shell = ['/', '/index.html', '/favicon.svg', '/site.webmanifest', '/assets/fonts/inter-variable.woff2', ...assets];
       this.emitFile({ type: 'asset', fileName: 'sw.js', source: `
@@ -26,7 +26,9 @@ self.addEventListener('fetch', event => {
       return response;
     }).catch(() => caches.match('/index.html')));
   } else if (APP_SHELL.includes(url.pathname)) {
-    event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
+    // Match our public versioned shell by path, not browser-added Origin headers.
+    // This also handles static hosts that send Vary: Origin on font/module files.
+    event.respondWith(caches.match(url.pathname).then(cached => cached || fetch(event.request)));
   }
 });
 ` });

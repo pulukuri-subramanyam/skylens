@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { WeatherService } from '../lib/weather';
+const cachedSuggestions = new Map();
 
 export function useCitySuggestions(query, saved, recent, enabled) {
   const service = useMemo(() => new WeatherService(saved, recent), [saved, recent]);
@@ -8,15 +9,22 @@ export function useCitySuggestions(query, saved, recent, enabled) {
   useEffect(() => {
     if (!enabled || !valid) return;
     const search = query.trim();
+    const key = search.toLowerCase();
+    const cached = cachedSuggestions.get(key);
+    if (cached && Date.now() - cached.time < 60000) {
+      setResult({ query: search, locations: service.combineCitySuggestions(cached.locations.weather, search, cached.locations.photon, cached.locations.india), loading: false });
+      return;
+    }
     const controller = new AbortController();
     const candidates = { weather: [], photon: [], india: [] };
+    let successful = 0;
     setResult({ query: search, locations: service.getLocalCitySuggestions(search), loading: true });
     const publish = loading => {
       if (!controller.signal.aborted) setResult({ query: search, locations: service.combineCitySuggestions(candidates.weather, search, candidates.photon, candidates.india), loading });
     };
     const timer = setTimeout(async () => {
       const receive = async (key, request) => {
-        try { candidates[key] = await request; } catch { candidates[key] = []; }
+        try { candidates[key] = await request; successful++; } catch { candidates[key] = []; }
         publish(true);
       };
       await Promise.all([
@@ -24,6 +32,10 @@ export function useCitySuggestions(query, saved, recent, enabled) {
         receive('photon', service.fetchPhotonCitySuggestions(search, '', controller.signal)),
         receive('india', service.fetchPhotonCitySuggestions(search, 'IN', controller.signal))
       ]);
+      if (!controller.signal.aborted && successful > 0) {
+        if (cachedSuggestions.size >= 100) cachedSuggestions.delete(cachedSuggestions.keys().next().value);
+        cachedSuggestions.set(key, { time: Date.now(), locations: candidates });
+      }
       publish(false);
     }, 120);
     return () => { clearTimeout(timer); controller.abort(); };
