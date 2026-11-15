@@ -23,11 +23,33 @@ jobs:
       - run: npm audit --omit=dev --audit-level=high
       - run: npm run check
       - run: npx playwright install --with-deps chromium firefox
-      - run: npm run test:e2e
+      - run: npx playwright test --project=chromium --project=mobile --project=firefox --project=pwa
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: browser-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+  firefox-accessibility:
+    name: Firefox accessibility checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps firefox
+      - run: npx playwright test --project=firefox-accessibility --workers=1 --retries=0
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: firefox-accessibility-report
           path: |
             playwright-report/
             test-results/

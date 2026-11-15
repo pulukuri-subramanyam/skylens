@@ -21,7 +21,7 @@ jobs:
       - name: Repeat Firefox checks without retries
         env:
           DEBUG: pw:browser
-        run: npx playwright test --project=firefox --grep "both themes|hourly canvas" --repeat-each=10 --retries=0 --workers=1
+        run: npx playwright test --project=firefox-accessibility --repeat-each=20 --retries=0 --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
