@@ -2853,4 +2853,15 @@ body { isolation:isolate; }
 .weather-details-grid .detail-value { font-size:15px; font-weight:650; }
 @media(max-width:480px) { .weather-details-grid .detail-item { min-height:64px; } .weather-details-grid .detail-value { font-size:14px; } }
 .forecast-item[role="button"] { transition:background-color 180ms ease, border-color 180ms ease; }
+/* Only the drag handle captures touch gestures; city links and page scrolling stay usable. */
+.saved-city-chip > .city-chip { min-width:0; }
+.saved-city-controls { flex-shrink:0; }
+.saved-city-drag { flex:0 0 26px; width:26px; align-self:stretch; display:flex; align-items:center; justify-content:center; border:0; border-radius:999px 0 0 999px; background:transparent; color:var(--text-muted); cursor:grab; touch-action:none; user-select:none; }
+.saved-city-drag:hover:not(:disabled), .saved-city-drag:focus-visible { color:var(--accent-color); }
+.saved-city-drag:focus-visible { outline-offset:-3px; }
+.saved-city-drag:active { cursor:grabbing; }
+.saved-city-drag:disabled { cursor:default; opacity:.35; }
+.saved-city-chip[data-dragging] { opacity:.6; }
+.saved-city-chip[data-drop-target] { outline:2px dashed var(--accent-color); outline-offset:2px; }
+
 }

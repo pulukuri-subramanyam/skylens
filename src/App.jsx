@@ -62,12 +62,24 @@ export default function App() {
     });
     setStatus('Saved city order updated.');
   };
+  const reorder = (sourceId, targetId) => {
+    setSaved(cities => {
+      const from = cities.findIndex(city=>city.id===sourceId);
+      const to = cities.findIndex(city=>city.id===targetId);
+      if (from < 0 || to < 0 || from === to) return cities;
+      const next = [...cities];
+      const [city] = next.splice(from,1);
+      next.splice(to,0,city);
+      return next;
+    });
+    setStatus('Saved city order updated.');
+  };
   return <div className="app-container">
     <a className="skip-link" href="#weatherContent">Skip to weather</a>
     <WeatherBackground current={weather?.currentWeatherData.current}/>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={loading}/>
-    <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
+    <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onReorder={reorder} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
     <p className="sr-only" role="status" aria-live="polite">{status}</p>
     {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
     {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent" tabIndex={-1}>
