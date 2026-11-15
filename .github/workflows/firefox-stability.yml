@@ -1,7 +1,5 @@
-name: Firefox stability investigation
+name: Firefox stability checks
 on:
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,8 +17,6 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps firefox
       - name: Repeat Firefox checks without retries
-        env:
-          DEBUG: pw:browser
         run: npx playwright test --project=firefox-accessibility --repeat-each=20 --retries=0 --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
