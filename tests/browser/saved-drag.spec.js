@@ -31,11 +31,12 @@ test('mouse drag reorders wrapped saved cities, persists, and does not select a 
   await page.reload();await expect(page.locator('#currentTemp')).toBeVisible();
   expect(await order(page)).toEqual(['saved-1','saved-2','saved-3','saved-4','saved-5','saved-0']);
 });
-test('arrows, drag-handle keyboard controls and remove still work',async({page})=>{
-  await page.getByRole('button',{name:'Move London, Test region later',exact:true}).click();
-  expect((await order(page)).slice(0,2)).toEqual(['saved-1','saved-0']);
+test('visible arrows are absent; drag-handle keyboard controls and remove still work',async({page})=>{
+  await expect(page.getByRole('group',{name:'Saved cities',exact:true}).getByRole('button',{name:/^Move /})).toHaveCount(0);
   const handle=page.getByRole('button',{name:'Reorder London, Test region',exact:true});
-  await handle.focus();await page.keyboard.press('ArrowLeft');
+  await handle.focus();await page.keyboard.press('ArrowRight');
+  expect((await order(page)).slice(0,2)).toEqual(['saved-1','saved-0']);
+  await page.keyboard.press('ArrowLeft');
   expect((await order(page))[0]).toBe('saved-0');await expect(handle).toBeFocused();
   await page.getByRole('button',{name:'Remove London, Test region from saved cities',exact:true}).click();
   expect(await order(page)).not.toContain('saved-0');

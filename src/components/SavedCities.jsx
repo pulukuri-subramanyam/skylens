@@ -33,7 +33,7 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
   return <section className="city-shortcuts" aria-label="Saved and recent cities">
     {saved.length > 0 && <div className="city-shortcut-group">
       <span className="city-shortcut-label">Saved</span>
-      <span id="savedCityDragHelp" className="sr-only">Drag to another saved city and release to reorder. Use arrow keys or the earlier and later buttons to move one place. Press Escape to cancel dragging.</span>
+      <span id="savedCityDragHelp" className="sr-only">Drag to another saved city and release to reorder. Focus the drag handle and use arrow keys to move one place. Press Escape to cancel dragging.</span>
       <div ref={list} className="city-chip-list" role="group" aria-label="Saved cities">
         {saved.map((city, index) => <div key={city.id} data-city-id={city.id} data-dragging={drag?.sourceId === city.id || undefined} data-drop-target={drag?.targetId === city.id && drag?.sourceId !== city.id || undefined} className="saved-city-chip">
           <button type="button" className="saved-city-drag" aria-label={`Reorder ${city.label}`} aria-describedby="savedCityDragHelp" title="Drag to reorder" disabled={saved.length < 2}
@@ -48,7 +48,6 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
             {readings[city.id] && <img className="city-chip-icon" src={weatherIconUrl(readings[city.id].icon)} alt=""/>}<span title={city.label} className="city-chip-name">{city.name}</span>{readings[city.id] && <strong>{formatTemperature(readings[city.id].temp, unit)}</strong>}
           </button>
           <span className="saved-city-controls">
-            {[['left', 'earlier', -1], ['right', 'later', 1]].map(([icon, label, direction]) => <button key={label} type="button" aria-label={`Move ${city.label} ${label}`} title={`Move ${city.label} ${label}`} disabled={direction < 0 ? index === 0 : index === saved.length - 1} onClick={() => onMove(index, direction)} className="saved-city-control"><Icon name={icon}/></button>)}
             <button type="button" aria-label={`Remove ${city.label} from saved cities`} title={`Remove ${city.label}`} onClick={() => onRemove(city.id)} className="saved-city-control"><Icon name="close"/></button>
           </span>
         </div>)}

@@ -30,7 +30,8 @@ test('saved cities can be reordered and removed and survive reload', async ({pag
   await page.getByRole('combobox').fill('Nandyal');
   await page.getByRole('combobox').press('Enter');
   await expect(page.locator('#locationName')).toContainText('Nandyal');await page.locator('#saveCityBtn').click();
-  await page.getByRole('button',{name:'Move Nandyal, Andhra Pradesh later'}).click();
+  await page.getByRole('button',{name:'Reorder Nandyal, Andhra Pradesh',exact:true}).focus();
+  await page.keyboard.press('ArrowRight');
   await expect(page.locator('.saved-city-chip').first()).toContainText('London');
   await page.reload();await expect(page.locator('.saved-city-chip')).toHaveCount(2);
   await page.getByRole('button',{name:'Remove London, England',exact:false}).last().click();
