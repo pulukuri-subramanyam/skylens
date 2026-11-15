@@ -32,7 +32,25 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
         }
       }
     });
-    return () => chart.destroy();
+    const container = canvas.current.parentElement;
+    // Keep the drawing buffer current even if an animation-frame resize is delayed.
+    const syncSize = () => {
+      const width = container.clientWidth, height = container.clientHeight;
+      if (!width || !height) return;
+      const ratio = chart.currentDevicePixelRatio || window.devicePixelRatio || 1;
+      if (Math.abs(chart.canvas.width / ratio - width) <= 1 &&
+          Math.abs(chart.canvas.height / ratio - height) <= 1) return;
+      chart.stop();
+      chart.resize(width, height);
+    };
+    const observer = new ResizeObserver(syncSize);
+    observer.observe(container);
+    window.addEventListener('resize', syncSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', syncSize);
+      chart.destroy();
+    };
   }, [days, unit, metric, theme, timeZone]);
   return <section className="chart-section glassmorphism" aria-labelledby="hourlyHeading">
     <div className="chart-heading">

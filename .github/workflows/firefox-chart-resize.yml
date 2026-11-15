@@ -1,0 +1,28 @@
+name: Firefox chart resize verification
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps firefox
+      - run: npx playwright test visual-polish.spec.js --project=firefox --grep "hourly canvas|drawing buffer" --repeat-each=10 --retries=0 --workers=1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: firefox-chart-resize-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
