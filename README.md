@@ -1,6 +1,6 @@
 # Skylens
 
-A weather dashboard with current conditions, a seven-day forecast, an hourly temperature/rain chart, city suggestions, saved cities, air quality and daylight progress.
+A weather dashboard with current conditions, a seven-day forecast, an hourly temperature/rain chart, city suggestions, saved cities with drag and keyboard reordering, air quality and daylight progress.
 
 [Open Skylens](https://www.skylens.live)
 
