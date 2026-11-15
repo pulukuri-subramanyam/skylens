@@ -8,7 +8,7 @@ import { useSavedCityDrag } from '../hooks/useSavedCityDrag';
 
 export function SavedCities({ saved, recent, current, unit, onSelect, onMove, onRemove, onReorder }) {
   const cache = useRef(new Map());
-  const {list,drag,start,move,finish,cancel} = useSavedCityDrag(onReorder);
+  const {list,drag,ordered,start,move,finish,cancel} = useSavedCityDrag(saved,onReorder);
   const [readings, setReadings] = useState({});
   useEffect(() => {
     const controller = new AbortController();
@@ -34,14 +34,17 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
     {saved.length > 0 && <div className="city-shortcut-group">
       <span className="city-shortcut-label">Saved</span>
       <span id="savedCityDragHelp" className="sr-only">Drag to another saved city and release to reorder. Focus the drag handle and use arrow keys to move one place. Press Escape to cancel dragging.</span>
-      <div ref={list} className="city-chip-list" role="group" aria-label="Saved cities">
-        {saved.map((city, index) => <div key={city.id} data-city-id={city.id} data-dragging={drag?.sourceId === city.id || undefined} data-drop-target={drag?.targetId === city.id && drag?.sourceId !== city.id || undefined} className="saved-city-chip">
+      <div ref={list} className="city-chip-list saved-city-list" role="group" aria-label="Saved cities"
+        onPointerMove={move} onPointerUp={finish} onPointerCancel={cancel} onLostPointerCapture={cancel}>
+        {ordered.map((city, index) => <div key={city.id} data-city-id={city.id} data-dragging={drag?.sourceId === city.id || undefined} data-drop-target={drag?.targetId === city.id && drag?.sourceId !== city.id || undefined} className="saved-city-chip">
           <button type="button" className="saved-city-drag" aria-label={`Reorder ${city.label}`} aria-describedby="savedCityDragHelp" title="Drag to reorder" disabled={saved.length < 2}
-            onPointerDown={event=>start(event,city.id)} onPointerMove={move} onPointerUp={finish} onPointerCancel={cancel} onLostPointerCapture={cancel}
+            onPointerDown={event=>start(event,city.id)}
             onKeyDown={event=>{
               if (event.key === 'Escape') { event.preventDefault(); cancel(); }
               else if (['ArrowLeft','ArrowUp','ArrowRight','ArrowDown'].includes(event.key)) {
-                event.preventDefault(); cancel(); onMove(index,['ArrowLeft','ArrowUp'].includes(event.key)?-1:1);
+                event.preventDefault();
+                if (drag) cancel();
+                else onMove(index,['ArrowLeft','ArrowUp'].includes(event.key)?-1:1);
               }
             }}><Icon name="grip"/></button>
           <button type="button" aria-label={`Show weather for ${city.label}`} aria-current={current?.currentCity?.id === city.id ? 'true' : undefined} onClick={() => onSelect(city)} className={`city-chip ${current?.currentCity?.id === city.id ? 'is-current' : ''}`}>

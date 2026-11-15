@@ -24,7 +24,9 @@ test('mouse drag reorders wrapped saved cities, persists, and does not select a 
   await page.setViewportSize({width:600,height:1000});
   const {a,b}=await points(page,0,5);
   await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:12});
-  await expect(page.locator('[data-city-id="saved-5"]')).toHaveAttribute('data-drop-target','true');
+  await expect.poll(()=>order(page)).toEqual(['saved-1','saved-2','saved-3','saved-4','saved-5','saved-0']);
+  await expect(page.locator('.saved-city-drag-overlay')).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('weatherapp-saved-cities')).map(city=>city.id))).toEqual(cities.map(city=>city.id));
   await page.mouse.up();
   expect(await order(page)).toEqual(['saved-1','saved-2','saved-3','saved-4','saved-5','saved-0']);
   await expect(page.locator('#locationName')).toHaveText('London, England');
@@ -48,9 +50,10 @@ test('Escape, pointer cancellation, and dropping outside keep the saved order',a
     await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:8});
     if(mode==='escape')await page.keyboard.press('Escape');
     if(mode==='outside')await page.mouse.move(1,1,{steps:8});
-    if(mode==='cancel')await page.locator('[data-city-id="saved-0"] .saved-city-drag').dispatchEvent('pointercancel',{pointerId:1});
+    if(mode==='cancel')await page.locator('[aria-label="Saved cities"]').dispatchEvent('pointercancel',{pointerId:1});
     await page.mouse.up();expect(await order(page)).toEqual(original);
     await expect(page.locator('[data-dragging]')).toHaveCount(0);
+    await expect(page.locator('.saved-city-drag-overlay')).toHaveCount(0);
   }
 });
 test('touch drag reorders on a narrow screen without hiding existing controls',async({page,browserName})=>{
@@ -64,4 +67,30 @@ test('touch drag reorders on a narrow screen without hiding existing controls',a
   await expect(page.getByRole('button',{name:'Remove London, Test region from saved cities',exact:true})).toBeInViewport();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await expect(page.locator('[data-city-id="saved-0"] > .city-chip')).toHaveCSS('touch-action','auto');
+});
+
+test('dragged chip follows the pointer and neighbours move before release',async({page})=>{
+  await page.setViewportSize({width:900,height:1000});
+  const {a,b}=await points(page,0,2);
+  const chip=await page.locator('[data-city-id="saved-0"]').boundingBox();
+  await page.mouse.move(a.x,a.y);await page.mouse.down();
+  await page.mouse.move(b.x,b.y,{steps:16});
+  await expect(page.locator('.saved-city-drag-overlay')).toBeVisible();
+  await expect.poll(async()=>{
+    const box=await page.locator('.saved-city-drag-overlay').boundingBox();
+    return Math.abs(box.x-(b.x-(a.x-chip.x)))+Math.abs(box.y-(b.y-(a.y-chip.y)));
+  }).toBeLessThan(3);
+  await expect.poll(()=>order(page)).toEqual(['saved-1','saved-2','saved-0','saved-3','saved-4','saved-5']);
+  await page.mouse.up();
+  await expect(page.locator('.saved-city-drag-overlay')).toHaveCount(0);
+  expect((await order(page))[2]).toBe('saved-0');
+});
+
+test('reduced motion preserves live dragging without neighbour animations',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const {a,b}=await points(page,0,1);
+  await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:10});
+  await expect.poll(()=>order(page)).toEqual(['saved-1','saved-0','saved-2','saved-3','saved-4','saved-5']);
+  expect(await page.locator('.saved-city-list [data-city-id]').evaluateAll(es=>es.some(e=>e.getAnimations().length>0))).toBe(false);
+  await page.mouse.up();
 });

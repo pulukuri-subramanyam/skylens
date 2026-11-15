@@ -2861,7 +2861,10 @@ body { isolation:isolate; }
 .saved-city-drag:focus-visible { outline-offset:-3px; }
 .saved-city-drag:active { cursor:grabbing; }
 .saved-city-drag:disabled { cursor:default; opacity:.35; }
-.saved-city-chip[data-dragging] { opacity:.6; }
-.saved-city-chip[data-drop-target] { outline:2px dashed var(--accent-color); outline-offset:2px; }
+.saved-city-chip[data-dragging] { opacity:.18; }
+.saved-city-list { position:relative; }
+.saved-city-list:has([data-dragging]) { user-select:none; }
+.saved-city-chip[data-drop-target] { border-color:var(--accent-color); }
+.saved-city-drag-overlay { position:fixed; top:0; left:0; z-index:1000; margin:0; pointer-events:none; opacity:1; box-shadow:0 8px 24px var(--shadow-dark); border-color:var(--accent-color); will-change:transform; }
 
 }

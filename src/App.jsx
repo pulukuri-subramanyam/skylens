@@ -62,11 +62,11 @@ export default function App() {
     });
     setStatus('Saved city order updated.');
   };
-  const reorder = (sourceId, targetId) => {
+  const reorder = (sourceId, targetIndex) => {
     setSaved(cities => {
       const from = cities.findIndex(city=>city.id===sourceId);
-      const to = cities.findIndex(city=>city.id===targetId);
-      if (from < 0 || to < 0 || from === to) return cities;
+      const to = targetIndex;
+      if (from < 0 || !Number.isInteger(to) || to < 0 || to >= cities.length || from === to) return cities;
       const next = [...cities];
       const [city] = next.splice(from,1);
       next.splice(to,0,city);
