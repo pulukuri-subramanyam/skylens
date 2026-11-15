@@ -1,0 +1,28 @@
+name: Firefox stability checks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  firefox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps firefox
+      - name: Repeat Firefox checks without retries
+        run: npx playwright test --project=firefox-accessibility --repeat-each=20 --retries=0 --workers=1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: firefox-stability-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

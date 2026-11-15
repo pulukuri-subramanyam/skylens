@@ -5,12 +5,14 @@ Skylens remains React, Vite and JavaScript. These changes harden the existing ap
 ## Release checklist
 
 1. Work in a feature branch and open a pull request.
-2. Confirm `Quality / Tests, build and browser checks` passes. It runs dependency auditing, unit tests, a production build, desktop/mobile browser checks, Firefox checks, accessibility scans and an offline reload test.
+2. Confirm both `Quality / Tests, build and browser checks` and `Quality / Firefox accessibility checks` pass. It runs dependency auditing, unit tests, a production build, desktop/mobile browser checks, Firefox checks, accessibility scans and an offline reload test.
 3. Review the Vercel preview with a real API key, including current location on an actual device.
 4. Merge only with the owner's explicit approval. Production deploys from `main`.
 5. Run `MONITOR_URL=https://www.skylens.live npm run monitor` (PowerShell: set `$env:MONITOR_URL` first).
 
-In GitHub Settings → Rules → Rulesets, require a pull request and the `Tests, build and browser checks` status for `main`. The workflow supplies the status; repository enforcement is a separate account setting and is not enabled merely by committing YAML.
+In GitHub Settings → Rules → Rulesets, require a pull request and both the `Tests, build and browser checks` and `Firefox accessibility checks` statuses for `main`. The workflow supplies the status; repository enforcement is a separate account setting and is not enabled merely by committing YAML.
+
+Firefox accessibility scans run in a separate CI job with one worker and no automatic retries. The regular browser job retains Chromium/mobile accessibility checks and Firefox interaction checks. This isolation passed 20 consecutive Firefox accessibility runs (both themes per run) without retries; it reduces interference but does not establish the root cause of the earlier intermittent Firefox page crash. The manually triggered `Firefox stability checks` workflow can repeat that verification. Chart resizing has a separate intermittent Firefox timing issue under repeated checks and remains under investigation.
 
 ## Monitoring
 

@@ -11,7 +11,8 @@ export default defineConfig({
   projects: [
     { name: 'chromium', testIgnore: '**/pwa.spec.js', use: { ...devices['Desktop Chrome'], channel: process.env.PLAYWRIGHT_CHANNEL || undefined } },
     { name: 'mobile', testIgnore: '**/pwa.spec.js', use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium', channel: process.env.PLAYWRIGHT_CHANNEL || undefined } },
-    { name: 'firefox', testIgnore: '**/pwa.spec.js', use: { ...devices['Desktop Firefox'] } },
+    { name: 'firefox', testIgnore: ['**/pwa.spec.js', '**/accessibility.spec.js'], use: { ...devices['Desktop Firefox'] } },
+    { name: 'firefox-accessibility', testMatch: '**/accessibility.spec.js', workers: 1, retries: 0, use: { ...devices['Desktop Firefox'] } },
     { name: 'pwa', testMatch: '**/pwa.spec.js', use: { ...devices['Desktop Chrome'], channel: process.env.PLAYWRIGHT_CHANNEL || undefined, serviceWorkers: 'allow' } }
   ],
   webServer: process.env.PLAYWRIGHT_EXTERNAL_SERVER ? undefined : { command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort', url: 'http://127.0.0.1:4173', reuseExistingServer: !process.env.CI }
