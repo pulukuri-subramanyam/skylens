@@ -20,14 +20,13 @@ export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
   };
   return <section className="search-section"><form onSubmit={submit} className="search-container" role="search">
     <div className="search-input-container">
-      <Icon name="search" className="search-icon"/>
       <input ref={input} id="cityInput" value={query} onChange={event => { setQuery(event.target.value); setOpen(true); setActive(-1); }} onFocus={() => setOpen(true)} onBlur={() => setOpen(false)} onKeyDown={event => {
         if (event.key === 'Escape') { setOpen(false); setActive(-1); }
         if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && locations.length) {
           event.preventDefault(); setOpen(true);
           setActive(index => event.key === 'ArrowDown' ? (index + 1) % locations.length : index <= 0 ? locations.length - 1 : index - 1);
         }
-      }} placeholder="Enter city name..." autoComplete="off" aria-label="Search for a city" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="citySuggestions" aria-expanded={visible} aria-activedescendant={visible && locations[active] ? `city-suggestion-${active}` : undefined} className="search-input"/>
+      }} placeholder="Search a city" autoComplete="off" aria-label="Search for a city" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="citySuggestions" aria-expanded={visible} aria-activedescendant={visible && locations[active] ? `city-suggestion-${active}` : undefined} className="search-input"/>
       <button id="searchBtn" type="submit" aria-label="Search" className="search-btn"><Icon name="search" /></button>
       {visible && <div ref={list} id="citySuggestions" role="listbox" aria-label="City suggestions" className="city-suggestions" onPointerDown={event => event.preventDefault()}>
         {locations.map((location, index) => <div key={`${location.lat},${location.lon},${location.name}`} id={`city-suggestion-${index}`} role="option" aria-selected={active === index} onClick={() => choose(location)} className="city-suggestion">
@@ -37,7 +36,7 @@ export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
       </div>}
     </div>
     <button type="button" id="locationBtn" onClick={onLocate} aria-label="Use my current location" title="Use current location" className="location-btn" disabled={locating}>
-      <Icon name="location" /><span >{locating ? 'Locating…' : 'Current Location'}</span>
+      <Icon name={locating?'refresh':'location'} className={locating?'animate-spin':''}/><span className="sr-only">{locating ? 'Locating…' : 'Current Location'}</span>
     </button>
   </form></section>;
 }

@@ -7,7 +7,7 @@ export function serviceWorkerPlugin() {
     generateBundle(_options, bundle) {
       const assets = Object.keys(bundle).filter(name => /\.(?:js|css|woff2)$/.test(name)).map(name => '/' + name);
       const revision = createHash('sha256').update(assets.join(',')).digest('hex').slice(0, 12);
-      const shell = ['/', '/index.html', '/favicon.svg', '/site.webmanifest', '/assets/fonts/inter-variable.woff2', ...assets];
+      const shell = ['/', '/index.html', '/favicon.svg', '/site.webmanifest', '/assets/fonts/inter-variable.woff2', '/assets/fonts/plus-jakarta-sans-latin.woff2', ...assets];
       this.emitFile({ type: 'asset', fileName: 'sw.js', source: `
 const CACHE_NAME = 'skylens-react-${revision}';
 const APP_SHELL = ${JSON.stringify(shell)};

@@ -3,6 +3,7 @@ import { Chart, LineController, LineElement, PointElement, LinearScale, Category
 import { weatherService } from '../lib/weather';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
+Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
 
 export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forecast' }) {
   const canvas = useRef(null);
@@ -19,16 +20,32 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
       type: 'line',
       data: {
         labels: data.map(hour => weatherService.formatLocationTime(hour.time, timeZone)),
-        datasets: [{ label: rain ? 'Rain chance (%)' : `Temperature (\u00b0${unit})`, data: data.map(hour => rain ? Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null : Number.isFinite(hour.temp_c) ? Math.round(unit === 'F' ? hour.temp_f : hour.temp_c) : null), borderColor: line, backgroundColor: styles.getPropertyValue('--chart-fill-color').trim(), borderWidth: 3, fill: true, tension: .2, pointRadius: 3, pointHoverRadius: 7, pointBackgroundColor: line, pointBorderColor: styles.getPropertyValue('--chart-point-border').trim(), pointBorderWidth: 2 }]
+        datasets: [{ label: rain ? 'Rain chance (%)' : `Temperature (\u00b0${unit})`, data: data.map(hour => rain ? Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent : null : Number.isFinite(hour.temp_c) ? Math.round(unit === 'F' ? hour.temp_f : hour.temp_c) : null), borderColor: line, backgroundColor: context => {
+          const {ctx,chartArea}=context.chart;
+          if(!chartArea) return styles.getPropertyValue('--chart-fill-color').trim();
+          const gradient=ctx.createLinearGradient(0,chartArea.top,0,chartArea.bottom);
+          gradient.addColorStop(0,theme==='dark'?'rgba(130,185,255,.24)':'rgba(40,100,237,.24)');
+          gradient.addColorStop(1,theme==='dark'?'rgba(130,185,255,.015)':'rgba(40,100,237,.015)');
+          return gradient;
+        }, borderWidth: 3.5, fill: true, tension: .2, pointRadius: context=>context.dataIndex%4===0?4.5:2.5, pointHoverRadius: 6, pointBackgroundColor: context=>context.dataIndex%4===0?styles.getPropertyValue('--chart-point-border').trim():line, pointBorderColor: line, pointBorderWidth: context=>context.dataIndex%4===0?3:1.5 }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
+        animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? false : undefined,
         interaction: { intersect: false, mode: 'index' },
         elements: { point: { hoverBorderWidth: 3 } },
-        plugins: { tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', titleColor: '#ffffff', bodyColor: '#ffffff', borderColor: line, borderWidth: 1, cornerRadius: 8, displayColors: false, callbacks: { title: context => new Date(data[context[0].dataIndex].time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', hour12: true, ...(timeZone ? {timeZone} : {}) }), label: context => rain ? `${context.parsed.y}% rain chance` : `${context.parsed.y}\u00b0${unit}` } } },
+        plugins: { tooltip: { backgroundColor: '#17243b', titleColor: '#ffffff', bodyColor: '#c9d7ea', borderColor: line, borderWidth: 1, cornerRadius: 11, displayColors: false, callbacks: {
+          title: context => new Date(data[context[0].dataIndex].time).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', hour12: true, ...(timeZone ? {timeZone} : {}) }),
+          label: context => {
+            const hour=data[context.dataIndex];
+            const temperature=Number.isFinite(hour.temp_c)?Math.round(unit==='F'?hour.temp_f:hour.temp_c)+'°'+unit:'Temperature unavailable';
+            const probability=Number.isFinite(hour.precipitation_probability_percent)?'Rain '+hour.precipitation_probability_percent+'%':'Rain probability unavailable';
+            return [temperature,probability];
+          }
+        } } },
         scales: {
-          x: { grid: { display: false }, border: { display: false }, ticks: { color: text, maxTicksLimit: 8 } },
-          y: { ...(rain ? { min: 0, max: 100 } : {}), grid: { color: styles.getPropertyValue('--chart-grid-color').trim() }, border: { display: false }, ticks: { color: text, callback: value => rain ? value + '%' : value + '\u00b0' + unit } }
+          x: { grid: { display: false }, border: { display: false }, ticks: { color: text, maxTicksLimit: 8, maxRotation: 0, callback: function(value) { return this.getLabelForValue(value).replace(':00',''); } } },
+          y: { ...(rain ? { min: 0, max: 100 } : {}), grid: { color: styles.getPropertyValue('--chart-grid-color').trim() }, border: { display: false, dash:[4,6] }, ticks: { color: text, maxTicksLimit:5, callback: value => rain ? value + '%' : value + '\u00b0' + unit } }
         }
       }
     });
@@ -54,7 +71,7 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
   }, [days, unit, metric, theme, timeZone]);
   return <section className="chart-section glassmorphism" aria-labelledby="hourlyHeading">
     <div className="chart-heading">
-      <h3 id="hourlyHeading" className="section-title">{title}</h3>
+      <div><p className="eyebrow">{title==='Hourly Forecast'?'Next 24 hours':title.replace('Hourly Forecast - ','')}</p><h3 id="hourlyHeading" className="section-title">{metric==='rain'?'Rain probability':'Temperature trend'}</h3></div>
       <div className="chart-toggle" role="group" aria-label="Hourly forecast metric">
         {[['temperature', 'Temperature', 'chartTemperatureBtn'], ['rain', 'Rain chance', 'chartRainBtn']].map(([value, label, id]) => <button key={value} id={id} type="button" aria-pressed={metric === value} onClick={() => setMetric(value)}>{label}</button>)}
       </div>

@@ -11,7 +11,7 @@ A weather dashboard with current conditions, a seven-day forecast, an hourly tem
 - Vite for development and production builds
 - Tailwind CSS with custom component styles and responsive themes
 - Chart.js for the hourly chart
-- Locally bundled Font Awesome icons and a self-hosted Inter web font
+- Inline SVG interface icons, locally bundled Font Awesome social icons and a self-hosted Plus Jakarta Sans web font
 - Open-Meteo for current weather and seven days of daily/hourly forecasts
 - OpenWeather for geocoding and air quality; Photon supplements city suggestions
 - A Vercel Function in `api/weather.mjs` keeps the OpenWeather key on the server
@@ -67,6 +67,8 @@ docs/             Operations, security limits and release checklist
 ```
 
 React renders the dashboard and manages interaction state. Tailwind's component layer contains the custom CSS for layout, typography, weather animations and light/dark themes. Tailwind utilities are available; its reset is disabled to preserve these styles.
+
+The redesign uses a blue weather hero, Recent/Saved city menus, responsive weekly cards/rows and the existing interactive Chart.js chart. See [redesign integration notes](docs/redesign-integration.md) for component changes, real-data mappings and verification limits.
 
 ## Deployment
 

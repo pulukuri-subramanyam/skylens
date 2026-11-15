@@ -16,7 +16,7 @@ export function useSavedCityDrag(saved, onReorder) {
   useLayoutEffect(() => {
     const previous = before.current;
     before.current = null;
-    if (!previous || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!previous || !list.current || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     for (const element of list.current.querySelectorAll('[data-city-id]')) {
       if (element.dataset.cityId === drag?.sourceId) continue;
       const from = previous.get(element.dataset.cityId), to = element.getBoundingClientRect();
@@ -59,7 +59,10 @@ export function useSavedCityDrag(saved, onReorder) {
   },[saved]);
   const preview = current => {
     const box = list.current.getBoundingClientRect();
-    current.valid = current.x>=box.left && current.x<=box.right && current.y>=box.top && current.y<=box.bottom;
+    const menu = list.current.closest('.city-menu')?.getBoundingClientRect();
+    const top = menu ? Math.max(box.top,menu.top) : box.top;
+    const bottom = menu ? Math.min(box.bottom,menu.bottom) : box.bottom;
+    current.valid = current.x>=box.left && current.x<=box.right && current.y>=top && current.y<=bottom;
     if (!current.valid) return;
     const target = [...list.current.querySelectorAll('[data-city-id]')].reduce((nearest,element)=>{
       // Layout offsets ignore the slide animation, avoiding targets that chase the pointer.
@@ -82,9 +85,12 @@ export function useSavedCityDrag(saved, onReorder) {
     const current=gesture.current;
     if (!current?.active) return;
     current.ghost.style.transform=`translate3d(${current.x-current.offsetX}px,${current.y-current.offsetY}px,0)`;
-    if (current.y>=0 && current.y<=innerHeight) {
-      const amount=current.y<48?-10:current.y>innerHeight-48?10:0;
-      if (amount) window.scrollBy(0,amount);
+    const menu=list.current.closest('.city-menu');
+    const bounds=menu?.getBoundingClientRect();
+    const top=bounds?.top||0,bottom=bounds?.bottom||innerHeight;
+    if (current.y>=top && current.y<=bottom && (!bounds || (current.x>=bounds.left && current.x<=bounds.right))) {
+      const amount=current.y<top+32?-10:current.y>bottom-32?10:0;
+      if (amount) (menu||window).scrollBy(0,amount);
     }
     preview(current);
     frame.current=requestAnimationFrame(paint);
