@@ -34,7 +34,7 @@ export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
           <span className="city-suggestion-name">{location.name}</span><span className="city-suggestion-meta"><span className="city-suggestion-details">{weatherService.formatCitySuggestionDetails(location)}</span>{location.source && <span className="city-suggestion-source">{location.source}</span>}</span>
         </div>)}
         </div>
-        {(loading || !locations.length) && <p role="status" className="city-suggestion-status">{loading ? locations.length ? 'Finding more places\u2026' : 'Searching places\u2026' : failed ? 'Could not load suggestions. Try again or search by city and state.' : 'No matching places. Try a city and state.'}</p>}
+        {(loading || !locations.length) && <p role="status" className="city-suggestion-status">{loading ? locations.length ? 'Finding more places\u2026' : 'Searching places\u2026' : failed ? 'Could not load suggestions. Try again or search by city and state.' : 'No suggestions found'}</p>}
       </div>}
     </div>
     <button type="button" id="locationBtn" onClick={onLocate} aria-label="Use my current location" title="Use current location" className="location-btn" disabled={locating}>

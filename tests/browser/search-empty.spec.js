@@ -8,7 +8,7 @@ test('empty search stays visible, can be dismissed, and recovers to keyboard sel
   await page.goto('/'); await expect(page.locator('#locationName')).toBeVisible();
   const input = page.getByRole('combobox');
   await input.fill('Qzznomatch');
-  const message = page.getByText('No matching places. Try a city and state.', {exact:true});
+  const message = page.getByText('No suggestions found', {exact:true});
   await expect(message).toBeVisible();
   await expect(input).toHaveAttribute('aria-expanded','true');
   await expect(page.getByRole('option')).toHaveCount(0);
@@ -31,6 +31,6 @@ test('failed suggestion providers are distinguished from an empty search', async
   await page.route('https://photon.komoot.io/**', route => route.fulfill({status:400,json:{}}));
   await page.getByRole('combobox').fill('Qzzfailed');
   await expect(page.getByText('Could not load suggestions. Try again or search by city and state.',{exact:true})).toBeVisible();
-  await expect(page.getByText('No matching places. Try a city and state.',{exact:true})).toHaveCount(0);
+  await expect(page.getByText('No suggestions found',{exact:true})).toHaveCount(0);
   await page.locator('#locationName').click(); await expect(page.locator('.city-suggestions')).toHaveCount(0);
 });
