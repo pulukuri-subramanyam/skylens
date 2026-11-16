@@ -12,6 +12,8 @@ Saved and recent city menus use real stored city objects and coordinates. Saving
 
 ## Real-data mapping
 
+Ambient animation refinement adds varied individual drops/flakes, independently twinkling stars, two cloud/mist layers at different speeds and a slow low-opacity storm glow. Weather changes crossfade over 900ms with at most two scenes; the outgoing scene is removed after one second. Same-condition refreshes retain particle positions. Phones display fewer particles (rain 18, snow 16, stars 12) than desktops (48, 36, 22). All effects remain behind opaque cards and retain reduced-motion and hidden-page support.
+
 | Redesigned surface | Existing source |
 | --- | --- |
 | City | `weather.currentCity.label` |
@@ -66,7 +68,7 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 ## Verification
 
 - `npm run check`: all 14 unit tests and production build passed.
-- Playwright `chromium`, `mobile` and `pwa` projects: all 49 tests passed using installed Chrome after restoring weather backgrounds. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
+- Playwright `chromium`, `mobile` and `pwa` projects: all 51 tests passed using installed Chrome after refining weather backgrounds. Six focused browser checks passed again after the final cloud-layer adjustment. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, crossfades, particle density, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
 - Visual checks at 320, 390, 640, 768, 1024 and 1440 pixels in both themes: no document horizontal overflow. Decorative hero rings are intentionally clipped. Screenshots use deterministic provider fixtures, not live observations.
 - Additional WCAG A/AA Axe scans at desktop and phone widths in both themes: no serious/critical violations.
 - `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
