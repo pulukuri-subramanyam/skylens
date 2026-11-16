@@ -262,6 +262,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
  .chart-container { height:260px; }
 }
 @media(max-width:639px) {
+ .city-menu-container { position:relative; }
  .header-content,.toolbar-inner { padding-left:16px; padding-right:16px; }
  .header-controls { gap:12px; }
  .app-container { padding:16px 16px 0; }
