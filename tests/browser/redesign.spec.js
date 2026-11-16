@@ -74,6 +74,16 @@ test('city panels share desktop edges and match their own button on phones and t
         const right=await page.locator(width<1280 ? '#'+name+'CitiesBtn' : '#savedCitiesBtn').boundingBox();
         expect(Math.abs(box.x-left.x)).toBeLessThanOrEqual(1);
         expect(Math.abs(box.x+box.width-right.x-right.width)).toBeLessThanOrEqual(1);
+        if (name==='recent') {
+          const headingIcon=await page.locator('#recentCitiesBtn > .ui-icon').first().boundingBox();
+          const rowIcons=await panel.locator('.city-menu-item > .ui-icon').all();
+          expect(rowIcons.length).toBeGreaterThan(0);
+          for (const icon of rowIcons) {
+            const iconBox=await icon.boundingBox();
+            expect(Math.abs(iconBox.x-headingIcon.x)).toBeLessThanOrEqual(1);
+            expect(Math.abs(iconBox.width-headingIcon.width)).toBeLessThanOrEqual(1);
+          }
+        }
         expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);
         await page.keyboard.press('Escape');await expect(panel).toHaveCount(0);
       }
