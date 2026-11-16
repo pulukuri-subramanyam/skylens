@@ -20,7 +20,7 @@ export function useCitySuggestions(query, saved, recent, enabled) {
     let successful = 0;
     setResult({ query: search, locations: service.getLocalCitySuggestions(search), loading: true });
     const publish = loading => {
-      if (!controller.signal.aborted) setResult({ query: search, locations: service.combineCitySuggestions(candidates.weather, search, candidates.photon, candidates.india), loading });
+      if (!controller.signal.aborted) setResult({ query: search, locations: service.combineCitySuggestions(candidates.weather, search, candidates.photon, candidates.india), loading, failed: !loading && successful === 0 });
     };
     const timer = setTimeout(async () => {
       const receive = async (key, request) => {
@@ -40,5 +40,5 @@ export function useCitySuggestions(query, saved, recent, enabled) {
     }, 120);
     return () => { clearTimeout(timer); controller.abort(); };
   }, [query, service, enabled, valid]);
-  return enabled && valid && result.query === query.trim() ? result : { locations: [], loading: enabled && valid };
+  return { ...(enabled && valid && result.query === query.trim() ? result : { locations: [], loading: enabled && valid }), valid };
 }
