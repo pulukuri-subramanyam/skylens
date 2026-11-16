@@ -34,7 +34,7 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refr
     </div></div>
     <div className="temperature-section">
       <div className="weather-icon-container"><img className="weather-icon" id="currentWeatherIcon" src={weatherIconUrl(current.condition.iconCode)} alt=""/></div>
-      <div className="main-temperature"><span className="temperature" id="currentTemp">{temperature==null?'Unavailable':<><span className="temperature-number">{temperature}</span><span className="temperature-degree">°</span><span className="sr-only">{unit}</span></>}</span></div>
+      <div className="main-temperature"><span className="temperature" id="currentTemp">{temperature==null?'Unavailable':<><span className="temperature-number">{temperature}</span><span className="temperature-degree">°{unit}</span></>}</span></div>
       <div className="condition-copy"><span className="condition" id="currentCondition">{current.condition.text}</span><div className="feels-like">Feels like <span id="feelsLike">{Number.isFinite(current.feelslike_c)?formatTemperature(current.feelslike_c,unit):'Unavailable'}</span><span aria-hidden="true"> · </span><span className="today-range">High <span id="todayHigh">{formatTemperature(today.maxtemp_c,unit)}</span> / Low <span id="todayLow">{formatTemperature(today.mintemp_c,unit)}</span></span></div></div>
     </div>
     <WeatherMetrics current={current} airQuality={lastAirQuality}/>
