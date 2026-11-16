@@ -1,3 +1,5 @@
+import './weather-background.css';
+
 export function WeatherBackground({ current }) {
   const code = current?.condition?.iconCode || '';
   const kind = code.slice(0, 2);

@@ -6,7 +6,7 @@ Implemented from the approved `origin/design/skylens-redesign` reference on `fea
 
 This is a presentation change in the existing JavaScript React/Vite/Tailwind application. The reference's sample city, clock, weather and simulated geolocation were replaced with existing application data and handlers. No TypeScript or runtime dependencies were added. API handlers, provider normalization, request management, storage keys, cached-result recovery and the single-page architecture remain unchanged.
 
-The reference was split into reusable `CityMenu`, `WeatherMetrics` and `DaylightBar` components and the existing header/search/weather/forecast/chart components. Existing realistic weather icons are retained because they cover night, fog, snow and other conditions beyond the prototype's small icon set. The existing footer, saved-city drag/keyboard reorder, missing-value labels, stale/error states and next-24-hours chart default are retained. The old animated weather background is not mounted in the reference's flat layout; its source remains available.
+The reference was split into reusable `CityMenu`, `WeatherMetrics` and `DaylightBar` components and the existing header/search/weather/forecast/chart components. Existing realistic weather icons are retained because they cover night, fog, snow and other conditions beyond the prototype's small icon set. The existing footer, saved-city drag/keyboard reorder, missing-value labels, stale/error states and next-24-hours chart default are retained. After review, the owner requested restoration of condition-based background animations. `WeatherBackground` now renders behind the opaque dashboard cards using the actual current condition; its isolated stylesheet restores clouds, rain, snow, sunlight, stars, fog and storm ambience without moving cards or intercepting input. Motion stops for reduced-motion preferences and pauses while the page is hidden.
 
 Saved and recent city menus use real stored city objects and coordinates. Saving/removing, selecting cities, outside-click/Escape dismissal and pointer/touch/keyboard dragging remain functional. Drag auto-scrolling now operates inside the menu. The selected forecast day still controls the real hourly chart; selecting it again returns to the next 24 hours. Chart.js remains responsible for tooltips, real samples and resizing rather than adopting the reference's static SVG plot.
 
@@ -50,6 +50,9 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 | `src/components/HourlyChart.jsx` | Reference colors, gradient, points, axis styling and actual temperature/rain tooltip content. |
 | `src/hooks/useSavedCityDrag.js` | Safe handling of closed menus and clipped menu drag/scroll bounds. |
 | `src/index.css` | Reference typography, palette, spacing, light/dark and responsive component styles; retained loading states. |
+| `src/components/WeatherBackground.jsx` | Restored current-condition background component and isolated CSS import. |
+| `src/components/weather-background.css` (new) | Condition-specific ambient layers, themes, motion and safe background stacking. |
+| `tests/browser/weather-background.spec.js` (new) | Real-condition switching, stationary cards, pointer passthrough, reduced motion and background pausing. |
 | `public/assets/fonts/plus-jakarta-sans-latin.woff2` (new) | Self-hosted variable Latin web font. |
 | `public/assets/fonts/PLUS-JAKARTA-OFL.txt` (new) | Font license. |
 | `build/serviceWorker.js` | Cache the new font for offline use. |
@@ -63,7 +66,7 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 ## Verification
 
 - `npm run check`: all 14 unit tests and production build passed.
-- Playwright `chromium`, `mobile` and `pwa` projects: all 45 tests passed using installed Chrome. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
+- Playwright `chromium`, `mobile` and `pwa` projects: all 49 tests passed using installed Chrome after restoring weather backgrounds. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
 - Visual checks at 320, 390, 640, 768, 1024 and 1440 pixels in both themes: no document horizontal overflow. Decorative hero rings are intentionally clipped. Screenshots use deterministic provider fixtures, not live observations.
 - Additional WCAG A/AA Axe scans at desktop and phone widths in both themes: no serious/critical violations.
 - `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
