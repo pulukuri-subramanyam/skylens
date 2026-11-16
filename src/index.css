@@ -210,7 +210,6 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 @keyframes refresh-spin { to { transform:rotate(360deg); } }
 .animate-spin { animation:refresh-spin 1s linear infinite; }
 @media(max-width:1279px) {
- .city-menu-container { position:relative; }
  .header-content,.toolbar-inner { padding-left:24px; padding-right:24px; }
  .app-container { padding-left:24px; padding-right:24px; }
  .current-weather-card { padding:20px; column-gap:20px; min-height:315px; }
@@ -245,6 +244,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
  .forecast-item { padding:10px 6px; border-radius:16px; }
 }
 @media(max-width:767px) {
+ .city-menu-container { position:relative; }
  .header-content,.toolbar-inner { padding-left:24px; padding-right:24px; }
  .toolbar-inner { grid-template-columns:minmax(0,1fr); gap:8px; }
  .app-container { padding:24px 24px 0; }
