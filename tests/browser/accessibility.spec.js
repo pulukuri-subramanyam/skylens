@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-
 import { providers } from './fixtures';
 
 test.beforeEach(async ({page})=>{ await providers(page); });
@@ -17,20 +16,17 @@ test('both themes have no serious accessibility violations or page overflow', as
   }
 });
 
-
-// Use CSS locators in this Axe test to avoid Firefox build 1572's cross-world
-// ARIA reflection crash: https://github.com/microsoft/playwright/issues/43967.
-// Role-based interaction assertions remain in search-empty.spec.js.
+// Keep full empty-search Axe coverage in the dedicated Firefox accessibility job.
 test('empty city suggestions have no serious accessibility violations in both themes',async({page})=>{
   await page.route('**/api/weather?**',route=>new URL(route.request().url()).searchParams.get('q')==='Qzznomatch'?route.fulfill({json:[]}):route.fallback());
   await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
-  await page.locator('#cityInput').fill('Qzznomatch');
+  await page.getByRole('combobox').fill('Qzznomatch');
   for(let i=0;i<2;i++){
-    await page.locator('#cityInput').focus();
+    await page.getByRole('combobox').focus();
     await expect(page.getByText('No suggestions found',{exact:true})).toBeVisible();
-    await expect(page.locator('[role=option]')).toHaveCount(0);
-    await expect(page.locator('[role=listbox]')).toHaveCount(0);
-    await expect(page.locator('#cityInput')).toHaveAttribute('aria-expanded','false');
+    await expect(page.getByRole('option')).toHaveCount(0);
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(page.getByRole('combobox')).toHaveAttribute('aria-expanded','false');
     await page.waitForTimeout(600);
     const scan=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
     expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
