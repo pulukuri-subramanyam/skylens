@@ -81,15 +81,14 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .city-suggestion-details { min-width:0; overflow-wrap:anywhere; }
 .city-suggestion-source { margin-left:auto; }
 .city-suggestion-status { padding:10px; font-size:12px; color:var(--text-secondary); }
-.city-shortcuts { display:flex; align-items:start; gap:8px; min-width:0; }
-.city-menu-container { position:relative; flex:1; min-width:0; }
+.city-shortcuts { position:relative; display:flex; align-items:start; gap:8px; min-width:0; }
+.city-menu-container { position:static; flex:1; min-width:0; }
 .city-menu-trigger { height:44px; width:100%; display:flex; align-items:center; justify-content:space-between; gap:6px; padding:0 12px; border:1px solid var(--border-color); border-radius:16px; background:var(--surface); color:var(--text-secondary); box-shadow:0 1px 3px #18304f08; font-size:12px; font-weight:800; }
 .city-menu-trigger>.ui-icon { width:16px; height:16px; }
 .city-menu-trigger>.ui-icon:last-child { width:14px; height:14px; transition:transform 180ms; }
 .city-menu-trigger>.is-open { transform:rotate(180deg); }
 .city-menu-count { border-radius:999px; padding:2px 6px; font-size:9px; background:var(--secondary-bg); color:var(--accent-color); }
-.city-menu { position:absolute; left:0; top:calc(100% + 8px); z-index:60; width:min(288px,calc(100vw - 32px)); max-height:min(65vh,500px); overflow:auto; padding:8px; border:1px solid var(--border-color); border-radius:16px; background:var(--surface); box-shadow:0 18px 45px var(--shadow-dark); }
-.city-menu-container:last-child .city-menu { left:auto; right:0; }
+.city-menu { position:absolute; left:0; top:calc(100% + 8px); z-index:60; width:100%; max-height:min(65vh,500px); overflow:auto; padding:8px; border:1px solid var(--border-color); border-radius:16px; background:var(--surface); box-shadow:0 18px 45px var(--shadow-dark); }
 .city-menu-item { display:flex; width:100%; align-items:center; gap:12px; text-align:left; padding:10px 12px; border:0; border-radius:12px; background:transparent; color:var(--text-secondary); font-size:13px; font-weight:700; }
 .city-menu-item>span:not(.current-city-dot) { flex:1; min-width:0; overflow-wrap:anywhere; }
 .city-menu-item .ui-icon { width:16px; height:16px; color:var(--text-muted); }

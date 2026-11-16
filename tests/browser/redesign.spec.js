@@ -58,3 +58,23 @@ test('chart hover tooltips remain interactive and preferences survive reload',as
   await page.reload();await expect(page.locator('#currentTemp')).toHaveText('59°F');
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
 });
+
+
+test('both city panels align with the shared Recent and Saved button edges', async ({page}) => {
+  await providers(page);await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
+  for (const width of [320,768,1440]) {
+    await page.setViewportSize({width,height:900});
+    for (const theme of ['light','dark']) {
+      if (await page.locator('html').getAttribute('data-theme') !== theme) await page.locator('#themeToggle').click();
+      for (const name of ['recent','saved']) {
+        await page.locator('#'+name+'CitiesBtn').click();
+        const panel=page.locator('#'+name+'CitiesMenu');await expect(panel).toBeVisible();
+        const box=await panel.boundingBox(),left=await page.locator('#recentCitiesBtn').boundingBox(),right=await page.locator('#savedCitiesBtn').boundingBox();
+        expect(Math.abs(box.x-left.x)).toBeLessThanOrEqual(1);
+        expect(Math.abs(box.x+box.width-right.x-right.width)).toBeLessThanOrEqual(1);
+        expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);
+        await page.keyboard.press('Escape');await expect(panel).toHaveCount(0);
+      }
+    }
+  }
+});
