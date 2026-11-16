@@ -75,7 +75,7 @@ export default function App() {
     setStatus('Saved city order updated.');
   };
   return <div className="app-shell">
-    <WeatherBackground current={weather?.currentWeatherData.current}/>
+    <WeatherBackground current={weather?.currentWeatherData.current} now={now}/>
     <a className="skip-link" href="#weatherContent">Skip to weather</a>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <div className="search-row"><div className="toolbar-inner">

@@ -12,7 +12,7 @@ Saved and recent city menus use real stored city objects and coordinates. Saving
 
 ## Real-data mapping
 
-Ambient animation refinement adds varied individual drops/flakes, independently twinkling stars, two cloud/mist layers at different speeds and a slow low-opacity storm glow. Weather changes crossfade over 900ms with at most two scenes; the outgoing scene is removed after one second. Same-condition refreshes retain particle positions. Phones display fewer particles (rain 18, snow 16, stars 12) than desktops (48, 36, 22). All effects remain behind opaque cards and retain reduced-motion and hidden-page support.
+Ambient animation refinement adds varied individual drops/flakes, independently twinkling stars, irregular overlapping cloud banks and two mist layers at different speeds. Weather changes crossfade over 900ms with at most two scenes; the outgoing scene is removed after one second. Same-condition refreshes retain particle positions. Provider condition descriptions set qualitative light/medium/heavy intensity, not rainfall-rate estimates: desktop rain counts are 24/40/56 and snow 20/32/44; phones use 10/16/22 and 8/12/16. Stars use 22 on desktop and 12 on phones. Wind speed and compass direction control screen drift capped at 6vw and rain tilt capped at 12 degrees. Clear-sky warmth follows the city's absolute sunrise/sunset timestamps and existing minute clock; missing timings produce no invented tint. More precipitation particles are distributed in page margins, with opaque cards shielding all readings. No new API fields or requests are required. All effects retain reduced-motion and hidden-page support.
 
 | Redesigned surface | Existing source |
 | --- | --- |
@@ -54,6 +54,8 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 | `src/index.css` | Reference typography, palette, spacing, light/dark and responsive component styles; retained loading states. |
 | `src/components/WeatherBackground.jsx` | Restored current-condition background component and isolated CSS import. |
 | `src/components/weather-background.css` (new) | Condition-specific ambient layers, themes, motion and safe background stacking. |
+| `src/lib/weatherAmbience.js` (new) | Provider-description intensity, capped wind projection and sunrise/sunset warmth calculations. |
+| `tests/weather-ambience.test.js` (new) | Intensity, missing/extreme wind and timezone-offset daylight edge cases. |
 | `tests/browser/weather-background.spec.js` (new) | Real-condition switching, stationary cards, pointer passthrough, reduced motion and background pausing. |
 | `public/assets/fonts/plus-jakarta-sans-latin.woff2` (new) | Self-hosted variable Latin web font. |
 | `public/assets/fonts/PLUS-JAKARTA-OFL.txt` (new) | Font license. |
@@ -67,8 +69,8 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 
 ## Verification
 
-- `npm run check`: all 14 unit tests and production build passed.
-- Playwright `chromium`, `mobile` and `pwa` projects: all 51 tests passed using installed Chrome after refining weather backgrounds. Six focused browser checks passed again after the final cloud-layer adjustment. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, crossfades, particle density, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
+- `npm run check`: all 17 unit tests and production build passed after adaptive ambience refinements.
+- Playwright `chromium`, `mobile` and `pwa` projects: all 53 tests passed using installed Chrome after adaptive ambience refinements. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, crossfades, intensity, capped wind, daylight clock updates, particle density, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
 - Visual checks at 320, 390, 640, 768, 1024 and 1440 pixels in both themes: no document horizontal overflow. Decorative hero rings are intentionally clipped. Screenshots use deterministic provider fixtures, not live observations.
 - Additional WCAG A/AA Axe scans at desktop and phone widths in both themes: no serious/critical violations.
 - `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.

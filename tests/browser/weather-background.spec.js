@@ -34,6 +34,33 @@ test('real current conditions select ambient motion without moving dashboard car
   await expect(page.locator('#refreshBtn')).toBeVisible();
 });
 
+test('live provider wind and the city daylight clock drive ambience without restarting particles', async ({page})=>{
+  const base=Math.floor(Date.now()/86400000)*86400;
+  await page.clock.install({time:new Date((base+5*3600+55*60)*1000)});
+  await providers(page);
+  let code=0,speed=9,direction=90;
+  await page.route('https://api.open-meteo.com/**',route=>{
+    const data=forecast();data.current.weather_code=code;data.current.wind_speed_10m=speed;data.current.wind_direction_10m=direction;
+    data.daily.sunrise[0]=base+6*3600;data.daily.sunset[0]=base+18*3600;
+    return route.fulfill({json:data});
+  });
+  await page.goto('/');await expect(page.locator('#currentTemp')).toHaveText('15°C');
+  const backdrop=page.locator('.weather-backdrop');
+  const warmth=()=>backdrop.evaluate(el=>Number(el.style.getPropertyValue('--daylight-warmth')));
+  expect(await warmth()).toBeGreaterThan(.98);
+  await page.clock.fastForward(6*3600000+5*60000);
+  expect(await warmth()).toBe(0);
+  await page.clock.fastForward(5*3600000+55*60000);
+  expect(await warmth()).toBeGreaterThan(.98);
+  code=65;speed=50;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
+  await expect(page.locator('.weather-scene.is-current')).toHaveClass(/precip-heavy/);
+  expect(await backdrop.evaluate(el=>el.style.getPropertyValue('--wind-x'))).toBe('-6vw');
+  const particle=await page.locator('.weather-scene.is-current .weather-particle').first().elementHandle();
+  direction=270;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
+  expect(await backdrop.evaluate(el=>el.style.getPropertyValue('--wind-x'))).toBe('6vw');
+  expect(await particle.evaluate(el=>el.isConnected)).toBe(true);
+});
+
 test('ambient weather respects reduced motion and pauses in hidden pages', async ({page})=>{
   await providers(page); await page.goto('/');
   await expect(page.locator('#currentTemp')).toHaveText('15°C');
@@ -54,7 +81,7 @@ test('weather scenes crossfade, discard old layers and use lighter particle dens
     return route.fulfill({json:data});
   });
   await page.goto('/');await expect(page.locator('#currentTemp')).toHaveText('15°C');
-  for(const [weatherCode,isDay,kind,desktopCount,phoneCount] of [[61,1,'rain',48,18],[71,1,'snow',36,16],[0,0,'stars',22,12]]) {
+  for(const [weatherCode,isDay,kind,desktopCount,phoneCount] of [[61,1,'rain',24,10],[65,1,'rain',56,22],[71,1,'snow',20,8],[75,1,'snow',44,16],[0,0,'stars',22,12]]) {
     code=weatherCode;day=isDay;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
     const scene=page.locator('.weather-scene.is-current');
     await expect(scene.locator('.'+kind)).toBeAttached();
