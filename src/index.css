@@ -209,6 +209,12 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .retry-btn { display:inline-flex; align-items:center; gap:8px; background:#2864ed; color:white; border:0; padding:10px 16px; border-radius:12px; font-weight:700; }
 @keyframes refresh-spin { to { transform:rotate(360deg); } }
 .animate-spin { animation:refresh-spin 1s linear infinite; }
+@media(min-width:1280px) {
+ .city-suggestion { flex-direction:row; align-items:baseline; gap:10px; }
+ .city-suggestion-name { max-width:45%; min-width:0; overflow-wrap:anywhere; }
+ .city-suggestion-meta { flex:1; min-width:0; align-items:baseline; gap:12px; }
+ .city-suggestion-details { flex:1; }
+}
 @media(max-width:1279px) {
  .header-content,.toolbar-inner { padding-left:24px; padding-right:24px; }
  .app-container { padding-left:24px; padding-right:24px; }

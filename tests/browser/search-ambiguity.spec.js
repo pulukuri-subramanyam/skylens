@@ -52,3 +52,21 @@ for(const action of ['Escape','edit']) {
     if(action==='Escape')await expect(input).toHaveAttribute('aria-expanded','false');
   });
 }
+
+
+test('desktop suggestions place regions beside city names while smaller screens stack them',async({page})=>{
+  await providers(page);await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
+  await page.getByRole('combobox').fill('Nandyal');await expect(page.getByRole('option').first()).toBeVisible();
+  for(const theme of ['light','dark']) {
+    for(const width of [390,1024,1279,1280,1440]) {
+      await page.setViewportSize({width,height:900});
+      if(await page.locator('html').getAttribute('data-theme')!==theme)await page.locator('#themeToggle').click();
+      await page.getByRole('combobox').focus();
+      const row=page.getByRole('option').first();
+      const name=await row.locator('.city-suggestion-name').boundingBox(),details=await row.locator('.city-suggestion-details').boundingBox();
+      if(width>=1280){expect(details.x).toBeGreaterThan(name.x+name.width);expect(Math.abs(details.y-name.y)).toBeLessThan(5);}
+      else expect(details.y).toBeGreaterThanOrEqual(name.y+name.height-1);
+      expect(await row.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+    }
+  }
+});
