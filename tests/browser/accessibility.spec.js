@@ -18,19 +18,25 @@ test('both themes have no serious accessibility violations or page overflow', as
 
 
 // Keep Axe scans in this suite so Firefox uses its dedicated single-worker job.
-test('empty city suggestions have no serious accessibility violations in both themes',async({page})=>{
-  await page.route('**/api/weather?**',route=>new URL(route.request().url()).searchParams.get('q')==='Qzznomatch'?route.fulfill({json:[]}):route.fallback());
-  await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
-  await page.getByRole('combobox').fill('Qzznomatch');
-  for(let i=0;i<2;i++){
-    await page.getByRole('combobox').focus();
-    await expect(page.getByText('No suggestions found',{exact:true})).toBeVisible();
-    await expect(page.getByRole('option')).toHaveCount(0);
-    await expect(page.getByRole('listbox')).toHaveCount(0);
-    await expect(page.getByRole('combobox')).toHaveAttribute('aria-expanded','false');
-    await page.waitForTimeout(600); // Match the settled-theme audit above.
-    const scan=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
-    expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
-    await page.locator('#themeToggle').click();
-  }
-});
+// Partition the same WCAG rules so a browser crash identifies the affected scan.
+for(const scanGroup of ['structure','contrast']) {
+  test(`empty city suggestions pass ${scanGroup} accessibility checks in both themes`,async({page})=>{
+    await page.route('**/api/weather?**',route=>new URL(route.request().url()).searchParams.get('q')==='Qzznomatch'?route.fulfill({json:[]}):route.fallback());
+    await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
+    await page.getByRole('combobox').fill('Qzznomatch');
+    for(let i=0;i<2;i++){
+      await page.getByRole('combobox').focus();
+      await expect(page.getByText('No suggestions found',{exact:true})).toBeVisible();
+      await expect(page.getByRole('option')).toHaveCount(0);
+      await expect(page.getByRole('listbox')).toHaveCount(0);
+      await expect(page.getByRole('combobox')).toHaveAttribute('aria-expanded','false');
+      await page.waitForTimeout(600);
+      const audit=new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']);
+      if(scanGroup==='contrast')audit.withRules(['color-contrast']);
+      else audit.disableRules(['color-contrast']);
+      const scan=await audit.analyze();
+      expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
+      await page.locator('#themeToggle').click();
+    }
+  });
+}
