@@ -1,6 +1,6 @@
 # SkyLens redesign integration
 
-Implemented from the approved `origin/design/skylens-redesign` reference on `feat/integrate-skylens-redesign`, then prepared for the owner's requested `updates` branch preview. Main is unchanged; no merge or pull request was made.
+Implemented from the approved `origin/design/skylens-redesign` reference, reviewed on `updates`, and merged into `main` with the owner's approval on November 16, 2026 through [PR #16](https://github.com/pulukuri-subramanyam/skylens/pull/16). Release commit `c76149cc919768c371450fe22b17adacc2195b16` is deployed at [skylens.live](https://skylens.live).
 
 ## Scope and adaptations
 
@@ -53,7 +53,7 @@ Motion polish keeps a stable bounded particle pool within each weather family. L
 | `src/components/SearchBar.jsx` | Reference search/location controls around existing search and geolocation logic. |
 | `src/components/SavedCities.jsx` | Recent/Saved dropdown composition with existing readings, selection, removal and reorder. |
 | `src/components/CityMenu.jsx` (new) | Shared accessible dropdown trigger, dismissal and focus behavior. |
-| `src/components/WeatherCard.jsx` | Real-data hero, timezone date, refresh badge, condition and temperatures. |
+| `src/components/WeatherCard.jsx` | Real-data hero, timezone date, separate update timestamp and Refresh action, condition and temperatures. |
 | `src/components/WeatherMetrics.jsx` (new) | Six consistently sized actual-weather metrics. |
 | `src/components/DaylightBar.jsx` (new) | Actual sunrise/sunset times and progress. |
 | `src/components/DailyForecast.jsx` | Reference weekly heading and responsive forecast presentation. |
@@ -77,19 +77,19 @@ Motion polish keeps a stable bounded particle pool within each weather family. L
 | `README.md` | Current font/icon stack and integration documentation link. |
 | `docs/redesign-integration.md` (new) | This mapping, file inventory and verification report. |
 
-## Verification
+## Release verification
 
-- `npm run check`: all 17 unit tests and production build passed after theme-colour and contrast refinements.
-- Playwright `chromium`, `mobile` and `pwa` projects: all 63 tests passed using installed Chrome after focus-aware polish. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, menu softening, clipped phone gaps, decorative wind, crossfades, continuous intensity fades, snow depth, cloud evolution, bounded storm glows, capped wind, daylight clock updates, particle density, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
-- Theme-balance regression run: the 65-test Chrome/mobile/PWA run passed 63 tests; two mobile background cases hit local timing failures (refresh readiness and scene cleanup). All 14 background/theme checks then passed with one worker, including both failed cases, retaining their original assertions and timeouts. Theme tests cover rain, snow, overcast, partly cloudy and clear-day colour blending in both directions with unchanged animation start times.
-- Visual checks at 320, 390, 640, 768, 1024 and 1440 pixels in both themes: no document horizontal overflow. Decorative hero rings are intentionally clipped. Screenshots use deterministic provider fixtures, not live observations.
-- Additional WCAG A/AA Axe scans at desktop and phone widths in both themes: no serious/critical violations.
-- `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
-- `git diff --check`: passed.
-- `npm run monitor`: existing deployed website, API readiness, geocoding and Open-Meteo checks passed. This is a production/provider check, not a deployment of these local changes.
-- Firefox/Firefox-accessibility projects were attempted with a freshly installed Playwright Firefox. The browser process exits with code 1 before opening a page on this Windows environment. These projects remain unverified and need a working Firefox environment before release. No test was weakened or removed to conceal this limitation.
+The final pre-merge checks ran against `09dffb459ceb93c16eeb8e04fd8eb0b0617b8825`, which PR #16 merged into the production release above.
+
+- [Quality workflow](https://github.com/pulukuri-subramanyam/skylens/actions/runs/43914872225): all 18 unit tests, production build and dependency audit passed. The audit reported zero vulnerabilities.
+- The same workflow's `chromium`, `mobile`, `firefox` and `pwa` browser suite passed 136 tests with one conditional skip. That skip is the Chromium-CDP-only touch dispatch test in Firefox; Firefox pointer interactions remain tested. Browser tests use mocked provider data.
+- Both dedicated Firefox accessibility tests passed, covering the default dashboard and empty-search feedback in both themes with the full configured WCAG A/AA rule set. No accessibility rules were disabled. Playwright is pinned to stable 1.64.1 to avoid the [upstream Firefox ARIA reflection regression](https://github.com/microsoft/playwright/issues/43967) in 1.65.
+- [Firefox chart resize verification](https://github.com/pulukuri-subramanyam/skylens/actions/runs/43914872203): all 20 repeated checks passed with one worker and no retries.
+- Live preview and production browser checks loaded real London weather, switched Celsius/Fahrenheit and light/dark themes, and displayed the hourly chart without page errors. No horizontal overflow appeared at 390, 768 or 1440 pixels.
+- After deployment, `/api/health` returned `ok` with release `c76149cc9197`. `npm run monitor` passed for the production website, API readiness, geocoding and Open-Meteo.
+- Local Windows Firefox could not launch during earlier checks; Linux CI supplied the completed Firefox verification. Mobile Chrome viewport emulation does not establish actual iPhone/Safari behaviour, physical-device performance or device location-permission behaviour.
 - The repository defines no lint, formatting or TypeScript-check command. JavaScript is intentionally retained.
 
 ## Review and release
 
-The owner authorized publishing the `updates` branch for preview; production remains unchanged. Review desktop, tablet and phone layouts in both themes, then resolve Firefox verification before an approved production release. Live API authentication and account settings were not changed by this UI work.
+The approved redesign is released on `main` and production. The `updates` branch was retained. Future changes still require a separate branch, preview review and the owner's explicit approval before merging into `main`. Live API authentication and account settings were not changed by this UI work.
