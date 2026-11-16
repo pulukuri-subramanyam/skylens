@@ -58,4 +58,4 @@ The dashboard retains its layout. Keyboard users have a skip link, visible focus
 
 Background animations pause in hidden tabs and continue respecting reduced-motion preferences. Obsolete overridden metric hover rules were removed. Broader CSS restructuring is deliberately deferred until individual changes can be verified against the current design.
 
-The same Font Awesome 6.4.0 icons are bundled locally with their license and cached with the app shell. No icon CDN is required. The build emits only the solid and brand font families used by Skylens.
+The GitHub and LinkedIn footer logos use inline SVG artwork from Font Awesome Free 6.4.0. Attribution and the original license are retained in `public/assets/licenses/font-awesome.txt`. These drawings are bundled with the app code and cached with the app shell. No icon font, icon stylesheet, Font Awesome package or icon CDN is required.

@@ -11,7 +11,7 @@ A weather dashboard with current conditions, a seven-day forecast, an hourly tem
 - Vite for development and production builds
 - Tailwind CSS with custom component styles and responsive themes
 - Chart.js for the hourly chart
-- Inline SVG interface icons, locally bundled Font Awesome social icons and a self-hosted Plus Jakarta Sans web font
+- Inline SVG interface icons, two inline Font Awesome social logos and a self-hosted Plus Jakarta Sans web font
 - Open-Meteo for current weather and seven days of daily/hourly forecasts
 - OpenWeather for geocoding and air quality; Photon supplements city suggestions
 - A Vercel Function in `api/weather.mjs` keeps the OpenWeather key on the server
@@ -59,7 +59,7 @@ api/weather.mjs   Server-only OpenWeather proxy
 api/health.mjs    Readiness and release endpoint
 api/events.mjs    Allowlisted client error events
 server/           Request guards and sanitized logging
-build/            Service-worker generation and local icon bundling
+build/            Service-worker generation
 scripts/          Production health-check script
 tests/            Unit, browser, accessibility and offline checks
 .github/workflows/ Automated quality checks and scheduled production health checks
