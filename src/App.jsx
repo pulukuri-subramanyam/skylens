@@ -18,11 +18,11 @@ export default function App() {
   const [theme, setTheme] = useState(() => readPreference('weatherapp-theme', ['light', 'dark'], 'light'));
   const [saved, setSaved] = useState(() => readCities('weatherapp-saved-cities'));
   const [now, setNow] = useState(Date.now);
-  const { weather, recent, loading, refreshing, error, status, setStatus, load, locate, retry, requestLabel } = useWeather();
+  const { weather, recent, loading, locating, refreshing, error, status, setStatus, load, locate, retry, requestLabel } = useWeather();
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#101a28' : '#eaf0f5');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0d1422' : '#f2f7fb');
     try { localStorage.setItem('weatherapp-theme', theme); } catch { /* Storage can be disabled by the browser. */ }
   }, [theme]);
   useEffect(() => { try { localStorage.setItem('weatherapp-temperature-unit', unit); } catch { /* Keep the session preference. */ } }, [unit]);
@@ -74,12 +74,15 @@ export default function App() {
     });
     setStatus('Saved city order updated.');
   };
-  return <div className="app-container">
+  return <div className="app-shell">
+    <WeatherBackground current={weather?.currentWeatherData.current} now={now}/>
     <a className="skip-link" href="#weatherContent">Skip to weather</a>
-    <WeatherBackground current={weather?.currentWeatherData.current}/>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
-    <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={loading}/>
+    <div className="search-row"><div className="toolbar-inner">
+    <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={locating}/>
     <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onReorder={reorder} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
+    </div></div>
+    <div className="app-container">
     <p className="sr-only" role="status" aria-live="polite">{status}</p>
     {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
     {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent" tabIndex={-1}>
@@ -87,5 +90,6 @@ export default function App() {
       <ForecastExplorer key={weather.currentCity.id} days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/>
     </main> : null}
     {!loading && (weather || error) && <Footer/>}
+    </div>
   </div>;
 }

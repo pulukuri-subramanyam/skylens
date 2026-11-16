@@ -15,3 +15,21 @@ test('both themes have no serious accessibility violations or page overflow', as
     await page.locator('#themeToggle').click();
   }
 });
+
+// Keep full empty-search Axe coverage in the dedicated Firefox accessibility job.
+test('empty city suggestions have no serious accessibility violations in both themes',async({page})=>{
+  await page.route('**/api/weather?**',route=>new URL(route.request().url()).searchParams.get('q')==='Qzznomatch'?route.fulfill({json:[]}):route.fallback());
+  await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
+  await page.getByRole('combobox').fill('Qzznomatch');
+  for(let i=0;i<2;i++){
+    await page.getByRole('combobox').focus();
+    await expect(page.getByText('No suggestions found',{exact:true})).toBeVisible();
+    await expect(page.getByRole('option')).toHaveCount(0);
+    await expect(page.getByRole('listbox')).toHaveCount(0);
+    await expect(page.getByRole('combobox')).toHaveAttribute('aria-expanded','false');
+    await page.waitForTimeout(600);
+    const scan=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+    expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
+    await page.locator('#themeToggle').click();
+  }
+});

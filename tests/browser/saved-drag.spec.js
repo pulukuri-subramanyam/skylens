@@ -13,6 +13,7 @@ test.beforeEach(async({page})=>{
   },cities);
   await page.goto('/');
   await expect(page.locator('#currentTemp')).toBeVisible();
+  await page.locator('#savedCitiesBtn').click();
 });
 const order=page=>page.locator('[aria-label="Saved cities"] .saved-city-chip').evaluateAll(es=>es.map(e=>e.dataset.cityId));
 async function points(page,from,to){
@@ -31,6 +32,7 @@ test('mouse drag reorders wrapped saved cities, persists, and does not select a 
   expect(await order(page)).toEqual(['saved-1','saved-2','saved-3','saved-4','saved-5','saved-0']);
   await expect(page.locator('#locationName')).toHaveText('London, England');
   await page.reload();await expect(page.locator('#currentTemp')).toBeVisible();
+  await page.locator('#savedCitiesBtn').click();
   expect(await order(page)).toEqual(['saved-1','saved-2','saved-3','saved-4','saved-5','saved-0']);
 });
 test('visible arrows are absent; drag-handle keyboard controls and remove still work',async({page})=>{
@@ -93,4 +95,18 @@ test('reduced motion preserves live dragging without neighbour animations',async
   await expect.poll(()=>order(page)).toEqual(['saved-1','saved-0','saved-2','saved-3','saved-4','saved-5']);
   expect(await page.locator('.saved-city-list [data-city-id]').evaluateAll(es=>es.some(e=>e.getAnimations().length>0))).toBe(false);
   await page.mouse.up();
+});
+
+test('dragging scrolls a long saved-city menu and outside release restores storage order',async({page})=>{
+  await page.setViewportSize({width:390,height:700});
+  await page.evaluate(seed=>localStorage.setItem('weatherapp-saved-cities',JSON.stringify(Array.from({length:24},(_,i)=>({...seed[i%seed.length],id:'long-'+i})))),cities);
+  await page.reload();await expect(page.locator('#currentTemp')).toBeVisible();await page.locator('#savedCitiesBtn').click();
+  const original=await order(page);
+  const handle=await page.locator('[data-city-id="long-0"] .saved-city-drag').boundingBox();
+  const menu=page.locator('#savedCitiesMenu');const box=await menu.boundingBox();
+  await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);await page.mouse.down();
+  await page.mouse.move(box.x+box.width/2,box.y+box.height-12,{steps:12});
+  await expect.poll(()=>menu.evaluate(element=>element.scrollTop)).toBeGreaterThan(80);
+  await page.mouse.move(1,1);await page.mouse.up();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('weatherapp-saved-cities')).map(city=>city.id))).toEqual(original);
 });

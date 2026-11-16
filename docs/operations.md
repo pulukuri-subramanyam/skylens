@@ -16,6 +16,8 @@ Firefox accessibility scans run in a separate CI job with one worker and no auto
 
 ## Monitoring
 
+Playwright is pinned to stable 1.64.1 because 1.65 bundles Firefox build 1572, which has a [cross-world ARIA reflection crash](https://github.com/microsoft/playwright/issues/43967) during role/name lookups and Axe scans. Keep the full accessibility scans and role-based interaction checks. Revisit the pin when the Firefox fix reaches a stable Playwright release.
+
 - `GET /api/health` reports API-key readiness and a short release identifier. It does not return the key or call a paid provider.
 - The `Production health` GitHub workflow checks the page, readiness, geocoding and Open-Meteo every hour after this workflow reaches the default branch. It also supports manual runs. GitHub schedules can be delayed and are not a continuous uptime guarantee.
 - Review failed workflow runs in GitHub Actions. Enable GitHub's failed-workflow notifications in your account if you want notifications; no external messaging service is configured.
