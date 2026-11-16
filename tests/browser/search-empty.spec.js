@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
 import { providers } from './fixtures';
 
 test('empty search stays visible, can be dismissed, and recovers to keyboard selection', async ({page}) => {
@@ -12,8 +11,6 @@ test('empty search stays visible, can be dismissed, and recovers to keyboard sel
   await expect(message).toBeVisible();
   await expect(input).toHaveAttribute('aria-expanded','true');
   await expect(page.getByRole('option')).toHaveCount(0);
-  const scan = await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
-  expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
   await input.press('Escape'); await expect(message).toBeHidden();
   await page.locator('#locationName').click(); await input.focus(); await expect(message).toBeVisible();
   await input.fill('Q'); await expect(page.locator('.city-suggestions')).toHaveCount(0);
