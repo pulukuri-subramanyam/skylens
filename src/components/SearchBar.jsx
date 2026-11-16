@@ -36,14 +36,14 @@ export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
           event.preventDefault(); setOpen(true);
           setActive(index => event.key === 'ArrowDown' ? (index + 1) % locations.length : index <= 0 ? locations.length - 1 : index - 1);
         }
-      }} placeholder="Search a city" autoComplete="off" aria-label="Search for a city" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls="citySuggestions" aria-expanded={visible} aria-activedescendant={visible && locations[active] ? `city-suggestion-${active}` : undefined} className="search-input"/>
+      }} placeholder="Search a city" autoComplete="off" aria-label="Search for a city" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" aria-controls={visible && locations.length ? 'citySuggestions' : undefined} aria-expanded={visible && locations.length > 0} aria-activedescendant={visible && locations[active] ? `city-suggestion-${active}` : undefined} className="search-input"/>
       <button id="searchBtn" type="submit" aria-label="Search" className="search-btn"><Icon name="search" /></button>
       {visible && <div className="city-suggestions" onPointerDown={event => event.preventDefault()}>
-        <div ref={list} id="citySuggestions" role="listbox" aria-label="City suggestions" aria-busy={loading}>
+        {locations.length > 0 && <div ref={list} id="citySuggestions" role="listbox" aria-label="City suggestions" aria-busy={loading}>
         {locations.map((location, index) => <div key={`${location.lat},${location.lon},${location.name}`} id={`city-suggestion-${index}`} role="option" aria-selected={active === index} onClick={() => choose(location)} className="city-suggestion">
           <span className="city-suggestion-name">{location.name}</span><span className="city-suggestion-meta"><span className="city-suggestion-details">{weatherService.formatCitySuggestionDetails(location)}</span>{location.source && <span className="city-suggestion-source">{location.source}</span>}</span>
         </div>)}
-        </div>
+        </div>}
         {(loading || !locations.length || needsChoice) && <p role="status" className="city-suggestion-status">{loading ? locations.length ? 'Finding more places\u2026' : 'Searching places\u2026' : needsChoice ? 'Choose a location to see its weather.' : failed ? 'Could not load suggestions. Try again or search by city and state.' : 'No suggestions found'}</p>}
       </div>}
     </div>

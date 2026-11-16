@@ -9,8 +9,10 @@ test('empty search stays visible, can be dismissed, and recovers to keyboard sel
   await input.fill('Qzznomatch');
   const message = page.getByText('No suggestions found', {exact:true});
   await expect(message).toBeVisible();
-  await expect(input).toHaveAttribute('aria-expanded','true');
+  await expect(input).toHaveAttribute('aria-expanded','false');
   await expect(page.getByRole('option')).toHaveCount(0);
+  await expect(page.getByRole('listbox')).toHaveCount(0);
+  await expect(input).not.toHaveAttribute('aria-controls');
   await input.press('Escape'); await expect(message).toBeHidden();
   await page.locator('#locationName').click(); await input.focus(); await expect(message).toBeVisible();
   await input.fill('Q'); await expect(page.locator('.city-suggestions')).toHaveCount(0);
