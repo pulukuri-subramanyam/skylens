@@ -4,6 +4,11 @@ export const particleCounts = {
   snow: { light:20, medium:32, heavy:44 },
   stars: { medium:22 }
 };
+export const phoneParticleCounts = {
+  rain: { light:10, medium:16, heavy:22 },
+  snow: { light:8, medium:12, heavy:16 },
+  stars: { medium:12 }
+};
 
 export function precipitationIntensity(current) {
   const text = current?.condition?.text || '';

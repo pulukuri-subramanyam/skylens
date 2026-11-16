@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ambientWind, daylightTint, particleCounts, precipitationIntensity } from '../src/lib/weatherAmbience.js';
+import { ambientWind, daylightTint, particleCounts, phoneParticleCounts, precipitationIntensity } from '../src/lib/weatherAmbience.js';
 
 test('ambient precipitation follows provider severity descriptions with bounded particle counts',()=>{
   for(const [text,intensity] of [['Light rain','light'],['Heavy rain','heavy'],['Light snow','light'],['Heavy snow showers','heavy'],['Rain','medium'],['Snow','medium'],['Thunderstorm with hail','heavy'],['Light drizzle','light']]) {
@@ -11,6 +11,7 @@ test('ambient precipitation follows provider severity descriptions with bounded 
     assert.ok(particleCounts[kind].light < particleCounts[kind].medium);
     assert.ok(particleCounts[kind].medium < particleCounts[kind].heavy);
     assert.ok(particleCounts[kind].heavy <= 56);
+    for(const intensity of ['light','medium','heavy']) assert.ok(phoneParticleCounts[kind][intensity] < particleCounts[kind][intensity]);
   }
 });
 

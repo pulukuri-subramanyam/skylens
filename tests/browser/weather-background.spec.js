@@ -90,7 +90,7 @@ test('weather scenes crossfade, discard old layers and use lighter particle dens
     await expect(page.locator('.weather-scene.is-leaving')).toHaveCount(0);
     for(const [width,count] of [[1440,desktopCount],[390,phoneCount]]) {
       await page.setViewportSize({width,height:900});
-      expect(await scene.locator('.weather-particle').evaluateAll(elements=>elements.filter(el=>getComputedStyle(el).display!=='none').length)).toBe(count);
+      await expect.poll(()=>scene.locator('.weather-particle').evaluateAll(elements=>elements.filter(el=>getComputedStyle(el).visibility==='visible').length)).toBe(count);
     }
     const variations=await scene.locator('.weather-particle').evaluateAll(elements=>elements.slice(0,12).map(el=>getComputedStyle(el).animationDuration));
     expect(new Set(variations).size).toBeGreaterThan(5);
@@ -109,4 +109,46 @@ test('weather scenes crossfade, discard old layers and use lighter particle dens
   }
   await expect(page.locator('.weather-scene.is-current')).toHaveClass(/clear-day/);
   await expect(page.locator('.weather-scene.is-leaving')).toHaveCount(0);
+});
+
+test('rain intensity fades particles without replacing its scene or restarting falling motion', async ({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});await providers(page);
+  let code=61;
+  await page.route('https://api.open-meteo.com/**',route=>{const data=forecast();data.current.weather_code=code;return route.fulfill({json:data});});
+  await page.goto('/');await expect(page.locator('#currentTemp')).toHaveText('15°C');
+  await expect(page.locator('.weather-scene.is-leaving')).toHaveCount(0);
+  const scene=await page.locator('.weather-scene.is-current').elementHandle();
+  const particle=await page.locator('.weather-scene.is-current .weather-particle').first().elementHandle();
+  const started=await particle.evaluate(el=>el.getAnimations().find(a=>a.animationName==='weather-rain-fall').startTime);
+  code=65;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
+  await expect(page.locator('.weather-scene.is-current')).toHaveClass(/precip-heavy/);
+  expect(await scene.evaluate(el=>el===document.querySelector('.weather-scene.is-current'))).toBe(true);
+  await expect(page.locator('.weather-scene.is-leaving')).toHaveCount(0);
+  expect(await particle.evaluate(el=>el.getAnimations().find(a=>a.animationName==='weather-rain-fall').startTime)).toBe(started);
+  const extra=page.locator('.weather-scene.is-current .weather-particle').nth(page.viewportSize().width < 640 ? 18 : 40);
+  await expect.poll(()=>extra.evaluate(el=>getComputedStyle(el).visibility)).toBe('visible');
+  code=61;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
+  expect(await extra.evaluate(el=>getComputedStyle(el).transitionDuration.split(',')[0].trim())).toBe('1.2s');
+  await expect.poll(()=>extra.evaluate(el=>getComputedStyle(el).visibility)).toBe('hidden');
+});
+
+test('snow depth, evolving clouds and offset storm glows stay soft behind the dashboard', async ({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});await providers(page);let code=71;
+  await page.route('https://api.open-meteo.com/**',route=>{const data=forecast();data.current.weather_code=code;return route.fulfill({json:data});});
+  await page.goto('/');await expect(page.locator('#currentTemp')).toHaveText('15°C');
+  const current=page.locator('.weather-scene.is-current');
+  expect(await current.locator('.snow').evaluate(el=>getComputedStyle(el).maskImage)).not.toBe('none');
+  const duration=selector=>current.locator(selector).first().evaluate(el=>parseFloat(getComputedStyle(el).animationDuration));
+  expect(await duration('.snow .is-near')).toBeLessThan(await duration('.snow .is-far'));
+  expect(await current.locator('.snow .particle-mark').first().evaluate(el=>getComputedStyle(el).animationName)).toBe('weather-flake-sway');
+  code=3;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
+  const wisp=current.locator('.cloud-evolution span').first();
+  const shape=await wisp.evaluate(el=>getComputedStyle(el).transform);
+  await expect.poll(()=>wisp.evaluate(el=>getComputedStyle(el).transform)).not.toBe(shape);
+  code=95;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
+  const glow=current.locator('.storm-glow');
+  const cycles=await glow.evaluate(el=>['::before','::after'].map(p=>parseFloat(getComputedStyle(el,p).animationDuration)));
+  expect(cycles[0]).not.toBe(cycles[1]);expect(Math.min(...cycles)).toBeGreaterThan(30);
+  const peaks=await glow.evaluate(el=>el.getAnimations({subtree:true}).filter(a=>a.animationName?.startsWith('weather-storm-glow')).map(a=>Math.max(...a.effect.getKeyframes().map(frame=>Number(frame.opacity)))));
+  expect(peaks).toHaveLength(2);expect(Math.max(...peaks)).toBeLessThanOrEqual(.14);
 });

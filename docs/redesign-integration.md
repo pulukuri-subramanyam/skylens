@@ -37,6 +37,8 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 
 ## Changed files
 
+Motion polish keeps a stable bounded particle pool within each weather family. Light/heavy changes fade visibility and size over 1200ms without restarting falling motion or crossfading the whole scene. A vertical mask softens precipitation at viewport edges. Snow has independently timed sway, with smaller, softer distant flakes falling more slowly. Three subtle cloud wisps (two on phones) evolve at different speeds. Storm ambience uses low-opacity 37s and 61s offset glow cycles rather than rapid flashes. Responsive checks use browser-emulated viewports; they do not establish physical-phone performance.
+
 | File | Change |
 | --- | --- |
 | `src/App.jsx` | Reference shell and toolbar composition; new browser theme colors; retains state/handlers and status surfaces. |
@@ -70,7 +72,7 @@ Missing optional readings continue to show `Unavailable`. Sunrise/sunset progres
 ## Verification
 
 - `npm run check`: all 17 unit tests and production build passed after adaptive ambience refinements.
-- Playwright `chromium`, `mobile` and `pwa` projects: all 53 tests passed using installed Chrome after adaptive ambience refinements. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, crossfades, intensity, capped wind, daylight clock updates, particle density, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
+- Playwright `chromium`, `mobile` and `pwa` projects: all 57 tests passed using installed Chrome after motion polish. Coverage includes search, errors, geolocation, saved-city pointer/touch/keyboard drag, chart interaction/resizing, real-condition background motion, crossfades, continuous intensity fades, snow depth, cloud evolution, bounded storm glows, capped wind, daylight clock updates, particle density, reduced motion, accessibility, persistence and offline recovery. A local wrapper starts the production preview and runs the repository test suite with mocked providers.
 - Visual checks at 320, 390, 640, 768, 1024 and 1440 pixels in both themes: no document horizontal overflow. Decorative hero rings are intentionally clipped. Screenshots use deterministic provider fixtures, not live observations.
 - Additional WCAG A/AA Axe scans at desktop and phone widths in both themes: no serious/critical violations.
 - `npm audit --omit=dev --audit-level=high`: zero vulnerabilities.
