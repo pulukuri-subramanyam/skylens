@@ -101,6 +101,10 @@ test('Today is highlighted until a forecast day is selected, without changing th
   await cards.nth(2).click();await expect(cards.nth(2)).toHaveClass(/is-selected/);
   await expect(page.locator('.forecast-item.is-default')).toHaveCount(0);
   await expect(cards.first()).not.toHaveClass(/is-selected/);
+  const background=card=>card.evaluate(el=>getComputedStyle(el).backgroundColor);
+  expect(await background(cards.first())).not.toBe(await background(cards.nth(1)));
+  expect(await background(cards.first())).not.toBe(await background(cards.nth(2)));
+  expect(await background(cards.nth(2))).not.toBe(await background(cards.nth(1)));
   await cards.nth(2).click();await expect(cards.first()).toHaveClass(/is-default/);
   await expect(page.locator('.chart-heading .eyebrow')).toHaveText('Next 24 hours');
 });
