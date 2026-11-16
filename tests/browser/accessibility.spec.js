@@ -18,7 +18,7 @@ test('both themes have no serious accessibility violations or page overflow', as
 
 
 // Keep Axe scans in this suite so Firefox uses its dedicated single-worker job.
-test('empty city suggestions have no serious accessibility violations in both themes',async({page})=>{
+test('empty city suggestions have no serious accessibility violations in both themes',async({page,browserName})=>{
   await page.route('**/api/weather?**',route=>new URL(route.request().url()).searchParams.get('q')==='Qzznomatch'?route.fulfill({json:[]}):route.fallback());
   await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
   await page.getByRole('combobox').fill('Qzznomatch');
@@ -27,7 +27,12 @@ test('empty city suggestions have no serious accessibility violations in both th
     await expect(page.getByText('No suggestions found',{exact:true})).toBeVisible();
     await expect(page.getByRole('option')).toHaveCount(0);
     await page.waitForTimeout(600); // Match the settled-theme audit above.
-    const scan=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+    const audit=new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']);
+    // The Firefox partial-frame runner crashes on this open combobox. Use the
+    // supported axe.run path, with an explicit guard against omitted frames.
+    // https://github.com/dequelabs/axe-core-npm/blob/develop/packages/playwright/error-handling.md
+    if(browserName==='firefox'){expect(page.frames()).toHaveLength(1);audit.setLegacyMode();}
+    const scan=await audit.analyze();
     expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
     await page.locator('#themeToggle').click();
   }
