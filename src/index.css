@@ -48,8 +48,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 [data-theme="dark"] .header,[data-theme="dark"] .search-row { background:#0e1624; }
 .header-content { max-width:1280px; min-height:74px; padding:12px 32px; margin:auto; display:flex; align-items:center; justify-content:space-between; gap:16px; }
 .app-title { display:flex; align-items:center; gap:10px; font-size:18px; font-weight:800; letter-spacing:-.04em; }
-.brand-mark { width:40px; height:40px; border-radius:14px; display:grid; place-items:center; background:#2864ed; color:#fff; box-shadow:0 8px 20px #2864ed40; }
-.brand-mark .ui-icon { width:24px; height:24px; }
+.brand-mark { display:block; width:40px; height:40px; flex-shrink:0; }
 .header-controls { display:flex; gap:16px; align-items:center; }
 .unit-toggle { display:flex; padding:4px; border-radius:16px; background:#e5edf5; gap:0; position:relative; isolation:isolate; }
 .unit-toggle::before { content:''; position:absolute; width:32px; height:32px; left:4px; top:4px; border-radius:12px; background:var(--surface); box-shadow:0 1px 3px #18304f15; transition:transform 180ms ease; z-index:-1; }
