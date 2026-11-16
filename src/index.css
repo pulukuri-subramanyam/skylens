@@ -161,7 +161,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .sun-time>.ui-icon { width:20px; height:20px; }
 .sun-progress-track { position:relative; flex:1; height:4px; min-width:32px; background:#214d8026; border-radius:999px; }
 .sun-progress-fill { display:block; height:100%; background:#2864ed; border-radius:999px; }
-.sun-progress-marker { position:absolute; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); display:grid; place-items:center; border-radius:50%; background:#fff1a8; color:#214d80; box-shadow:0 0 18px #fff1a8a6; animation:sun-float 2.8s ease-in-out infinite; }
+.sun-progress-marker { position:absolute; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); display:grid; place-items:center; border-radius:50%; background:#fff1a8; color:#214d80; box-shadow:0 0 18px #fff1a8a6; }
 .sun-progress-marker .ui-icon { width:12px; height:12px; }
 .sun-progress.is-unavailable .sun-progress-track { opacity:.25; }
 .sun-progress.is-unavailable .sun-progress-fill,.sun-progress.is-unavailable .sun-progress-marker { display:none; }
@@ -205,7 +205,6 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .error-title { font-size:20px; margin-bottom:10px; }
 .error-message { font-size:13px; line-height:1.7; color:var(--text-secondary); margin-bottom:16px; }
 .retry-btn { display:inline-flex; align-items:center; gap:8px; background:#2864ed; color:white; border:0; padding:10px 16px; border-radius:12px; font-weight:700; }
-@keyframes sun-float { 0%,100% { margin-top:-2px; } 50% { margin-top:2px; } }
 @keyframes refresh-spin { to { transform:rotate(360deg); } }
 .animate-spin { animation:refresh-spin 1s linear infinite; }
 @media(max-width:1279px) {
