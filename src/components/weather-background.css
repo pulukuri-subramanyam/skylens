@@ -39,8 +39,10 @@
     filter:blur(24px); opacity:.55; animation-duration:48s;
   }
   .weather-scene.dark-clouds::after { opacity:.32; animation-duration:73s; }
-  [data-theme="dark"] .weather-scene::before,[data-theme="dark"] .weather-scene::after { opacity:.18; }
-  [data-theme="dark"] .weather-scene.dark-clouds::before,[data-theme="dark"] .weather-scene.dark-clouds::after { opacity:.48; }
+  [data-theme="dark"] .weather-scene::before { opacity:.14; }
+  [data-theme="dark"] .weather-scene::after { opacity:.09; }
+  [data-theme="dark"] .weather-scene.dark-clouds::before { opacity:.32; }
+  [data-theme="dark"] .weather-scene.dark-clouds::after { opacity:.22; }
   [data-theme="light"] .weather-scene.cloudy::before { animation-name:weather-cloud-soft-near; }
   [data-theme="light"] .weather-scene.cloudy::after { animation-name:weather-cloud-soft-far; }
   [data-theme="light"] .weather-scene.dark-clouds::before,[data-theme="light"] .weather-scene.dark-clouds::after {
@@ -52,7 +54,7 @@
   .cloud-evolution span { position:absolute; width:min(66vw,700px); height:180px; left:-12%; top:24%; background:radial-gradient(ellipse 45% 27% at 30% 55%,#91aac344,transparent 85%),radial-gradient(ellipse 33% 35% at 56% 42%,#a4b9cb44,transparent 85%),radial-gradient(ellipse 40% 22% at 78% 60%,#8fa9bf38,transparent 85%); filter:blur(16px); opacity:.16; animation:weather-cloud-evolve 67s ease-in-out -23s infinite alternate; }
   .cloud-evolution span:nth-child(2) { left:auto; right:-15%; top:53%; width:min(72vw,780px); animation-duration:89s; animation-delay:-47s; animation-direction:alternate-reverse; }
   .cloud-evolution span:nth-child(3) { left:16%; top:76%; height:130px; animation-duration:109s; animation-delay:-71s; }
-  [data-theme="dark"] .cloud-evolution span { opacity:.22; }
+  [data-theme="dark"] .cloud-evolution span { opacity:.14; }
   .weather-particles { z-index:2; }
   .weather-particles:is(.rain,.snow) { mask-image:linear-gradient(to bottom,transparent,#000 8%,#000 92%,transparent); }
   .weather-particle { position:absolute; width:1px; height:1px; opacity:0; visibility:hidden; transition:opacity 1200ms ease,visibility 0s linear 1200ms; animation-delay:var(--delay) !important; animation-duration:var(--duration) !important; }
@@ -62,10 +64,14 @@
   .rain .particle-mark { width:1px; height:var(--size); border-radius:1px; background:linear-gradient(transparent,#537d9ca8); }
   .precip-light .rain .particle-mark { width:.75px; }
   .precip-heavy .rain .particle-mark { width:1.25px; }
-  [data-theme="dark"] .rain .particle-mark { background:linear-gradient(transparent,#c2dfff9c); }
+  [data-theme="dark"] .weather-particles.rain { opacity:.85; }
+  [data-theme="dark"] .rain .particle-mark { background:linear-gradient(transparent,#b4cde084); }
   .snow .weather-particle { animation:weather-snow-fall 14s linear infinite; }
   .snow .particle-mark { width:var(--size); height:var(--size); border-radius:50%; background:#fff; animation:weather-flake-sway var(--sway-duration) ease-in-out var(--sway-delay) infinite alternate; }
   .snow .is-far .particle-mark { filter:blur(.35px); }
+  [data-theme="dark"] .weather-particles.snow { opacity:.75; }
+  [data-theme="dark"] .snow .particle-mark { background:#dbe7f2; }
+  [data-theme="dark"] .snow .is-far .particle-mark { opacity:.8; }
   .stars .particle-mark { width:var(--size); height:var(--size); border-radius:50%; background:#fff; animation:weather-star-twinkle var(--duration) ease-in-out var(--delay) infinite alternate; }
   .weather-atmosphere { position:absolute; inset:-12%; z-index:1; }
   .weather-atmosphere.sunlight { background:radial-gradient(ellipse at 12% 12%,#ffe8a580,transparent 48%),radial-gradient(ellipse at 90% 75%,#ffedbd55,transparent 40%); animation:weather-sun-drift 28s ease-in-out infinite alternate; }
