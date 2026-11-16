@@ -201,6 +201,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .footer-brand { font-weight:800; }
 .footer-social-links { display:flex; gap:18px; }
 .footer-social-link { display:flex; gap:6px; align-items:center; text-decoration:none; }
+.social-icon { display:block; flex-shrink:0; line-height:1; }
 .error-container { padding:0 0 20px; }
 .error-content { padding:24px; border:1px solid var(--border-color); border-radius:22px; background:var(--surface); text-align:center; }
 .error-icon { width:32px; height:32px; color:var(--error-color); margin-bottom:12px; }

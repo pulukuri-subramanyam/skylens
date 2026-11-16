@@ -5,14 +5,13 @@ import weatherHandler from './api/weather.mjs';
 import healthHandler from './api/health.mjs';
 import eventsHandler from './api/events.mjs';
 import { serviceWorkerPlugin } from './build/serviceWorker.js';
-import { localIconsPlugin } from './build/localIcons.js';
 
 export default defineConfig(({ mode }) => {
   // Server-only configuration. Vite exposes only VITE_* variables to browser code.
   const env = loadEnv(mode, process.cwd(), '');
   if (env.OPENWEATHER_API_KEY) process.env.OPENWEATHER_API_KEY = env.OPENWEATHER_API_KEY;
   return {
-    plugins: [react(), tailwindcss(), localIconsPlugin(), serviceWorkerPlugin(), {
+    plugins: [react(), tailwindcss(), serviceWorkerPlugin(), {
       name: 'skylens-local-weather-api',
       configureServer(server) {
         for (const [path, handler] of [['/api/weather', weatherHandler], ['/api/health', healthHandler], ['/api/events', eventsHandler]]) server.middlewares.use(path, async (request, response) => {
