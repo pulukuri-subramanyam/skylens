@@ -159,8 +159,6 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .sun-time { display:flex; align-items:center; gap:6px; flex-shrink:0; color:var(--hero-text); font-size:12px; font-weight:700; }
 .sun-time-label { color:var(--hero-muted); }
 .sun-time>.ui-icon { width:20px; height:20px; }
-.sun-time:first-child>.ui-icon { color:#8b5e0a; }
-.sun-time:last-child>.ui-icon { color:#a34417; }
 .sun-progress-track { position:relative; flex:1; height:4px; min-width:32px; background:#214d8026; border-radius:999px; }
 .sun-progress-fill { display:block; height:100%; background:#2864ed; border-radius:999px; }
 .sun-progress-marker { position:absolute; top:50%; width:24px; height:24px; transform:translate(-50%,-50%); display:grid; place-items:center; border-radius:50%; background:#fff1a8; color:#214d80; box-shadow:0 0 18px #fff1a8a6; animation:sun-float 2.8s ease-in-out infinite; }
