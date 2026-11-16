@@ -39,7 +39,7 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
         {recent.length ? recent.map(city=><button key={city.id} type="button" className="city-menu-item" onClick={()=>choose(city)}><Icon name="history"/><span>{city.label}</span>{current?.currentCity?.id===city.id&&<span className="current-city-dot"/>}</button>) : <p className="empty-city-menu">No recent cities yet.</p>}
       </div>
     </CityMenu>
-    <CityMenu name="Saved" icon="check" count={saved.length} open={openMenu==='saved'} onToggle={()=>setOpenMenu(value=>value==='saved'?null:'saved')} onClose={closeMenu}>
+    <CityMenu name="Saved" icon="bookmark" count={saved.length} open={openMenu==='saved'} onToggle={()=>setOpenMenu(value=>value==='saved'?null:'saved')} onClose={closeMenu}>
       <span id="savedCityDragHelp" className="sr-only">Drag to another saved city and release to reorder. Focus the drag handle and use arrow keys to move one place. Press Escape to cancel dragging.</span>
       <div ref={list} className="city-chip-list saved-city-list" role="group" aria-label="Saved cities"
         onPointerMove={move} onPointerUp={finish} onPointerCancel={cancel} onLostPointerCapture={cancel}>

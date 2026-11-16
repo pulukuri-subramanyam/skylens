@@ -25,7 +25,7 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refr
     <div className="weather-rings" aria-hidden="true"/>
     <div className="current-weather-header"><div className="location-info">
       <div className="location-heading-row"><h2 id="locationName" className="location-name">{currentCity.label}</h2>
-        <button id="saveCityBtn" type="button" onClick={onSave} aria-label={saved?`Remove ${currentCity.label} from saved cities`:`Save ${currentCity.label} to saved cities`} aria-pressed={saved} className={`save-city-btn ${saved?'is-saved':''}`}><Icon name={saved?'check':'plus'}/><span>{saved?'Saved':'Save'}</span></button>
+        <button id="saveCityBtn" type="button" onClick={onSave} aria-label={saved?`Remove ${currentCity.label} from saved cities`:`Save ${currentCity.label} to saved cities`} aria-pressed={saved} className={`save-city-btn ${saved?'is-saved':''}`}><Icon name="bookmark" fill={saved?'currentColor':'none'}/><span>{saved?'Saved':'Save'}</span></button>
       </div>
       <p className="city-local-time">Local time <time id="cityLocalTime" dateTime={new Date(now).toISOString()}>{localTime}</time></p>
       <p className="city-local-date" id="cityLocalDate">{localDate}</p>
