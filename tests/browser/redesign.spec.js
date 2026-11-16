@@ -90,3 +90,17 @@ test('city panels share desktop edges and match their own button on phones and t
     }
   }
 });
+
+
+test('Today is highlighted until a forecast day is selected, without changing the default chart', async ({page}) => {
+  await providers(page);await page.goto('/');await expect(page.locator('#temperatureChart')).toBeVisible();
+  const cards=page.locator('.forecast-item');
+  await expect(cards.first()).toHaveClass(/is-default/);
+  await expect(cards.first()).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('.chart-heading .eyebrow')).toHaveText('Next 24 hours');
+  await cards.nth(2).click();await expect(cards.nth(2)).toHaveClass(/is-selected/);
+  await expect(page.locator('.forecast-item.is-default')).toHaveCount(0);
+  await expect(cards.first()).not.toHaveClass(/is-selected/);
+  await cards.nth(2).click();await expect(cards.first()).toHaveClass(/is-default/);
+  await expect(page.locator('.chart-heading .eyebrow')).toHaveText('Next 24 hours');
+});
