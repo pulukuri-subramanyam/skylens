@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 // Generate the shell list from Vite's hashed filenames on every production build.
 export function serviceWorkerPlugin() {
@@ -6,7 +7,9 @@ export function serviceWorkerPlugin() {
     name: 'skylens-service-worker',
     generateBundle(_options, bundle) {
       const assets = Object.keys(bundle).filter(name => /\.(?:js|css|woff2)$/.test(name)).map(name => '/' + name);
-      const revision = createHash('sha256').update(assets.join(',')).digest('hex').slice(0, 12);
+      // The manifest is cached too; refresh installed shells when its colours change.
+      const manifest = readFileSync(new URL('../public/site.webmanifest', import.meta.url));
+      const revision = createHash('sha256').update(assets.join(',')).update(manifest).digest('hex').slice(0, 12);
       const shell = ['/', '/index.html', '/favicon.svg', '/site.webmanifest', '/assets/fonts/inter-variable.woff2', '/assets/fonts/plus-jakarta-sans-latin.woff2', ...assets];
       this.emitFile({ type: 'asset', fileName: 'sw.js', source: `
 const CACHE_NAME = 'skylens-react-${revision}';
