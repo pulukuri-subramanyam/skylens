@@ -23,9 +23,15 @@ test('real current conditions select ambient motion without moving dashboard car
     const card=page.locator('.current-weather-card');
     await card.hover();
     const before=await card.boundingBox();
-    const animation=await backdrop.evaluate(el=>el.getAnimations({subtree:true}).find(a=>a.playState==='running')?.currentTime);
+    const active=page.locator('.weather-scene.is-current');
+    await expect(active).toHaveClass(new RegExp(kind));await expect(active).toHaveClass(new RegExp(extra));
+    // Hold one active looping animation, rather than following changing array order
+    // while the outgoing scene is removed during a crossfade.
+    const clock=await active.evaluateHandle(el=>el.getAnimations({subtree:true}).find(a=>a instanceof CSSAnimation && a.playState==='running' && a.animationName!=='weather-scene-enter'));
+    const animation=await clock.evaluate(a=>a?.currentTime);
     expect(animation).toBeGreaterThanOrEqual(0);
-    await expect.poll(()=>backdrop.evaluate(el=>el.getAnimations({subtree:true}).find(a=>a.playState==='running')?.currentTime)).toBeGreaterThan(animation);
+    await expect.poll(()=>clock.evaluate(a=>a.currentTime)).toBeGreaterThan(animation);
+    await clock.dispose();
     expect(await card.boundingBox()).toEqual(before);
     expect(await backdrop.evaluate(el=>getComputedStyle(el).pointerEvents)).toBe('none');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(await page.evaluate(()=>innerWidth));
