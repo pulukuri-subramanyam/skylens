@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { ambientWind, daylightTint, particleCounts, phoneParticleCounts, precipitationIntensity } from '../lib/weatherAmbience';
 import './weather-background.css';
 
@@ -47,7 +47,7 @@ function WeatherScene({ scene, leaving }) {
   </div>;
 }
 
-export function WeatherBackground({ current, now }) {
+export const WeatherBackground = memo(function WeatherBackground({ current, now }) {
   const next = describeWeather(current);
   const wind = ambientWind(current), daylight = daylightTint(current, now);
   const [scenes, setScenes] = useState(() => ({ current: next, previous: null }));
@@ -62,4 +62,4 @@ export function WeatherBackground({ current, now }) {
     {scenes.previous && <WeatherScene key={scenes.previous.key} scene={scenes.previous} leaving/>}
     <WeatherScene key={scenes.current.key} scene={scenes.current}/>
   </div>;
-}
+});

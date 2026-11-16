@@ -35,9 +35,11 @@ Ambient animation refinement adds varied individual drops/flakes, independently 
 
 Missing optional readings continue to show `Unavailable`. Sunrise/sunset progress is clamped and handles nighttime or missing timestamps. Temperature/rain tooltips use the actual hovered sample. No reference sample weather values were copied into production components.
 
+Performance follow-up (verified with all 17 unit tests, production build and 14 desktop/mobile background/theme browser checks): shortened theme fades to 180ms, removed large-area blur filters and per-particle colour interpolation, paused inactive particle animations, and memoized the background so unrelated theme/control renders do not rebuild its particle tree. Soft radial gradients, weather intensity, wind and daylight behaviour remain.
+
 ## Changed files
 
-Theme balance uses a 700ms opacity crossfade between light and dark sky palettes, with smooth particle colour/opacity changes. It keeps the existing scene and particle nodes mounted, including their animation clocks. Snow uses a more muted sky and lower flake opacity to avoid dominating rain and clouds. Cloud drift names remain consistent across themes to prevent position resets. Reduced motion switches colours immediately.
+Theme balance uses a 180ms opacity crossfade between light and dark sky palettes, with smooth particle colour/opacity changes. It keeps the existing scene and particle nodes mounted, including their animation clocks. Snow uses a more muted sky and lower flake opacity to avoid dominating rain and clouds. Cloud drift names remain consistent across themes to prevent position resets. Reduced motion switches colours immediately.
 
 Focus-aware polish uses existing search/menu expanded states to soften the backdrop while a city menu is open. On phones, small decorative accents are clipped to the existing 16px section gaps; they add no layout space and cannot cover or intercept readings. These accents stop for reduced motion and pause in hidden pages. A 19s transform-only easing cycle adds decorative wind variation; it does not claim measured gust data or change the wind reading. Fall drift plus easing remains within the existing cap.
 
