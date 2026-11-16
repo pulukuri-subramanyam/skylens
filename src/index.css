@@ -153,7 +153,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .detail-label { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--hero-muted); }
 .detail-value { display:block; margin-top:3px; font-size:14px; font-weight:800; overflow-wrap:anywhere; }
 .detail-value small { font-size:9px; font-weight:600; }
-#windDirection { display:inline-block; margin-left:.5em; color:var(--hero-muted); }
+#windDirection,.uv-severity { display:inline-block; margin-left:.5em; color:var(--hero-muted); }
 .air-pm25 { display:block; font-size:9px; font-weight:600; color:var(--hero-muted); margin-top:2px; }
 .sun-progress { grid-column:1 / -1; grid-row:3; display:flex; align-items:center; gap:12px; margin-top:8px; padding-top:20px; border-top:1px solid #214d8026; }
 .sun-time { display:flex; align-items:center; gap:6px; flex-shrink:0; color:var(--hero-text); font-size:12px; font-weight:700; }
