@@ -60,9 +60,9 @@ test('chart hover tooltips remain interactive and preferences survive reload',as
 });
 
 
-test('city panels share desktop edges and match their own button on phones', async ({page}) => {
+test('city panels share desktop edges and match their own button on phones and tablets', async ({page}) => {
   await providers(page);await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();
-  for (const width of [320,768,1440]) {
+  for (const width of [320,768,1024,1279,1280,1440]) {
     await page.setViewportSize({width,height:900});
     for (const theme of ['light','dark']) {
       if (await page.locator('html').getAttribute('data-theme') !== theme) await page.locator('#themeToggle').click();
@@ -70,8 +70,8 @@ test('city panels share desktop edges and match their own button on phones', asy
         await page.locator('#'+name+'CitiesBtn').click();
         const panel=page.locator('#'+name+'CitiesMenu');await expect(panel).toBeVisible();
         const box=await panel.boundingBox();
-        const left=await page.locator(width<640 ? '#'+name+'CitiesBtn' : '#recentCitiesBtn').boundingBox();
-        const right=await page.locator(width<640 ? '#'+name+'CitiesBtn' : '#savedCitiesBtn').boundingBox();
+        const left=await page.locator(width<1280 ? '#'+name+'CitiesBtn' : '#recentCitiesBtn').boundingBox();
+        const right=await page.locator(width<1280 ? '#'+name+'CitiesBtn' : '#savedCitiesBtn').boundingBox();
         expect(Math.abs(box.x-left.x)).toBeLessThanOrEqual(1);
         expect(Math.abs(box.x+box.width-right.x-right.width)).toBeLessThanOrEqual(1);
         expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);
