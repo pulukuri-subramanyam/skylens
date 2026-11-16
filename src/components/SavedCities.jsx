@@ -34,9 +34,9 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
     return () => controller.abort();
   }, [saved, current]);
   return <section className="city-shortcuts" aria-label="Saved and recent cities">
-    <CityMenu name="Recent" icon="refresh" count={recent.length} open={openMenu==='recent'} onToggle={()=>setOpenMenu(value=>value==='recent'?null:'recent')} onClose={closeMenu}>
+    <CityMenu name="Recent" icon="history" count={recent.length} open={openMenu==='recent'} onToggle={()=>setOpenMenu(value=>value==='recent'?null:'recent')} onClose={closeMenu}>
       <div className="recent-city-list" role="group" aria-label="Recent cities">
-        {recent.length ? recent.map(city=><button key={city.id} type="button" className="city-menu-item" onClick={()=>choose(city)}><Icon name="refresh"/><span>{city.label}</span>{current?.currentCity?.id===city.id&&<span className="current-city-dot"/>}</button>) : <p className="empty-city-menu">No recent cities yet.</p>}
+        {recent.length ? recent.map(city=><button key={city.id} type="button" className="city-menu-item" onClick={()=>choose(city)}><Icon name="history"/><span>{city.label}</span>{current?.currentCity?.id===city.id&&<span className="current-city-dot"/>}</button>) : <p className="empty-city-menu">No recent cities yet.</p>}
       </div>
     </CityMenu>
     <CityMenu name="Saved" icon="check" count={saved.length} open={openMenu==='saved'} onToggle={()=>setOpenMenu(value=>value==='saved'?null:'saved')} onClose={closeMenu}>

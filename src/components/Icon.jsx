@@ -9,6 +9,7 @@ const paths = {
   moon: <path d="M20.6 15.5A8.6 8.6 0 0 1 8.5 3.4 8.7 8.7 0 1 0 20.6 15.5Z"/>,
   pressure: <><circle cx="12" cy="12" r="8"/><path d="M12 12 16.5 8M7 17h10"/></>,
   air: <path d="M4 8h10.5a2.5 2.5 0 1 0-2.2-3.7M4 12h15M4 16h9.5a2.5 2.5 0 1 1-2.2 3.7"/>,
+  history: <><path d="M3 11a9 9 0 1 1 2.7 7M3 4v7h7"/><path d="M12 7v5l3 2"/></>,
   refresh: <><path d="M20 7v5h-5"/><path d="M4 17v-5h5M6.1 8.2a7 7 0 0 1 11.3-1.4L20 12M4 12l2.6 5.2a7 7 0 0 0 11.3-1.4"/></>,
   location: <><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
   close: <path d="m7 7 10 10M17 7 7 17"/>,
