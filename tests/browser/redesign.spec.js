@@ -108,3 +108,26 @@ test('Today is highlighted until a forecast day is selected, without changing th
   await cards.nth(2).click();await expect(cards.first()).toHaveClass(/is-default/);
   await expect(page.locator('.chart-heading .eyebrow')).toHaveText('Next 24 hours');
 });
+
+
+test('saved city subtitles distinguish same names and support older saved entries', async ({page}) => {
+  await providers(page);
+  await page.addInitScript(() => localStorage.setItem('weatherapp-saved-cities',JSON.stringify([
+    {id:'il',name:'Springfield',label:'Springfield, Illinois',query:'Springfield',state:'Illinois',country:'US',lat:39.78,lon:-89.65},
+    {id:'ma',name:'Springfield',label:'Springfield, Massachusetts',query:'Springfield',state:'Massachusetts',country:'US',lat:42.1,lon:-72.59},
+    {id:'legacy',name:'London',label:'London, England',query:'London',lat:51.5,lon:-.12},
+    {id:'plain',name:'Example',label:'Example',query:'Example'}
+  ])));
+  await page.goto('/');await expect(page.locator('#currentTemp')).toBeVisible();await page.locator('#savedCitiesBtn').click();
+  await expect(page.locator('[data-city-id="il"] .city-chip-region')).toHaveText('Illinois, United States');
+  await expect(page.locator('[data-city-id="ma"] .city-chip-region')).toHaveText('Massachusetts, United States');
+  await expect(page.locator('[data-city-id="legacy"] .city-chip-region')).toHaveText('England');
+  await expect(page.locator('[data-city-id="plain"] .city-chip-region')).toHaveCount(0);
+  for(const width of [320,768,1440]) {
+    await page.setViewportSize({width,height:900});
+    for(const chip of await page.locator('.saved-city-chip').all()) {
+      const box=await chip.boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);
+      expect(await chip.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+    }
+  }
+});

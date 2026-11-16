@@ -7,6 +7,12 @@ import { Icon } from './Icon';
 import { useSavedCityDrag } from '../hooks/useSavedCityDrag';
 import { CityMenu } from './CityMenu';
 
+function savedCityRegion(city) {
+  const prefix=city.name+', ';
+  const legacyRegion=city.label?.startsWith(prefix)?city.label.slice(prefix.length):'';
+  return service.formatCitySuggestionDetails({...city,state:city.state||legacyRegion});
+}
+
 export function SavedCities({ saved, recent, current, unit, onSelect, onMove, onRemove, onReorder }) {
   const cache = useRef(new Map());
   const {list,drag,ordered,start,move,finish,cancel} = useSavedCityDrag(saved,onReorder);
@@ -56,6 +62,7 @@ export function SavedCities({ saved, recent, current, unit, onSelect, onMove, on
             }}><Icon name="grip"/></button>
           <button type="button" aria-label={`Show weather for ${city.label}`} aria-current={current?.currentCity?.id === city.id ? 'true' : undefined} onClick={() => choose(city)} className={`city-chip ${current?.currentCity?.id === city.id ? 'is-current' : ''}`}>
             {readings[city.id] && <img className="city-chip-icon" src={weatherIconUrl(readings[city.id].icon)} alt=""/>}<span title={city.label} className="city-chip-name">{city.name}</span>{readings[city.id] && <strong>{formatTemperature(readings[city.id].temp, unit)}</strong>}
+            {savedCityRegion(city) && <small className="city-chip-region">{savedCityRegion(city)}</small>}
           </button>
           <span className="saved-city-controls">
             <button type="button" aria-label={`Remove ${city.label} from saved cities`} title={`Remove ${city.label}`} onClick={() => onRemove(city.id)} className="saved-city-control"><Icon name="close"/></button>
