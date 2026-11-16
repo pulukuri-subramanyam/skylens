@@ -130,6 +130,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .city-local-time time { margin-left:4px; }
 .city-local-date { margin-top:2px; font-weight:700; }
 .location-meta-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; align-items:center; }
+.last-updated { font-size:11px; font-weight:600; color:var(--hero-muted); }
 .refresh-btn { display:flex; align-items:center; gap:8px; min-height:32px; padding:8px 12px; font-size:11px; font-weight:700; background:#ffffff40; color:var(--hero-text); border:0; border-radius:16px; }
 .refresh-btn .ui-icon { width:14px; height:14px; }
 .data-freshness.is-stale { font-size:11px; font-weight:600; max-width:100%; }
@@ -171,6 +172,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .eyebrow { font-size:10px; font-weight:800; letter-spacing:.17em; text-transform:uppercase; color:var(--text-muted); }
 .section-title { margin-top:5px; font-size:20px; line-height:1.4; font-weight:800; letter-spacing:-.035em; }
 .section-hint { font-size:12px; font-weight:700; color:var(--text-muted); }
+.forecast-mobile-hint { display:none; }
 .forecast-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:10px; margin-top:20px; }
 .forecast-item { min-width:0; display:flex; flex-direction:column; align-items:center; padding:12px; border:1px solid var(--border-color); border-radius:18px; background:transparent; color:var(--text-primary); font:inherit; transition:background-color 180ms,border-color 180ms; }
 .forecast-item:hover { border-color:var(--accent-color); }
@@ -285,7 +287,9 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
  .sun-progress { gap:10px; }
  .sun-time>.ui-icon { width:20px; height:20px; }
  .forecast-section,.chart-section { padding:12px; }
- .section-hint { display:none; }
+ .section-heading { flex-direction:column; align-items:flex-start; gap:6px; }
+ .forecast-desktop-hint { display:none; }
+ .forecast-mobile-hint { display:inline; }
  .forecast-grid { display:flex; flex-direction:column; gap:0; margin-top:20px; }
  .forecast-item { display:grid; grid-template-columns:60px 32px 46px minmax(0,1fr); align-items:center; gap:8px; border:0; border-bottom:1px solid var(--border-color); border-radius:0; padding:10px 6px; text-align:left; }
  .forecast-item:first-child { border-radius:16px 16px 0 0; }

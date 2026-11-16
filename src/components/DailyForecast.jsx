@@ -6,7 +6,7 @@ export function DailyForecast({ days, unit, timeZone, selectedDate, onSelect }) 
   const low = Math.min(...days.map(day => day.day.mintemp_c).filter(Number.isFinite));
   const range = Math.max(1, Math.max(...days.map(day => day.day.maxtemp_c).filter(Number.isFinite)) - low);
   return <section className="forecast-section glassmorphism" aria-labelledby="dailyHeading">
-    <div className="section-heading"><div><p className="eyebrow">This week</p><h3 id="dailyHeading" className="section-title">7-day outlook</h3></div><p className="section-hint">Select a day for details</p></div>
+    <div className="section-heading"><div><p className="eyebrow">This week</p><h3 id="dailyHeading" className="section-title">7-day outlook</h3></div><p className="section-hint"><span className="forecast-desktop-hint">Select a day for details</span><span className="forecast-mobile-hint">Tap a day for hourly weather</span></p></div>
     <div id="forecastGrid" className="forecast-grid">
       {days.map((entry, index) => {
         const { day } = entry;

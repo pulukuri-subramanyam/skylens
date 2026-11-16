@@ -29,7 +29,7 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refr
       </div>
       <p className="city-local-time">Local time <time id="cityLocalTime" dateTime={new Date(now).toISOString()}>{localTime}</time></p>
       <p className="city-local-date" id="cityLocalDate">{localDate}</p>
-      <div className="location-meta-row"><button id="refreshBtn" type="button" onClick={onRefresh} disabled={refreshing} className="refresh-btn" aria-label="Refresh weather" title="Refresh weather"><Icon name="refresh" className={refreshing?'animate-spin':''}/><span id="lastUpdated">{refreshing?'Refreshing…':'Last updated: '+service.formatTime(current.last_updated)}</span></button>
+      <div className="location-meta-row"><span id="lastUpdated" className="last-updated">Last updated: {service.formatTime(current.last_updated)}</span><button id="refreshBtn" type="button" onClick={onRefresh} disabled={refreshing} className="refresh-btn" aria-label="Refresh weather" title="Refresh weather"><Icon name="refresh" className={refreshing?'animate-spin':''}/><span>{refreshing?'Refreshing…':'Refresh'}</span></button>
       <span id="dataFreshness" className={`data-freshness ${error||stale?'is-stale':'sr-only'}`}>{error?'Refresh failed. Showing the last successful weather.':(stale?'May be outdated. Checked ':'Checked ')+service.formatTime(new Date(lastFetchedAt).toISOString())}</span></div>
     </div></div>
     <div className="temperature-section">
