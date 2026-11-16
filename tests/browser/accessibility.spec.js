@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import axeCore from 'axe-core';
 import { providers } from './fixtures';
 
 test.beforeEach(async ({page})=>{ await providers(page); });
@@ -34,6 +35,13 @@ for(const scanGroup of ['structure','contrast']) {
       const audit=new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']);
       if(scanGroup==='contrast')audit.withRules(['color-contrast']);
       else audit.disableRules(['color-contrast']);
+      if(scanGroup==='structure' && i===0){
+        for(const rule of axeCore.getRules(['wcag2a','wcag2aa','wcag21aa']).filter(rule=>rule.ruleId!=='color-contrast')){
+          console.log('Auditing rule: '+rule.ruleId);
+          const result=await new AxeBuilder({page}).withRules([rule.ruleId]).analyze();
+          expect(result.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
+        }
+      }
       const scan=await audit.analyze();
       expect(scan.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
       await page.locator('#themeToggle').click();
