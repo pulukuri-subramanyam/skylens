@@ -3,10 +3,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { readCities, readWeatherCache, writeStorage, uniqueRecentCities } from '../lib/storage';
 import { weatherService as service } from '../lib/weather';
 import { reportEvent } from '../lib/monitoring';
+import { WEATHER_STALE_AFTER_MS } from '../lib/weatherFreshness';
+
+const AUTO_REFRESH_COOLDOWN_MS = 5 * 60 * 1000;
 
 export function useWeather() {
   const [weather, setWeather] = useState(readWeatherCache);
-  const [recent, setRecent] = useState(() => uniqueRecentCities(readCities('weatherapp-recent-cities')));
+  const [recent, setRecent] = useState(() =>
+    uniqueRecentCities(readCities('weatherapp-recent-cities')),
+  );
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -17,89 +22,227 @@ export function useWeather() {
   const sequence = useRef(0);
   const current = useRef(weather);
   const lastAction = useRef({ kind: 'weather', target: weather?.currentCity || 'London' });
-
-  const load = useCallback(async (target, { refresh = false, fromLocation = false } = {}) => {
-    const id = ++sequence.current;
-    active.current?.abort();
-    const controller = new AbortController();
-    active.current = controller;
-    const keep = Boolean(refresh && current.current);
-    setLocating(fromLocation);
-    setError(''); setStatus(''); setLoading(!keep); setRefreshing(keep);
-    lastAction.current = { kind: 'weather', target, fromLocation };
-    const targetName = typeof target === 'string' ? (/^-?[\d.]+,-?[\d.]+$/.test(target) ? 'your location' : target) : target.label || target.name || 'your location';
-    setRequestLabel(targetName);
-    try {
-      // Suggestions and saved cities keep their exact coordinates when selected.
-      const hasCoordinates = typeof target === 'object' && target.lat != null && target.lon != null && Number.isFinite(Number(target.lat)) && Number.isFinite(Number(target.lon));
-      const location = hasCoordinates ? {
-        ...target,
-        state: target.state || target.region || (target.label?.includes(',') ? target.label.slice(target.label.indexOf(',') + 1).trim() : ''),
-        lat: Number(target.lat), lon: Number(target.lon)
-      } : await service.resolveLocation(typeof target === 'string' ? target : target.query, controller.signal);
-      if (id !== sequence.current) return;
-      const coordinates = { lat: location.lat, lon: location.lon };
-      const request = type => service.fetchJson(service.getWeatherApiUrl(type, coordinates), { signal: controller.signal });
-      const airRequest = request('air').catch(() => null);
-      const payload = await service.fetchJson(forecastUrl(location.lat,location.lon), {signal:controller.signal});
-      if (id !== sequence.current) return;
-      const { currentData, forecastData } = normalizeMeteo(service,location,payload);
-      const currentCity = service.createCityShortcut(currentData.location);
-      const next = { currentWeatherData: currentData, forecastData, currentCity, lastAirQuality: null, weatherProvider: 'open-meteo', lastFetchedAt: Date.now() };
-      current.current = next;
-      setWeather(next);
-      writeStorage('weatherapp-last-weather', next);
-      setRecent(cities => uniqueRecentCities([currentCity, ...cities]));
-      setStatus('Weather loaded for ' + currentCity.label + '.');
-      airRequest.then(air => {
-        if (id !== sequence.current) return;
-        const updated = {...next,lastAirQuality:service.getAqiDetails(air)};
-        current.current=updated;setWeather(updated);writeStorage('weatherapp-last-weather',updated);
-      });
-    } catch (cause) {
-      if (id !== sequence.current || cause.name === 'AbortError') return;
-      reportEvent(keep ? 'refresh_failure' : 'weather_failure');
-      const message = cause.code === 'rate_limited' ? 'Too many requests. Wait a moment before trying again.'
-        : cause.code === 'timeout' ? 'The weather request timed out. Try again.'
-        : cause.message.includes('No matching') ? 'City not found. Check the spelling or choose a suggestion.'
-        : !navigator.onLine ? 'You appear to be offline.' : `Couldn't load weather for ${targetName}. Try again in a moment.`;
-      setError(!navigator.onLine
-        ? current.current ? "You're offline. Showing saved weather." : "You're offline. Connect to the internet and try again."
-        : keep ? 'Refresh failed. Showing the last successful weather.' : current.current ? message + ' Showing the last successful weather.' : message);
-    } finally {
-      if (id === sequence.current) { setLoading(false); setRefreshing(false); setLocating(false); }
-    }
+  const busy = useRef(false);
+  const searchActive = useRef(false);
+  const manualFailure = useRef(false);
+  const lastAttempt = useRef(-Infinity);
+  const setSearchActive = useCallback((value) => {
+    searchActive.current = value;
   }, []);
 
+  const load = useCallback(
+    async (target, { refresh = false, fromLocation = false, automatic = false } = {}) => {
+      busy.current = true;
+      manualFailure.current = false;
+      lastAttempt.current = Date.now();
+      const id = ++sequence.current;
+      active.current?.abort();
+      const controller = new AbortController();
+      active.current = controller;
+      const keep = Boolean(refresh && current.current);
+      setLocating(fromLocation);
+      setError('');
+      setStatus('');
+      setLoading(!keep);
+      setRefreshing(keep);
+      if (!automatic) lastAction.current = { kind: 'weather', target, fromLocation };
+      const targetName =
+        typeof target === 'string'
+          ? /^-?[\d.]+,-?[\d.]+$/.test(target)
+            ? 'your location'
+            : target
+          : target.label || target.name || 'your location';
+      setRequestLabel(targetName);
+      try {
+        // Suggestions and saved cities keep their exact coordinates when selected.
+        const hasCoordinates =
+          typeof target === 'object' &&
+          target.lat != null &&
+          target.lon != null &&
+          Number.isFinite(Number(target.lat)) &&
+          Number.isFinite(Number(target.lon));
+        const location = hasCoordinates
+          ? {
+              ...target,
+              state:
+                target.state ||
+                target.region ||
+                (target.label?.includes(',')
+                  ? target.label.slice(target.label.indexOf(',') + 1).trim()
+                  : ''),
+              lat: Number(target.lat),
+              lon: Number(target.lon),
+            }
+          : await service.resolveLocation(
+              typeof target === 'string' ? target : target.query,
+              controller.signal,
+            );
+        if (id !== sequence.current) return;
+        const coordinates = { lat: location.lat, lon: location.lon };
+        const request = (type) =>
+          service.fetchJson(service.getWeatherApiUrl(type, coordinates), {
+            signal: controller.signal,
+          });
+        const airRequest = request('air').catch(() => null);
+        const payload = await service.fetchJson(forecastUrl(location.lat, location.lon), {
+          signal: controller.signal,
+        });
+        if (id !== sequence.current) return;
+        const { currentData, forecastData } = normalizeMeteo(service, location, payload);
+        const currentCity = service.createCityShortcut(currentData.location);
+        const next = {
+          currentWeatherData: currentData,
+          forecastData,
+          currentCity,
+          lastAirQuality: null,
+          weatherProvider: 'open-meteo',
+          lastFetchedAt: Date.now(),
+        };
+        current.current = next;
+        setWeather(next);
+        writeStorage('weatherapp-last-weather', next);
+        setRecent((cities) => uniqueRecentCities([currentCity, ...cities]));
+        setStatus('Weather loaded for ' + currentCity.label + '.');
+        airRequest.then((air) => {
+          if (id !== sequence.current) return;
+          const updated = { ...next, lastAirQuality: service.getAqiDetails(air) };
+          current.current = updated;
+          setWeather(updated);
+          writeStorage('weatherapp-last-weather', updated);
+        });
+      } catch (cause) {
+        if (id !== sequence.current || cause.name === 'AbortError') return;
+        manualFailure.current = !automatic && !keep;
+        reportEvent(keep ? 'refresh_failure' : 'weather_failure');
+        const message =
+          cause.code === 'rate_limited'
+            ? 'Too many requests. Wait a moment before trying again.'
+            : cause.code === 'timeout'
+              ? 'The weather request timed out. Try again.'
+              : cause.message.includes('No matching')
+                ? 'City not found. Check the spelling or choose a suggestion.'
+                : !navigator.onLine
+                  ? 'You appear to be offline.'
+                  : `Couldn't load weather for ${targetName}. Try again in a moment.`;
+        setError(
+          !navigator.onLine
+            ? current.current
+              ? "You're offline. Showing saved weather."
+              : "You're offline. Connect to the internet and try again."
+            : keep
+              ? 'Refresh failed. Showing the last successful weather.'
+              : current.current
+                ? message + ' Showing the last successful weather.'
+                : message,
+        );
+      } finally {
+        if (id === sequence.current) {
+          busy.current = false;
+          setLoading(false);
+          setRefreshing(false);
+          setLocating(false);
+        }
+      }
+    },
+    [],
+  );
+
   const locate = useCallback(() => {
+    busy.current = true;
+    manualFailure.current = false;
     const id = ++sequence.current;
     active.current?.abort();
-    setLocating(true); setLoading(true); setRefreshing(false); setError(''); setRequestLabel('your location');
+    setLocating(true);
+    setLoading(true);
+    setRefreshing(false);
+    setError('');
+    setRequestLabel('your location');
     lastAction.current = { kind: 'location' };
-    const fail = message => {
+    const fail = (message) => {
       if (id !== sequence.current) return;
-      setLocating(false); setLoading(false); setError(message);
+      busy.current = false;
+      manualFailure.current = true;
+      setLocating(false);
+      setLoading(false);
+      setError(message);
     };
-    if (!navigator.geolocation) return fail('This browser does not support location. Search for a city instead.');
+    if (!navigator.geolocation)
+      return fail('This browser does not support location. Search for a city instead.');
     navigator.geolocation.getCurrentPosition(
-      position => {
+      (position) => {
         if (id !== sequence.current) return;
         load(`${position.coords.latitude},${position.coords.longitude}`, { fromLocation: true });
       },
-      cause => fail(cause.code === 1 ? 'Location access was denied. Allow location in your browser settings or search for a city.'
-        : cause.code === 3 ? 'Location lookup timed out. Check your device location settings or search for a city.'
-          : 'Your location is unavailable. Search for a city instead.'),
-      { enableHighAccuracy: false, timeout: 20000, maximumAge: 300000 }
+      (cause) =>
+        fail(
+          cause.code === 1
+            ? 'Location access was denied. Allow location in your browser settings or search for a city.'
+            : cause.code === 3
+              ? 'Location lookup timed out. Check your device location settings or search for a city.'
+              : 'Your location is unavailable. Search for a city instead.',
+        ),
+      { enableHighAccuracy: false, timeout: 20000, maximumAge: 300000 },
     );
   }, [load]);
 
-  const retry = () => lastAction.current.kind === 'location' ? locate() : load(lastAction.current.target, { refresh: Boolean(current.current), fromLocation: Boolean(lastAction.current.fromLocation) });
+  const retry = () =>
+    lastAction.current.kind === 'location'
+      ? locate()
+      : load(lastAction.current.target, {
+          refresh: Boolean(current.current),
+          fromLocation: Boolean(lastAction.current.fromLocation),
+        });
 
   useEffect(() => {
     load(current.current?.currentCity || 'London', { refresh: Boolean(current.current) });
-    return () => { sequence.current += 1; active.current?.abort(); };
+    return () => {
+      sequence.current += 1;
+      active.current?.abort();
+    };
   }, [load]);
-  useEffect(() => { writeStorage('weatherapp-recent-cities', recent); }, [recent]);
+  useEffect(() => {
+    writeStorage('weatherapp-recent-cities', recent);
+  }, [recent]);
 
-  return { weather, recent, loading, locating, refreshing, error, status, setStatus, load, locate, retry, requestLabel };
+  useEffect(() => {
+    const refreshStale = () => {
+      const latest = current.current;
+      const now = Date.now();
+      if (
+        document.visibilityState !== 'visible' ||
+        !navigator.onLine ||
+        busy.current ||
+        searchActive.current ||
+        manualFailure.current ||
+        !latest?.currentCity ||
+        !Number.isFinite(latest.lastFetchedAt) ||
+        now - latest.lastFetchedAt < WEATHER_STALE_AFTER_MS ||
+        now - lastAttempt.current < AUTO_REFRESH_COOLDOWN_MS
+      )
+        return;
+      void load(latest.currentCity, { refresh: true, automatic: true });
+    };
+    document.addEventListener('visibilitychange', refreshStale);
+    window.addEventListener('focus', refreshStale);
+    return () => {
+      document.removeEventListener('visibilitychange', refreshStale);
+      window.removeEventListener('focus', refreshStale);
+    };
+  }, [load]);
+
+  return {
+    weather,
+    recent,
+    loading,
+    locating,
+    refreshing,
+    error,
+    status,
+    setStatus,
+    load,
+    locate,
+    retry,
+    requestLabel,
+    setSearchActive,
+  };
 }

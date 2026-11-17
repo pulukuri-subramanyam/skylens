@@ -6,4 +6,10 @@ import { startMonitoring } from './lib/monitoring';
 import './index.css';
 
 startMonitoring();
-createRoot(document.getElementById('root')).render(<StrictMode><ErrorBoundary><App/></ErrorBoundary></StrictMode>);
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </StrictMode>,
+);

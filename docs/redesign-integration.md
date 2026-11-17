@@ -14,24 +14,24 @@ Saved and recent city menus use real stored city objects and coordinates. Saving
 
 Ambient animation refinement adds varied individual drops/flakes, independently twinkling stars, irregular overlapping cloud banks and two mist layers at different speeds. Weather changes crossfade over 900ms with at most two scenes; the outgoing scene is removed after one second. Same-condition refreshes retain particle positions. Provider condition descriptions set qualitative light/medium/heavy intensity, not rainfall-rate estimates: desktop rain counts are 24/40/56 and snow 20/32/44; phones use 10/16/22 and 8/12/16. Stars use 22 on desktop and 12 on phones. Wind speed and compass direction control screen drift capped at 6vw and rain tilt capped at 12 degrees. Clear-sky warmth follows the city's absolute sunrise/sunset timestamps and existing minute clock; missing timings produce no invented tint. More precipitation particles are distributed in page margins, with opaque cards shielding all readings. No new API fields or requests are required. All effects retain reduced-motion and hidden-page support.
 
-| Redesigned surface | Existing source |
-| --- | --- |
-| City | `weather.currentCity.label` |
-| Local time/date | Application clock formatted with `currentWeatherData.location.timezone` |
-| Updated/refresh status | `current.last_updated`, `lastFetchedAt`, existing refresh/error state |
-| Temperature and units | `current.temp_c` / `temp_f`, stored unit preference |
-| Condition and weather image | `current.condition.text` / `iconCode`, existing weather-icon utility |
-| Feels like | `current.feelslike_c`, existing unit formatter |
-| Today's high/low | First normalized forecast day's `maxtemp_c` / `mintemp_c` |
-| Humidity | `current.humidity` |
-| Wind | `current.wind_kph` / `wind_dir` |
-| Visibility | `current.vis_km` |
-| Pressure | `current.pressure_mb`, rounded display with thousands separator |
-| UV | `current.uv` |
-| Air quality | `lastAirQuality.label` / `pm25` |
-| Daylight | `current.sunrise` / `sunset`, location timezone and application clock |
-| Seven days | `forecastData.forecast.forecastday[].date` and `.day` |
-| Hourly temperature/rain | Normalized forecast `.hour[]`, selected date or next 24 hours |
+| Redesigned surface          | Existing source                                                         |
+| --------------------------- | ----------------------------------------------------------------------- |
+| City                        | `weather.currentCity.label`                                             |
+| Local time/date             | Application clock formatted with `currentWeatherData.location.timezone` |
+| Updated/refresh status      | `current.last_updated`, `lastFetchedAt`, existing refresh/error state   |
+| Temperature and units       | `current.temp_c` / `temp_f`, stored unit preference                     |
+| Condition and weather image | `current.condition.text` / `iconCode`, existing weather-icon utility    |
+| Feels like                  | `current.feelslike_c`, existing unit formatter                          |
+| Today's high/low            | First normalized forecast day's `maxtemp_c` / `mintemp_c`               |
+| Humidity                    | `current.humidity`                                                      |
+| Wind                        | `current.wind_kph` / `wind_dir`                                         |
+| Visibility                  | `current.vis_km`                                                        |
+| Pressure                    | `current.pressure_mb`, rounded display with thousands separator         |
+| UV                          | `current.uv`                                                            |
+| Air quality                 | `lastAirQuality.label` / `pm25`                                         |
+| Daylight                    | `current.sunrise` / `sunset`, location timezone and application clock   |
+| Seven days                  | `forecastData.forecast.forecastday[].date` and `.day`                   |
+| Hourly temperature/rain     | Normalized forecast `.hour[]`, selected date or next 24 hours           |
 
 Missing optional readings continue to show `Unavailable`. Sunrise/sunset progress is clamped and handles nighttime or missing timestamps. Temperature/rain tooltips use the actual hovered sample. No reference sample weather values were copied into production components.
 
@@ -45,31 +45,31 @@ Focus-aware polish uses existing search/menu expanded states to soften the backd
 
 Motion polish keeps a stable bounded particle pool within each weather family. Light/heavy changes fade visibility and size over 1200ms without restarting falling motion or crossfading the whole scene. A vertical mask softens precipitation at viewport edges. Snow has independently timed sway, with smaller, softer distant flakes falling more slowly. Three subtle cloud wisps (two on phones) evolve at different speeds. Storm ambience uses low-opacity 37s and 61s offset glow cycles rather than rapid flashes. Responsive checks use browser-emulated viewports; they do not establish physical-phone performance.
 
-| File | Change |
-| --- | --- |
-| `src/App.jsx` | Reference shell and toolbar composition; new browser theme colors; retains state/handlers and status surfaces. |
-| `src/components/Header.jsx` | Brand tile, unit switch and theme control presentation. |
-| `src/components/Icon.jsx` | Reusable line SVG interface icons; social icon fallback retained. |
-| `src/components/SearchBar.jsx` | Reference search/location controls around existing search and geolocation logic. |
-| `src/components/SavedCities.jsx` | Recent/Saved dropdown composition with existing readings, selection, removal and reorder. |
-| `src/components/CityMenu.jsx` (new) | Shared accessible dropdown trigger, dismissal and focus behavior. |
-| `src/components/WeatherCard.jsx` | Real-data hero, timezone date, separate update timestamp and Refresh action, condition and temperatures. |
-| `src/components/WeatherMetrics.jsx` (new) | Six consistently sized actual-weather metrics. |
-| `src/components/DaylightBar.jsx` (new) | Actual sunrise/sunset times and progress. |
-| `src/components/DailyForecast.jsx` | Reference weekly heading and responsive forecast presentation. |
-| `src/components/HourlyChart.jsx` | Reference colors, gradient, points, axis styling and actual temperature/rain tooltip content. |
-| `src/hooks/useSavedCityDrag.js` | Safe handling of closed menus and clipped menu drag/scroll bounds. |
-| `src/index.css` | Reference typography, palette, spacing, light/dark and responsive component styles; retained loading states. |
-| `tests/browser/weather-theme.spec.js` (new) | Chart reuse and preserved readings during theme changes; static backgrounds across weather conditions and both themes. |
-| `public/assets/fonts/plus-jakarta-sans-latin.woff2` (new) | Self-hosted variable Latin web font. |
-| `public/assets/fonts/PLUS-JAKARTA-OFL.txt` (new) | Font license. |
-| `build/serviceWorker.js` | Cache the new font for offline use. |
-| `tests/browser/weather.spec.js` | Open Saved menu before existing reorder assertions. |
-| `tests/browser/saved-drag.spec.js` | Adapt existing drag tests to menus; cover long-menu auto-scroll and cancellation. |
-| `tests/browser/redesign.spec.js` (new) | Verify provider mappings, menus, geolocation, tooltip interaction and persisted unit/theme settings. |
-| `tests/weather.test.js` | Freeze a midnight-sensitive fixture's clock, preserving existing assertions. |
-| `README.md` | Current font/icon stack and integration documentation link. |
-| `docs/redesign-integration.md` (new) | This mapping, file inventory and verification report. |
+| File                                                      | Change                                                                                                                 |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `src/App.jsx`                                             | Reference shell and toolbar composition; new browser theme colors; retains state/handlers and status surfaces.         |
+| `src/components/Header.jsx`                               | Brand tile, unit switch and theme control presentation.                                                                |
+| `src/components/Icon.jsx`                                 | Reusable line SVG interface icons; social icon fallback retained.                                                      |
+| `src/components/SearchBar.jsx`                            | Reference search/location controls around existing search and geolocation logic.                                       |
+| `src/components/SavedCities.jsx`                          | Recent/Saved dropdown composition with existing readings, selection, removal and reorder.                              |
+| `src/components/CityMenu.jsx` (new)                       | Shared accessible dropdown trigger, dismissal and focus behavior.                                                      |
+| `src/components/WeatherCard.jsx`                          | Real-data hero, timezone date, separate update timestamp and Refresh action, condition and temperatures.               |
+| `src/components/WeatherMetrics.jsx` (new)                 | Six consistently sized actual-weather metrics.                                                                         |
+| `src/components/DaylightBar.jsx` (new)                    | Actual sunrise/sunset times and progress.                                                                              |
+| `src/components/DailyForecast.jsx`                        | Reference weekly heading and responsive forecast presentation.                                                         |
+| `src/components/HourlyChart.jsx`                          | Reference colors, gradient, points, axis styling and actual temperature/rain tooltip content.                          |
+| `src/hooks/useSavedCityDrag.js`                           | Safe handling of closed menus and clipped menu drag/scroll bounds.                                                     |
+| `src/index.css`                                           | Reference typography, palette, spacing, light/dark and responsive component styles; retained loading states.           |
+| `tests/browser/weather-theme.spec.js` (new)               | Chart reuse and preserved readings during theme changes; static backgrounds across weather conditions and both themes. |
+| `public/assets/fonts/plus-jakarta-sans-latin.woff2` (new) | Self-hosted variable Latin web font.                                                                                   |
+| `public/assets/fonts/PLUS-JAKARTA-OFL.txt` (new)          | Font license.                                                                                                          |
+| `build/serviceWorker.js`                                  | Cache the new font for offline use.                                                                                    |
+| `tests/browser/weather.spec.js`                           | Open Saved menu before existing reorder assertions.                                                                    |
+| `tests/browser/saved-drag.spec.js`                        | Adapt existing drag tests to menus; cover long-menu auto-scroll and cancellation.                                      |
+| `tests/browser/redesign.spec.js` (new)                    | Verify provider mappings, menus, geolocation, tooltip interaction and persisted unit/theme settings.                   |
+| `tests/weather.test.js`                                   | Freeze a midnight-sensitive fixture's clock, preserving existing assertions.                                           |
+| `README.md`                                               | Current font/icon stack and integration documentation link.                                                            |
+| `docs/redesign-integration.md` (new)                      | This mapping, file inventory and verification report.                                                                  |
 
 ## Release verification
 

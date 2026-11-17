@@ -1,18 +1,61 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { DailyForecast } from './DailyForecast';
-const HourlyChart = lazy(() => import('./HourlyChart').then(module => ({default:module.HourlyChart})));
+const HourlyChart = lazy(() =>
+  import('./HourlyChart').then((module) => ({ default: module.HourlyChart })),
+);
 
 export function ForecastExplorer({ days, unit, theme, timeZone }) {
   const [selectedDate, setSelectedDate] = useState(null);
-  const selectDay = useCallback(date => setSelectedDate(previous => previous===date ? null : date), []);
-  const selected = days.find(day => day.date === selectedDate);
-  const dateLabel = selected ? new Date(selected.date).toLocaleDateString('en-US', {weekday:'long',month:'short',day:'numeric',...(timeZone ? {timeZone} : {})}) : '';
+  const selectDay = useCallback(
+    (date) => setSelectedDate((previous) => (previous === date ? null : date)),
+    [],
+  );
+  const selected = days.find((day) => day.date === selectedDate);
+  const dateLabel = selected
+    ? new Date(selected.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        ...(timeZone ? { timeZone } : {}),
+      })
+    : '';
   // Theme changes reuse chart inputs; the minute clock still advances the rolling window.
-  const minute = Math.floor(Date.now()/60000);
-  const hours = useMemo(() => selected ? selected.hour || [] : days.flatMap(day => day.hour || []).filter(hour=>Date.parse(hour.time)>=Date.now()-3600000).slice(0,24), [days, selected, minute]);
-  const chartDays = useMemo(() => [{hour:hours}], [hours]);
-  return <>
-    <DailyForecast days={days} unit={unit} timeZone={timeZone} selectedDate={selectedDate} onSelect={selectDay}/>
-    {hours.length ? <Suspense fallback={<section className="panel p-5">Loading hourly chart...</section>}><HourlyChart days={chartDays} unit={unit} theme={theme} timeZone={timeZone} title={selected ? `Hourly Forecast - ${dateLabel}` : 'Hourly Forecast'}/></Suspense> : <p className="chart-note" role="status">Hourly data is temporarily unavailable for {dateLabel}. Refresh to try again.</p>}
-  </>;
+  const minute = Math.floor(Date.now() / 60000);
+  const hours = useMemo(
+    () =>
+      selected
+        ? selected.hour || []
+        : days
+            .flatMap((day) => day.hour || [])
+            .filter((hour) => Date.parse(hour.time) >= Date.now() - 3600000)
+            .slice(0, 24),
+    [days, selected, minute],
+  );
+  const chartDays = useMemo(() => [{ hour: hours }], [hours]);
+  return (
+    <>
+      <DailyForecast
+        days={days}
+        unit={unit}
+        timeZone={timeZone}
+        selectedDate={selectedDate}
+        onSelect={selectDay}
+      />
+      {hours.length ? (
+        <Suspense fallback={<section className="panel p-5">Loading hourly chart...</section>}>
+          <HourlyChart
+            days={chartDays}
+            unit={unit}
+            theme={theme}
+            timeZone={timeZone}
+            title={selected ? `Hourly Forecast - ${dateLabel}` : 'Hourly Forecast'}
+          />
+        </Suspense>
+      ) : (
+        <p className="chart-note" role="status">
+          Hourly data is temporarily unavailable for {dateLabel}. Refresh to try again.
+        </p>
+      )}
+    </>
+  );
 }
