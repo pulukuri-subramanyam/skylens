@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { providers, forecast } from './fixtures';
 
 test('theme switches reuse the chart without replacing its drawing context ownership', async ({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await page.clock.setFixedTime(new Date());
   await providers(page);await page.goto('/');
   const canvas=page.locator('#temperatureChart');await expect(canvas).toBeVisible();
@@ -12,12 +13,10 @@ test('theme switches reuse the chart without replacing its drawing context owner
     expect(await owner.evaluate(record=>Boolean(record))).toBe(true);
     const readings=await page.locator('.chart-section table').innerText();
     for(const theme of ['dark','light','dark','light']) {
-      const firstFrame=await page.evaluate(async()=>{
-        document.querySelector('#themeToggle').click();
-        await new Promise(requestAnimationFrame);
-        return ['.app-shell','.forecast-section','.chart-section'].map(selector=>getComputedStyle(document.querySelector(selector)).backgroundColor);
-      });
-      expect(firstFrame).toEqual(theme==='dark'
+      await page.locator('#themeToggle').click();
+      const durations=await page.locator('.app-shell,.header,.search-row,.forecast-section,.chart-section,.weather-hero').evaluateAll(elements=>elements.map(element=>getComputedStyle(element).transitionDuration));
+      expect(durations.every(duration=>duration==='0.08s, 0.08s')).toBe(true);
+      await expect.poll(()=>page.evaluate(()=>['.app-shell','.forecast-section','.chart-section'].map(selector=>getComputedStyle(document.querySelector(selector)).backgroundColor))).toEqual(theme==='dark'
         ? ['rgb(13, 20, 34)','rgb(19, 30, 47)','rgb(19, 30, 47)']
         : ['rgb(242, 247, 251)','rgb(255, 255, 255)','rgb(255, 255, 255)']);
       await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
