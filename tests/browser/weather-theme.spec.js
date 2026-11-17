@@ -1,6 +1,27 @@
 import { test, expect } from '@playwright/test';
 import { providers, forecast } from './fixtures';
 
+test('theme switches reuse the chart without replacing its drawing context ownership', async ({page})=>{
+  await page.clock.setFixedTime(new Date());
+  await providers(page);await page.goto('/');
+  const canvas=page.locator('#temperatureChart');await expect(canvas).toBeVisible();
+  for(const metric of ['temperature','rain']) {
+    await page.locator(metric==='rain'?'#chartRainBtn':'#chartTemperatureBtn').click();
+    // Chart.js replaces this ownership record when it destroys/recreates a chart.
+    const owner=await canvas.evaluateHandle(element=>element.$chartjs);
+    expect(await owner.evaluate(record=>Boolean(record))).toBe(true);
+    const readings=await page.locator('.chart-section table').innerText();
+    for(const theme of ['dark','light','dark','light']) {
+      await page.locator('#themeToggle').click();
+      await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
+      expect(await owner.evaluate(record=>record===document.querySelector('#temperatureChart').$chartjs)).toBe(true);
+      await expect(canvas).toHaveAttribute('data-metric',metric);
+      await expect(page.locator('.chart-section table')).toHaveText(readings,{useInnerText:true});
+    }
+    await owner.dispose();
+  }
+});
+
 test('theme colours blend in both directions without replacing weather particles or resetting motion', async ({page})=>{
   await page.emulateMedia({reducedMotion:'no-preference'});await providers(page);let code=65;
   await page.route('https://api.open-meteo.com/**',route=>{const data=forecast();data.current.weather_code=code;return route.fulfill({json:data});});
