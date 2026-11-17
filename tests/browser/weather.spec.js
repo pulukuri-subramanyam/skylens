@@ -44,9 +44,24 @@ test('failed refresh retains the last result and announces failure', async ({pag
   await page.route('https://api.open-meteo.com/**',r=>r.fulfill({status:503,json:{}}));
   await page.locator('#refreshBtn').click();
   await expect(page.getByRole('alert')).toContainText('Refresh failed');
+  await expect(page.getByRole('alert')).toHaveClass('weather-notice');
+  await expect(page.locator('.error-title')).toHaveCount(0);
+  await expect(page.locator('#dataFreshness')).toHaveCount(0);
   await expect(page.locator('#currentTemp')).toHaveText('15°C');
   await page.reload();await expect(page.locator('#currentTemp')).toHaveText('15°C');
   await expect(page.getByRole('alert')).toBeVisible();
+});
+
+test('a failed first load keeps the full error panel and can retry', async ({page})=>{
+  let failed=true;
+  await page.route('https://api.open-meteo.com/**',route=>failed?route.fulfill({status:503,json:{}}):route.fulfill({json:forecast()}));
+  await page.goto('/');
+  await expect(page.locator('.error-title')).toHaveText("Weather couldn't be loaded");
+  await expect(page.locator('.weather-notice')).toHaveCount(0);
+  await expect(page.locator('#currentTemp')).toHaveCount(0);
+  failed=false;await page.locator('#retryBtn').click();
+  await expect(page.locator('#currentTemp')).toHaveText('15°C');
+  await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
 test('invalid optional readings never become fake zeroes', async ({page})=>{

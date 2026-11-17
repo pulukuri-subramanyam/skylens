@@ -202,6 +202,11 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 .footer-social-links { display:flex; gap:18px; }
 .footer-social-link { display:flex; gap:6px; align-items:center; text-decoration:none; }
 .social-icon { display:block; flex-shrink:0; line-height:1; }
+.weather-notice { display:flex; justify-content:center; align-items:center; gap:10px; padding:10px 14px; margin-bottom:16px; border:1px solid var(--border-color); border-radius:14px; background:var(--surface); color:var(--text-secondary); }
+.weather-notice-icon { width:18px; height:18px; flex-shrink:0; }
+.weather-notice p { min-width:0; margin:0; font-size:13px; line-height:1.5; }
+.weather-notice-retry { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; padding:7px 10px; border:1px solid var(--border-color); border-radius:10px; background:var(--surface); color:var(--text-primary); font-size:12px; font-weight:700; white-space:nowrap; }
+.weather-notice-retry .ui-icon { width:14px; height:14px; }
 .error-container { padding:0 0 20px; }
 .error-content { padding:24px; border:1px solid var(--border-color); border-radius:22px; background:var(--surface); text-align:center; }
 .error-icon { width:32px; height:32px; color:var(--error-color); margin-bottom:12px; }

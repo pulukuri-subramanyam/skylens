@@ -84,7 +84,10 @@ export default function App() {
     </div></div>
     <div className="app-container">
     <p className="sr-only" role="status" aria-live="polite">{status}</p>
-    {error && <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>}
+    {error && (weather ? <div className="weather-notice" id="errorContainer" role="alert">
+      <Icon name="warning" className="weather-notice-icon"/><p id="errorMessage">{error}</p>
+      <button type="button" className="weather-notice-retry" id="retryBtn" onClick={retry} disabled={loading || refreshing}><Icon name="refresh"/>Try Again</button>
+    </div> : <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>)}
     {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent" tabIndex={-1}>
       <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
       <ForecastExplorer key={weather.currentCity.id} days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/>
