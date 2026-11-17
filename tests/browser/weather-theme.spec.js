@@ -12,7 +12,14 @@ test('theme switches reuse the chart without replacing its drawing context owner
     expect(await owner.evaluate(record=>Boolean(record))).toBe(true);
     const readings=await page.locator('.chart-section table').innerText();
     for(const theme of ['dark','light','dark','light']) {
-      await page.locator('#themeToggle').click();
+      const firstFrame=await page.evaluate(async()=>{
+        document.querySelector('#themeToggle').click();
+        await new Promise(requestAnimationFrame);
+        return ['.app-shell','.forecast-section','.chart-section'].map(selector=>getComputedStyle(document.querySelector(selector)).backgroundColor);
+      });
+      expect(firstFrame).toEqual(theme==='dark'
+        ? ['rgb(13, 20, 34)','rgb(19, 30, 47)','rgb(19, 30, 47)']
+        : ['rgb(242, 247, 251)','rgb(255, 255, 255)','rgb(255, 255, 255)']);
       await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
       expect(await owner.evaluate(record=>record===document.querySelector('#temperatureChart').$chartjs)).toBe(true);
       await expect(canvas).toHaveAttribute('data-metric',metric);
