@@ -45,6 +45,8 @@ npm run preview
 
 Run `npx playwright install chromium firefox` once, then `npm run test:e2e` for browser and accessibility checks. Tests mock provider data and do not require a provider key. `npm run monitor` checks the deployed production site and providers.
 
+Use `npm run format` to apply the shared Prettier formatting rules, or `npm run format:check` to check without writing files. `npm run check` includes formatting, unit tests and the production build. Generated output, dependency lockfiles, environment files and public assets are excluded from formatting. Prettier is a development dependency and is not included in the browser bundle.
+
 See [operations and release checklist](docs/operations.md) for security limits, monitoring, rollback and account settings that still require configuration. JavaScript is retained; TypeScript is not required.
 
 ## Project layout

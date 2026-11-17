@@ -2,7 +2,7 @@ import { fetchJson } from './request.js';
 /** Provider normalization and location ranking retained from the original Skylens app. */
 export class WeatherService {
   constructor(savedCities = [], recentCities = []) {
-    this.PHOTON_BASE_URL = "https://photon.komoot.io";
+    this.PHOTON_BASE_URL = 'https://photon.komoot.io';
     this.savedCities = savedCities;
     this.recentCities = recentCities;
   }
@@ -13,45 +13,47 @@ export class WeatherService {
     params.append('layer', 'city');
     params.append('layer', 'locality');
 
-    const payload = await this.fetchJson(
-      this.PHOTON_BASE_URL + '/api/?' + params.toString(),
-      { signal }
-    );
+    const payload = await this.fetchJson(this.PHOTON_BASE_URL + '/api/?' + params.toString(), {
+      signal,
+    });
     const features = Array.isArray(payload.features) ? payload.features : [];
 
-    return features.map((feature) => {
-      const properties = feature && feature.properties ? feature.properties : {};
-      const featureType = String(properties.type || '').toLowerCase();
-      const osmKey = String(properties.osm_key || '').toLowerCase();
-      if (featureType === 'locality' && osmKey !== 'place') return null;
+    return features
+      .map((feature) => {
+        const properties = feature && feature.properties ? feature.properties : {};
+        const featureType = String(properties.type || '').toLowerCase();
+        const osmKey = String(properties.osm_key || '').toLowerCase();
+        if (featureType === 'locality' && osmKey !== 'place') return null;
 
-      const coordinates =
-        feature && feature.geometry && Array.isArray(feature.geometry.coordinates)
-          ? feature.geometry.coordinates
-          : [];
-      const name = properties.name || properties.city;
-      const lon = Number(coordinates[0]);
-      const lat = Number(coordinates[1]);
+        const coordinates =
+          feature && feature.geometry && Array.isArray(feature.geometry.coordinates)
+            ? feature.geometry.coordinates
+            : [];
+        const name = properties.name || properties.city;
+        const lon = Number(coordinates[0]);
+        const lat = Number(coordinates[1]);
 
-      if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
 
-      const parentCity = properties.city &&
-        this.normalizeLocationText(properties.city) !== this.normalizeLocationText(name)
-        ? properties.city
-        : '';
+        const parentCity =
+          properties.city &&
+          this.normalizeLocationText(properties.city) !== this.normalizeLocationText(name)
+            ? properties.city
+            : '';
 
-      return {
-        name,
-        state: properties.state || '',
-        district: properties.county || properties.district || '',
-        parentCity,
-        country: properties.country || '',
-        countryCode: properties.countrycode || properties.country_code || '',
-        lat,
-        lon,
-        osmSource: true
-      };
-    }).filter(Boolean);
+        return {
+          name,
+          state: properties.state || '',
+          district: properties.county || properties.district || '',
+          parentCity,
+          country: properties.country || '',
+          countryCode: properties.countrycode || properties.country_code || '',
+          lat,
+          lon,
+          osmSource: true,
+        };
+      })
+      .filter(Boolean);
   }
 
   normalizeLocationText(value) {
@@ -108,7 +110,8 @@ export class WeatherService {
         const rawCountry = location.countryCode || location.country;
         const countryName = this.normalizeLocationText(this.getCountryDisplayName(rawCountry));
         const countryCode = this.normalizeLocationText(
-          location.countryCode || (/^[a-z]{2}$/i.test(String(location.country || '')) ? location.country : '')
+          location.countryCode ||
+            (/^[a-z]{2}$/i.test(String(location.country || '')) ? location.country : ''),
         );
         const searchableText = [name, district, parentCity, state, countryName, countryCode]
           .filter(Boolean)
@@ -124,7 +127,10 @@ export class WeatherService {
           score = qualifierMatches ? 1 : 4;
         } else if (name && nameQuery && name.includes(nameQuery)) {
           score = qualifierMatches ? 2 : 4;
-        } else if (queryTokens.length && queryTokens.every((token) => searchableText.includes(token))) {
+        } else if (
+          queryTokens.length &&
+          queryTokens.every((token) => searchableText.includes(token))
+        ) {
           score = 3;
         }
 
@@ -141,14 +147,18 @@ export class WeatherService {
 
     return this.rankCityLocations(locations, query)
       .filter((location) => {
-        const searchableText = this.normalizeLocationText([
-          location.name,
-          location.district,
-          location.parentCity,
-          location.state,
-          location.countryCode,
-          this.getCountryDisplayName(location.countryCode || location.country)
-        ].filter(Boolean).join(' '));
+        const searchableText = this.normalizeLocationText(
+          [
+            location.name,
+            location.district,
+            location.parentCity,
+            location.state,
+            location.countryCode,
+            this.getCountryDisplayName(location.countryCode || location.country),
+          ]
+            .filter(Boolean)
+            .join(' '),
+        );
         return queryTokens.every((token) => searchableText.includes(token));
       })
       .slice(0, 12);
@@ -160,7 +170,7 @@ export class WeatherService {
 
     const entries = [
       ...(this.recentCities || []).map((city) => ({ city, source: 'Recent' })),
-      ...(this.savedCities || []).map((city) => ({ city, source: 'Saved' }))
+      ...(this.savedCities || []).map((city) => ({ city, source: 'Saved' })),
     ];
     const seenIds = new Set();
     const suggestions = [];
@@ -173,7 +183,9 @@ export class WeatherService {
       let lat = city.lat != null ? Number(city.lat) : NaN;
       let lon = city.lon != null ? Number(city.lon) : NaN;
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-        const coordinateMatch = String(city.id).match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+        const coordinateMatch = String(city.id).match(
+          /^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/,
+        );
         if (!coordinateMatch) return;
         lat = Number(coordinateMatch[1]);
         lon = Number(coordinateMatch[2]);
@@ -193,7 +205,7 @@ export class WeatherService {
         lat,
         lon,
         suggestionDetails: city.state || city.country ? '' : savedRegion,
-        source
+        source,
       });
     });
 
@@ -203,15 +215,19 @@ export class WeatherService {
   isSameCitySuggestion(left, right) {
     const leftCountryCode = /^[a-z]{2}$/i.test(String(left.countryCode || ''))
       ? left.countryCode
-      : (/^[a-z]{2}$/i.test(String(left.country || '')) ? left.country : '');
+      : /^[a-z]{2}$/i.test(String(left.country || ''))
+        ? left.country
+        : '';
     const rightCountryCode = /^[a-z]{2}$/i.test(String(right.countryCode || ''))
       ? right.countryCode
-      : (/^[a-z]{2}$/i.test(String(right.country || '')) ? right.country : '');
+      : /^[a-z]{2}$/i.test(String(right.country || ''))
+        ? right.country
+        : '';
     const leftCountry = this.normalizeLocationText(
-      leftCountryCode ? this.getCountryDisplayName(leftCountryCode) : left.country
+      leftCountryCode ? this.getCountryDisplayName(leftCountryCode) : left.country,
     );
     const rightCountry = this.normalizeLocationText(
-      rightCountryCode ? this.getCountryDisplayName(rightCountryCode) : right.country
+      rightCountryCode ? this.getCountryDisplayName(rightCountryCode) : right.country,
     );
 
     if (leftCountry && rightCountry && leftCountry !== rightCountry) return false;
@@ -224,9 +240,8 @@ export class WeatherService {
     const sameState = Boolean(leftState && rightState && leftState === rightState);
 
     const latitudeDelta = (Number(left.lat) - Number(right.lat)) * 111;
-    const meanLatitude = (Number(left.lat) + Number(right.lat)) * Math.PI / 360;
-    const longitudeDelta =
-      (Number(left.lon) - Number(right.lon)) * 111 * Math.cos(meanLatitude);
+    const meanLatitude = ((Number(left.lat) + Number(right.lat)) * Math.PI) / 360;
+    const longitudeDelta = (Number(left.lon) - Number(right.lon)) * 111 * Math.cos(meanLatitude);
     const distanceKm = Math.hypot(latitudeDelta, longitudeDelta);
 
     // Providers can return different spellings for the same place at the same point.
@@ -259,10 +274,10 @@ export class WeatherService {
       const normalizedLocation = {
         ...location,
         lat: Number(location.lat),
-        lon: Number(location.lon)
+        lon: Number(location.lon),
       };
       const duplicate = suggestions.find((item) =>
-        this.isSameCitySuggestion(item, normalizedLocation)
+        this.isSameCitySuggestion(item, normalizedLocation),
       );
 
       if (duplicate) {
@@ -291,12 +306,14 @@ export class WeatherService {
       location.district,
       location.parentCity,
       location.state,
-      this.getCountryDisplayName(location.countryCode || location.country)
+      this.getCountryDisplayName(location.countryCode || location.country),
     ].filter(Boolean);
-    const uniqueDetails = details.filter((detail, index) =>
-      details.findIndex((candidate) =>
-        this.normalizeLocationText(candidate) === this.normalizeLocationText(detail)
-      ) === index
+    const uniqueDetails = details.filter(
+      (detail, index) =>
+        details.findIndex(
+          (candidate) =>
+            this.normalizeLocationText(candidate) === this.normalizeLocationText(detail),
+        ) === index,
     );
     return uniqueDetails.join(', ');
   }
@@ -310,22 +327,38 @@ export class WeatherService {
       : { q: queryText };
 
     const response = await this.fetchJson(this.getWeatherApiUrl(type, params), { signal });
-    const matches = Array.isArray(response) ? response.filter(place=>place && typeof place.name==='string' && Number.isFinite(place.lat) && Math.abs(place.lat)<=90 && Number.isFinite(place.lon) && Math.abs(place.lon)<=180) : [];
-    let match = coordinateMatch
-      ? matches[0]
-      : this.rankCityLocations(matches, queryText)[0];
+    const matches = Array.isArray(response)
+      ? response.filter(
+          (place) =>
+            place &&
+            typeof place.name === 'string' &&
+            Number.isFinite(place.lat) &&
+            Math.abs(place.lat) <= 90 &&
+            Number.isFinite(place.lon) &&
+            Math.abs(place.lon) <= 180,
+        )
+      : [];
+    let match = coordinateMatch ? matches[0] : this.rankCityLocations(matches, queryText)[0];
 
     if (!coordinateMatch && !match) {
-      const mapMatches = await this.fetchPhotonCitySuggestions(queryText, '', signal).catch(cause => {
-        if (signal?.aborted) throw cause;
-        return [];
-      });
+      const mapMatches = await this.fetchPhotonCitySuggestions(queryText, '', signal).catch(
+        (cause) => {
+          if (signal?.aborted) throw cause;
+          return [];
+        },
+      );
       match = this.rankCityLocations(mapMatches, queryText)[0];
     }
     if (!match) {
       if (coordinateMatch) {
         const [, lat, lon] = coordinateMatch;
-        return { name: 'Current location', state: '', country: '', lat: Number(lat), lon: Number(lon) };
+        return {
+          name: 'Current location',
+          state: '',
+          country: '',
+          lat: Number(lat),
+          lon: Number(lon),
+        };
       }
       throw new Error('No matching location found');
     }
@@ -336,7 +369,7 @@ export class WeatherService {
       country: match.country || '',
       countryCode: match.countryCode || match.country || '',
       lat: Number(match.lat),
-      lon: Number(match.lon)
+      lon: Number(match.lon),
     };
   }
 
@@ -347,12 +380,16 @@ export class WeatherService {
 
   getAqiDetails(payload) {
     const data = payload && Array.isArray(payload.list) ? payload.list[0] : null;
-    if (!data || !Number.isInteger(data.main?.aqi) || data.main.aqi < 1 || data.main.aqi > 5) return null;
+    if (!data || !Number.isInteger(data.main?.aqi) || data.main.aqi < 1 || data.main.aqi > 5)
+      return null;
     const labels = ['', 'Good', 'Fair', 'Moderate', 'Poor', 'Very poor'];
     return {
       index: Number(data.main.aqi),
       label: labels[Number(data.main.aqi)] || 'Unknown',
-      pm25: Number.isFinite(data.components?.pm2_5) && data.components.pm2_5 >= 0 ? data.components.pm2_5 : null
+      pm25:
+        Number.isFinite(data.components?.pm2_5) && data.components.pm2_5 >= 0
+          ? data.components.pm2_5
+          : null,
     };
   }
 
@@ -361,7 +398,9 @@ export class WeatherService {
   }
 
   getOpenWeatherIconCode(weather) {
-    const iconCode = String(weather?.icon || '01d').trim().toLowerCase();
+    const iconCode = String(weather?.icon || '01d')
+      .trim()
+      .toLowerCase();
     return /^\d{2}[dn]$/.test(iconCode) ? iconCode : '01d';
   }
 
@@ -377,23 +416,24 @@ export class WeatherService {
       throw new Error('Weather data was not available');
     }
 
-    const number = value => Number.isFinite(value) ? value : null;
-    const toFahrenheit = value => Number.isFinite(value) ? value * 9 / 5 + 32 : null;
-    const toKph = value => Number.isFinite(value) ? value * 3.6 : null;
-    const toIso = timestamp => new Date(Number(timestamp) * 1000).toISOString();
-    const readableText = weather => {
+    const number = (value) => (Number.isFinite(value) ? value : null);
+    const toFahrenheit = (value) => (Number.isFinite(value) ? (value * 9) / 5 + 32 : null);
+    const toKph = (value) => (Number.isFinite(value) ? value * 3.6 : null);
+    const toIso = (timestamp) => new Date(Number(timestamp) * 1000).toISOString();
+    const readableText = (weather) => {
       const value = weather?.description || 'Unknown conditions';
       return value.charAt(0).toUpperCase() + value.slice(1);
     };
-    const conditionFor = point => ({
+    const conditionFor = (point) => ({
       text: readableText(point.weather?.[0]),
-      iconCode: this.getOpenWeatherIconCode(point.weather?.[0])
+      iconCode: this.getOpenWeatherIconCode(point.weather?.[0]),
     });
     const sunriseTimestamp = currentPoint.sunrise ?? dailyPayload.data?.[0]?.sunrise ?? null;
     const sunsetTimestamp = currentPoint.sunset ?? dailyPayload.data?.[0]?.sunset ?? null;
-    const isDay = sunriseTimestamp && sunsetTimestamp
-      ? currentPoint.dt >= sunriseTimestamp && currentPoint.dt <= sunsetTimestamp
-      : true;
+    const isDay =
+      sunriseTimestamp && sunsetTimestamp
+        ? currentPoint.dt >= sunriseTimestamp && currentPoint.dt <= sunsetTimestamp
+        : true;
 
     const currentData = {
       location: {
@@ -402,7 +442,7 @@ export class WeatherService {
         country: location.country,
         lat: location.lat,
         lon: location.lon,
-        timezone: currentPayload.timezone || dailyPayload.timezone || location.timezone || null
+        timezone: currentPayload.timezone || dailyPayload.timezone || location.timezone || null,
       },
       current: {
         last_updated: toIso(currentPoint.dt),
@@ -412,29 +452,33 @@ export class WeatherService {
         feelslike_c: number(currentPoint.feels_like),
         feelslike_f: toFahrenheit(currentPoint.feels_like),
         humidity: number(currentPoint.humidity),
-        wind_kph: Number.isFinite(currentPoint.wind_speed) ? Math.round(toKph(currentPoint.wind_speed)) : null,
+        wind_kph: Number.isFinite(currentPoint.wind_speed)
+          ? Math.round(toKph(currentPoint.wind_speed))
+          : null,
         wind_dir: this.getWindDirection(currentPoint.wind_deg),
         pressure_mb: number(currentPoint.pressure),
         vis_km: Number.isFinite(currentPoint.visibility) ? currentPoint.visibility / 1000 : null,
         uv: number(currentPoint.uvi),
         sunrise: sunriseTimestamp ? toIso(sunriseTimestamp) : null,
         sunset: sunsetTimestamp ? toIso(sunsetTimestamp) : null,
-        is_day: isDay ? 1 : 0
-      }
+        is_day: isDay ? 1 : 0,
+      },
     };
 
     const hourly = (hourlyPayload.data || [])
-      .filter(point => Number(point.dt) * 1000 >= Date.now())
-      .map(point => ({
+      .filter((point) => Number(point.dt) * 1000 >= Date.now())
+      .map((point) => ({
         time: toIso(point.dt),
         wind_kph: point.wind_speed == null ? null : Math.round(toKph(point.wind_speed)),
         temp_c: Number(point.temp),
         temp_f: toFahrenheit(point.temp),
-        precipitation_probability_percent: point.pop == null || !Number.isFinite(Number(point.pop))
-          ? null : Math.max(0, Math.min(100, Math.round(Number(point.pop) * 100)))
+        precipitation_probability_percent:
+          point.pop == null || !Number.isFinite(Number(point.pop))
+            ? null
+            : Math.max(0, Math.min(100, Math.round(Number(point.pop) * 100))),
       }));
 
-    const forecastDays = (dailyPayload.data || []).slice(0, 7).map(point => ({
+    const forecastDays = (dailyPayload.data || []).slice(0, 7).map((point) => ({
       date: toIso(point.dt),
       day: {
         condition: conditionFor(point),
@@ -443,10 +487,11 @@ export class WeatherService {
         maxtemp_f: toFahrenheit(point.temp?.max ?? point.temp?.day),
         mintemp_c: number(point.temp?.min ?? point.temp?.night),
         mintemp_f: toFahrenheit(point.temp?.min ?? point.temp?.night),
-        precipitation_probability_percent: point.pop == null || !Number.isFinite(Number(point.pop))
-          ? null
-          : Math.max(0, Math.min(100, Math.round(Number(point.pop) * 100)))
-      }
+        precipitation_probability_percent:
+          point.pop == null || !Number.isFinite(Number(point.pop))
+            ? null
+            : Math.max(0, Math.min(100, Math.round(Number(point.pop) * 100))),
+      },
     }));
 
     if (!forecastDays.length) {
@@ -458,13 +503,22 @@ export class WeatherService {
       currentData,
       forecastData: {
         forecast: {
-          forecastday: forecastDays.map(day => ({...day, hour: hourly.filter(hour => {
-            const zone = currentData.location.timezone;
-            const dateKey = value => new Intl.DateTimeFormat('en-CA', {year:'numeric',month:'2-digit',day:'2-digit',...(zone ? {timeZone:zone} : {timeZone:'UTC'})}).format(new Date(value));
-            return dateKey(hour.time) === dateKey(day.date);
-          })}))
-        }
-      }
+          forecastday: forecastDays.map((day) => ({
+            ...day,
+            hour: hourly.filter((hour) => {
+              const zone = currentData.location.timezone;
+              const dateKey = (value) =>
+                new Intl.DateTimeFormat('en-CA', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  ...(zone ? { timeZone: zone } : { timeZone: 'UTC' }),
+                }).format(new Date(value));
+              return dateKey(hour.time) === dateKey(day.date);
+            }),
+          })),
+        },
+      },
     };
   }
 
@@ -476,10 +530,15 @@ export class WeatherService {
     const label = region ? name + ', ' + region : name;
     const latitude = Number(location.lat);
     const longitude = Number(location.lon);
-    const hasCoordinates = location.lat != null && location.lon != null &&
-      Number.isFinite(latitude) && Number.isFinite(longitude);
+    const hasCoordinates =
+      location.lat != null &&
+      location.lon != null &&
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude);
     const query = label;
-    const id = hasCoordinates ? latitude.toFixed(3) + ',' + longitude.toFixed(3) : label.toLowerCase();
+    const id = hasCoordinates
+      ? latitude.toFixed(3) + ',' + longitude.toFixed(3)
+      : label.toLowerCase();
     return {
       id,
       name,
@@ -489,16 +548,14 @@ export class WeatherService {
       lon: hasCoordinates ? longitude : null,
       state: String(location.state || '').trim(),
       country: String(location.country || '').trim(),
-      countryCode: String(location.countryCode || location.country || '').trim()
+      countryCode: String(location.countryCode || location.country || '').trim(),
     };
   }
 
   formatLocationTime(value, timeZone) {
     if (value == null) return 'Unavailable';
 
-    const timestamp = typeof value === 'number'
-      ? value * 1000
-      : Date.parse(value);
+    const timestamp = typeof value === 'number' ? value * 1000 : Date.parse(value);
     if (!Number.isFinite(timestamp)) return 'Unavailable';
 
     const date = new Date(timestamp);
@@ -508,7 +565,9 @@ export class WeatherService {
     try {
       return new Intl.DateTimeFormat(undefined, options).format(date);
     } catch {
-      return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date);
+      return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(
+        date,
+      );
     }
   }
 
@@ -516,7 +575,7 @@ export class WeatherService {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) {
       return 'just now';
     } else if (diffInMinutes < 60) {
@@ -530,7 +589,7 @@ export class WeatherService {
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       });
     }
   }

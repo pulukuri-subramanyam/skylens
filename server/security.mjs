@@ -11,8 +11,13 @@ export function allowRequest(request, response, bucket, limit = 90, now = Date.n
     response.status(403).json({ message: 'Cross-site requests are not allowed.' });
     return false;
   }
-  const address = request.headers?.['x-vercel-forwarded-for'] || request.headers?.['x-forwarded-for'] || request.socket?.remoteAddress || 'unknown';
-  const key = bucket + ':' + createHash('sha256').update(String(address).split(',')[0].trim()).digest('hex');
+  const address =
+    request.headers?.['x-vercel-forwarded-for'] ||
+    request.headers?.['x-forwarded-for'] ||
+    request.socket?.remoteAddress ||
+    'unknown';
+  const key =
+    bucket + ':' + createHash('sha256').update(String(address).split(',')[0].trim()).digest('hex');
   for (const [id, entry] of windows) if (entry.expires <= now) windows.delete(id);
   let entry = windows.get(key);
   if (!entry) {

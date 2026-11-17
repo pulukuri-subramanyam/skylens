@@ -7,7 +7,7 @@ const ROUTES = {
   current: { path: '/data/4.0/onecall/current', maxAge: 300 },
   hourly: { path: '/data/4.0/onecall/timeline/1h', maxAge: 900 },
   daily: { path: '/data/4.0/onecall/timeline/1day', maxAge: 1800 },
-  air: { path: '/data/2.5/air_pollution', maxAge: 1800 }
+  air: { path: '/data/2.5/air_pollution', maxAge: 1800 },
 };
 
 function getString(query, name) {
@@ -80,18 +80,33 @@ export default async function handler(request, response) {
     if (!upstreamResponse.ok) {
       logEvent('weather_upstream_failed', { type, status: upstreamResponse.status });
       if (upstreamResponse.status === 429) response.setHeader('Retry-After', '60');
-      return response.status(upstreamResponse.status === 429 ? 429 : 502)
+      return response
+        .status(upstreamResponse.status === 429 ? 429 : 502)
         .json({ message: 'Weather provider is temporarily unavailable.' });
     }
 
-    if (!payload || typeof payload !== 'object' || ((type === 'geocode' || type === 'reverse') ? !Array.isArray(payload) : type === 'air' ? !Array.isArray(payload.list) : !Array.isArray(payload.data))) throw new Error('Invalid provider response');
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      (type === 'geocode' || type === 'reverse'
+        ? !Array.isArray(payload)
+        : type === 'air'
+          ? !Array.isArray(payload.list)
+          : !Array.isArray(payload.data))
+    )
+      throw new Error('Invalid provider response');
 
     if (type === 'hourly' && Array.isArray(payload.data)) {
       const points = [...payload.data];
       let next = payload.next;
       for (let page = 0; page < 2 && next && points.length < 48; page++) {
         const cursor = new URL(next, OPENWEATHER_BASE_URL);
-        if (cursor.hostname !== 'api.openweathermap.org' || !['http:', 'https:'].includes(cursor.protocol) || cursor.pathname !== route.path) break;
+        if (
+          cursor.hostname !== 'api.openweathermap.org' ||
+          !['http:', 'https:'].includes(cursor.protocol) ||
+          cursor.pathname !== route.path
+        )
+          break;
         const start = cursor.searchParams.get('start');
         if (!start || !/^\d+$/.test(start)) break;
         const pageUrl = new URL(upstreamUrl);
@@ -103,7 +118,9 @@ export default async function handler(request, response) {
         points.push(...pagePayload.data);
         next = pagePayload.next;
       }
-      payload.data = [...new Map(points.map(point => [point.dt, point])).values()].sort((a,b)=>a.dt-b.dt).slice(0,48);
+      payload.data = [...new Map(points.map((point) => [point.dt, point])).values()]
+        .sort((a, b) => a.dt - b.dt)
+        .slice(0, 48);
     }
     // Provider pagination URLs can contain the server key. Never return them.
     delete payload.next;
@@ -111,12 +128,14 @@ export default async function handler(request, response) {
     logEvent('weather_request', { type, status: 200, durationMs: Date.now() - started });
     response.setHeader(
       'Cache-Control',
-      `public, max-age=0, s-maxage=${route.maxAge}, stale-while-revalidate=600`
+      `public, max-age=0, s-maxage=${route.maxAge}, stale-while-revalidate=600`,
     );
     return response.status(200).json(payload);
   } catch (error) {
     const timeout = error?.name === 'TimeoutError' || error?.name === 'AbortError';
     logEvent('weather_request_failed', { type, reason: timeout ? 'timeout' : 'upstream' });
-    return response.status(timeout ? 504 : 502).json({ message: 'Unable to retrieve weather data right now.' });
+    return response
+      .status(timeout ? 504 : 502)
+      .json({ message: 'Unable to retrieve weather data right now.' });
   }
 }

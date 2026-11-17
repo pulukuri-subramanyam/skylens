@@ -6,14 +6,22 @@ export function useReadingFade(container, weather, unit) {
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const animations = [];
-    const readings = container.current?.querySelectorAll('#currentTemp, #currentCondition, #feelsLike, #todayHigh, #todayLow, .detail-value, .air-pm25, #currentWeatherIcon') || [];
+    const readings =
+      container.current?.querySelectorAll(
+        '#currentTemp, #currentCondition, #feelsLike, #todayHigh, #todayLow, .detail-value, .air-pm25, #currentWeatherIcon',
+      ) || [];
     for (const reading of readings) {
       const value = reading.tagName === 'IMG' ? reading.getAttribute('src') : reading.textContent;
       if (previous.current.get(reading) !== value && !reducedMotion && reading.animate) {
-        animations.push(reading.animate([{ opacity: .65 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' }));
+        animations.push(
+          reading.animate([{ opacity: 0.65 }, { opacity: 1 }], {
+            duration: 180,
+            easing: 'ease-out',
+          }),
+        );
       }
       previous.current.set(reading, value);
     }
-    return () => animations.forEach(animation=>animation.cancel());
+    return () => animations.forEach((animation) => animation.cancel());
   }, [container, weather, unit]);
 }
