@@ -63,7 +63,9 @@ export function useWeather() {
         : cause.code === 'timeout' ? 'The weather request timed out. Try again.'
         : cause.message.includes('No matching') ? 'City not found. Check the spelling or choose a suggestion.'
         : !navigator.onLine ? 'You appear to be offline.' : `Couldn't load weather for ${targetName}. Try again in a moment.`;
-      setError(keep ? 'Refresh failed. Showing the last successful weather.' : current.current ? message + ' Showing the last successful weather.' : message);
+      setError(!navigator.onLine
+        ? current.current ? "You're offline. Showing saved weather." : "You're offline. Connect to the internet and try again."
+        : keep ? 'Refresh failed. Showing the last successful weather.' : current.current ? message + ' Showing the last successful weather.' : message);
     } finally {
       if (id === sequence.current) { setLoading(false); setRefreshing(false); setLocating(false); }
     }
