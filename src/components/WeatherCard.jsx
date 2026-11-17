@@ -6,6 +6,7 @@ import { weatherService as service } from '../lib/weather';
 import { weatherIconUrl } from '../lib/weatherIcons';
 import { formatTemperature } from '../lib/storage';
 import { useReadingFade } from '../hooks/useReadingFade';
+import { WEATHER_STALE_AFTER_MS } from '../lib/weatherFreshness';
 
 export const WeatherCard = memo(function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refreshing, error }) {
   const card=useRef(null);
@@ -19,7 +20,7 @@ export const WeatherCard = memo(function WeatherCard({ weather, unit, now, saved
       localDate=new Intl.DateTimeFormat('en-US',{timeZone:location.timezone,weekday:'long',month:'long',day:'numeric'}).format(now);
     }
   } catch { /* Unknown provider time zone. */ }
-  const stale=now-lastFetchedAt>=900000;
+  const stale=now-lastFetchedAt>=WEATHER_STALE_AFTER_MS;
   const temperature=Number.isFinite(current.temp_c)?Math.round(unit==='F'?current.temp_f:current.temp_c):null;
   return <section ref={card} className="current-weather-card weather-hero" aria-label="Current weather">
     <div className="weather-rings" aria-hidden="true"/>

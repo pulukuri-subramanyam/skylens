@@ -3,7 +3,7 @@ import { Icon } from './Icon';
 import { useCitySuggestions } from '../hooks/useCitySuggestions';
 import { weatherService } from '../lib/weather';
 
-export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
+export function SearchBar({ saved, recent, onSearch, onLocate, locating, onActivityChange }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -13,6 +13,10 @@ export function SearchBar({ saved, recent, onSearch, onLocate, locating }) {
   const list = useRef(null);
   const { locations, loading, valid, failed } = useCitySuggestions(query, saved, recent, open);
   const visible = open && valid;
+  useEffect(() => {
+    onActivityChange?.(Boolean(open || query.trim() || pending));
+    return () => onActivityChange?.(false);
+  }, [open, query, pending, onActivityChange]);
   useEffect(() => { list.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' }); }, [active]);
   const choose = useCallback(location => { setPending(null); setNeedsChoice(false); setOpen(false); setQuery(''); setActive(-1); onSearch(location); }, [onSearch]);
   useEffect(() => {

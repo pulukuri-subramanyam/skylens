@@ -17,7 +17,7 @@ export default function App() {
   const [theme, setTheme] = useState(() => readPreference('weatherapp-theme', ['light', 'dark'], 'light'));
   const [saved, setSaved] = useState(() => readCities('weatherapp-saved-cities'));
   const [now, setNow] = useState(Date.now);
-  const { weather, recent, loading, locating, refreshing, error, status, setStatus, load, locate, retry, requestLabel } = useWeather();
+  const { weather, recent, loading, locating, refreshing, error, status, setStatus, load, locate, retry, requestLabel, setSearchActive } = useWeather();
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
@@ -80,7 +80,7 @@ export default function App() {
     <a className="skip-link" href="#weatherContent">Skip to weather</a>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <div className="search-row"><div className="toolbar-inner">
-    <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={locating}/>
+    <SearchBar saved={saved} recent={recent} onSearch={load} onLocate={locate} locating={locating} onActivityChange={setSearchActive}/>
     <SavedCities saved={saved} recent={recent} current={weather} unit={unit} onSelect={load} onMove={move} onReorder={reorder} onRemove={id => { setSaved(cities => cities.filter(city => city.id !== id)); setStatus('Saved city removed.'); }}/>
     </div></div>
     <div className="app-container">

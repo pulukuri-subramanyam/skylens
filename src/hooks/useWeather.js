@@ -3,6 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { readCities, readWeatherCache, writeStorage, uniqueRecentCities } from '../lib/storage';
 import { weatherService as service } from '../lib/weather';
 import { reportEvent } from '../lib/monitoring';
+import { WEATHER_STALE_AFTER_MS } from '../lib/weatherFreshness';
+
+const AUTO_REFRESH_COOLDOWN_MS = 5 * 60 * 1000;
 
 export function useWeather() {
   const [weather, setWeather] = useState(readWeatherCache);
@@ -17,8 +20,16 @@ export function useWeather() {
   const sequence = useRef(0);
   const current = useRef(weather);
   const lastAction = useRef({ kind: 'weather', target: weather?.currentCity || 'London' });
+  const busy = useRef(false);
+  const searchActive = useRef(false);
+  const manualFailure = useRef(false);
+  const lastAttempt = useRef(-Infinity);
+  const setSearchActive = useCallback(value => { searchActive.current = value; }, []);
 
-  const load = useCallback(async (target, { refresh = false, fromLocation = false } = {}) => {
+  const load = useCallback(async (target, { refresh = false, fromLocation = false, automatic = false } = {}) => {
+    busy.current = true;
+    manualFailure.current = false;
+    lastAttempt.current = Date.now();
     const id = ++sequence.current;
     active.current?.abort();
     const controller = new AbortController();
@@ -26,7 +37,7 @@ export function useWeather() {
     const keep = Boolean(refresh && current.current);
     setLocating(fromLocation);
     setError(''); setStatus(''); setLoading(!keep); setRefreshing(keep);
-    lastAction.current = { kind: 'weather', target, fromLocation };
+    if (!automatic) lastAction.current = { kind: 'weather', target, fromLocation };
     const targetName = typeof target === 'string' ? (/^-?[\d.]+,-?[\d.]+$/.test(target) ? 'your location' : target) : target.label || target.name || 'your location';
     setRequestLabel(targetName);
     try {
@@ -58,6 +69,7 @@ export function useWeather() {
       });
     } catch (cause) {
       if (id !== sequence.current || cause.name === 'AbortError') return;
+      manualFailure.current = !automatic && !keep;
       reportEvent(keep ? 'refresh_failure' : 'weather_failure');
       const message = cause.code === 'rate_limited' ? 'Too many requests. Wait a moment before trying again.'
         : cause.code === 'timeout' ? 'The weather request timed out. Try again.'
@@ -67,17 +79,21 @@ export function useWeather() {
         ? current.current ? "You're offline. Showing saved weather." : "You're offline. Connect to the internet and try again."
         : keep ? 'Refresh failed. Showing the last successful weather.' : current.current ? message + ' Showing the last successful weather.' : message);
     } finally {
-      if (id === sequence.current) { setLoading(false); setRefreshing(false); setLocating(false); }
+      if (id === sequence.current) { busy.current = false; setLoading(false); setRefreshing(false); setLocating(false); }
     }
   }, []);
 
   const locate = useCallback(() => {
+    busy.current = true;
+    manualFailure.current = false;
     const id = ++sequence.current;
     active.current?.abort();
     setLocating(true); setLoading(true); setRefreshing(false); setError(''); setRequestLabel('your location');
     lastAction.current = { kind: 'location' };
     const fail = message => {
       if (id !== sequence.current) return;
+      busy.current = false;
+      manualFailure.current = true;
       setLocating(false); setLoading(false); setError(message);
     };
     if (!navigator.geolocation) return fail('This browser does not support location. Search for a city instead.');
@@ -101,5 +117,23 @@ export function useWeather() {
   }, [load]);
   useEffect(() => { writeStorage('weatherapp-recent-cities', recent); }, [recent]);
 
-  return { weather, recent, loading, locating, refreshing, error, status, setStatus, load, locate, retry, requestLabel };
+  useEffect(() => {
+    const refreshStale = () => {
+      const latest = current.current;
+      const now = Date.now();
+      if (document.visibilityState !== 'visible' || !navigator.onLine || busy.current ||
+          searchActive.current || manualFailure.current || !latest?.currentCity ||
+          !Number.isFinite(latest.lastFetchedAt) || now - latest.lastFetchedAt < WEATHER_STALE_AFTER_MS ||
+          now - lastAttempt.current < AUTO_REFRESH_COOLDOWN_MS) return;
+      void load(latest.currentCity, { refresh: true, automatic: true });
+    };
+    document.addEventListener('visibilitychange', refreshStale);
+    window.addEventListener('focus', refreshStale);
+    return () => {
+      document.removeEventListener('visibilitychange', refreshStale);
+      window.removeEventListener('focus', refreshStale);
+    };
+  }, [load]);
+
+  return { weather, recent, loading, locating, refreshing, error, status, setStatus, load, locate, retry, requestLabel, setSearchActive };
 }

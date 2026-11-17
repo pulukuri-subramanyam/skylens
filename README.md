@@ -86,6 +86,8 @@ Saved cities and preferences are stored locally in the browser. PWA installation
 
 Requests have bounded timeouts, cancellation and limited retries for transient failures. Provider and cached data are validated, and a failed refresh keeps the last successful result with a warning. Missing optional readings show `Unavailable`.
 
+Returning to a visible tab or focusing the window refreshes the selected city's weather if its last successful fetch is at least 15 minutes old. Existing readings and forecast controls stay visible. Automatic refresh skips offline sessions, active searches, in-flight requests and pending geolocation; it preserves failed manual searches and location errors. Failed automatic attempts have a five-minute cooldown before another return can retry. There is no periodic polling.
+
 GitHub Actions runs dependency auditing, unit tests, production builds and Playwright browser checks, including accessibility and offline reloads. A separate scheduled workflow checks production health hourly; GitHub may delay scheduled runs.
 
 Vercel Firewall enforces a fixed-window limit of **300 GET requests to `/api/weather` per 60 seconds per IP, per region**, returning HTTP 429 above the limit. Counters are shared across instances in a region, not a worldwide quota. This rule is configured in Vercel, not deployed from this repository. `/api/events` has only the application's per-instance guard. See [operations](docs/operations.md) for the limits and verification details.
