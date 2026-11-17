@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { weatherIconUrl } from '../lib/weatherIcons';
 import { formatTemperature } from '../lib/storage';
 import { Icon } from './Icon';
 
-export function DailyForecast({ days, unit, timeZone, selectedDate, onSelect }) {
+export const DailyForecast = memo(function DailyForecast({ days, unit, timeZone, selectedDate, onSelect }) {
   const low = Math.min(...days.map(day => day.day.mintemp_c).filter(Number.isFinite));
   const range = Math.max(1, Math.max(...days.map(day => day.day.maxtemp_c).filter(Number.isFinite)) - low);
   return <section className="forecast-section glassmorphism" aria-labelledby="dailyHeading">
@@ -30,4 +31,4 @@ export function DailyForecast({ days, unit, timeZone, selectedDate, onSelect }) 
       })}
     </div>
   </section>;
-}
+});

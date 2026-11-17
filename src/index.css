@@ -459,7 +459,7 @@ button:focus-visible,a:focus-visible,[role="button"]:focus-visible { outline:2px
 }
 
 [data-theme="dark"] .surface-card,[data-theme="dark"] .forecast-section,[data-theme="dark"] .chart-section { box-shadow:0 6px 18px #00000024; }
-.app-shell,.header,.search-row,.forecast-section,.chart-section,.weather-hero { transition:background-color 220ms ease,color 220ms ease; }
+.app-shell,.header,.search-row,.forecast-section,.chart-section,.weather-hero { transition:background-color 80ms ease,color 80ms ease; }
 [data-page-hidden="true"] .weather-loader * { animation-play-state:paused !important; }
 @media(prefers-reduced-motion:reduce) {
  html { scroll-behavior:auto; }

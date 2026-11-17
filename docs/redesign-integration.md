@@ -6,7 +6,7 @@ Implemented from the approved `origin/design/skylens-redesign` reference, review
 
 This is a presentation change in the existing JavaScript React/Vite/Tailwind application. The reference's sample city, clock, weather and simulated geolocation were replaced with existing application data and handlers. No TypeScript or runtime dependencies were added. API handlers, provider normalization, request management, storage keys, cached-result recovery and the single-page architecture remain unchanged.
 
-The reference was split into reusable `CityMenu`, `WeatherMetrics` and `DaylightBar` components and the existing header/search/weather/forecast/chart components. Existing realistic weather icons are retained because they cover night, fog, snow and other conditions beyond the prototype's small icon set. The existing footer, saved-city drag/keyboard reorder, missing-value labels, stale/error states and next-24-hours chart default are retained. After review, the owner requested restoration of condition-based background animations. `WeatherBackground` now renders behind the opaque dashboard cards using the actual current condition; its isolated stylesheet restores clouds, rain, snow, sunlight, stars, fog and storm ambience without moving cards or intercepting input. Motion stops for reduced-motion preferences and pauses while the page is hidden.
+The reference was split into reusable `CityMenu`, `WeatherMetrics` and `DaylightBar` components and the existing header/search/weather/forecast/chart components. Existing realistic weather icons are retained because they cover night, fog, snow and other conditions beyond the prototype's small icon set. The existing footer, saved-city drag/keyboard reorder, missing-value labels, stale/error states and next-24-hours chart default are retained. Weather background animations were subsequently removed at the owner's request. The page now uses a static light/dark background; chart, loading and reading-update animations remain.
 
 Saved and recent city menus use real stored city objects and coordinates. Saving/removing, selecting cities, outside-click/Escape dismissal and pointer/touch/keyboard dragging remain functional. Drag auto-scrolling now operates inside the menu. The selected forecast day still controls the real hourly chart; selecting it again returns to the next 24 hours. Chart.js remains responsible for tooltips, real samples and resizing rather than adopting the reference's static SVG plot.
 
@@ -60,13 +60,7 @@ Motion polish keeps a stable bounded particle pool within each weather family. L
 | `src/components/HourlyChart.jsx` | Reference colors, gradient, points, axis styling and actual temperature/rain tooltip content. |
 | `src/hooks/useSavedCityDrag.js` | Safe handling of closed menus and clipped menu drag/scroll bounds. |
 | `src/index.css` | Reference typography, palette, spacing, light/dark and responsive component styles; retained loading states. |
-| `src/components/WeatherBackground.jsx` | Restored current-condition background component and isolated CSS import. |
-| `src/components/weather-background.css` (new) | Condition-specific ambient layers, themes, motion and safe background stacking. |
-| `src/lib/weatherAmbience.js` (new) | Provider-description intensity, capped wind projection and sunrise/sunset warmth calculations. |
-| `tests/weather-ambience.test.js` (new) | Intensity, missing/extreme wind and timezone-offset daylight edge cases. |
-| `tests/browser/weather-background.spec.js` (new) | Real-condition switching, stationary cards, pointer passthrough, reduced motion and background pausing. |
-| `tests/browser/weather-focus.spec.js` (new) | Menu softening/restoration, clipped phone gaps and decorative wind with unchanged readings. |
-| `tests/browser/weather-theme.spec.js` (new) | Actual intermediate colour blending in both directions with unchanged moving elements and animation start times. |
+| `tests/browser/weather-theme.spec.js` (new) | Chart reuse and preserved readings during theme changes; static backgrounds across weather conditions and both themes. |
 | `public/assets/fonts/plus-jakarta-sans-latin.woff2` (new) | Self-hosted variable Latin web font. |
 | `public/assets/fonts/PLUS-JAKARTA-OFL.txt` (new) | Font license. |
 | `build/serviceWorker.js` | Cache the new font for offline use. |
