@@ -49,6 +49,7 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
       options: {
         responsive: true, maintainAspectRatio: false,
         animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? false : undefined,
+        transitions: { theme: { animation: { duration: 160 } } },
         interaction: { intersect: false, mode: 'index' },
         elements: { point: { hoverBorderWidth: 3 } },
         plugins: { tooltip: { backgroundColor: '#17243b', titleColor: '#ffffff', bodyColor: '#c9d7ea', borderColor: line, borderWidth: 1, cornerRadius: 11, displayColors: false, callbacks: {
@@ -105,7 +106,7 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
     appliedTheme.current = theme;
     // Theme changes recolour the existing chart without replaying its entry animation.
     chart.stop();
-    chart.update();
+    chart.update('theme');
   }, [theme]);
   return <section className="chart-section glassmorphism" aria-labelledby="hourlyHeading">
     <div className="chart-heading">
