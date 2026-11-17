@@ -66,7 +66,7 @@ tests/            Unit, browser, accessibility and offline checks
 docs/             Operations, security limits and release checklist
 ```
 
-React renders the dashboard and manages interaction state. Tailwind's component layer contains the custom CSS for layout, typography, weather animations and light/dark themes. Tailwind utilities are available; its reset is disabled to preserve these styles.
+React renders the dashboard and manages interaction state. Tailwind's component layer contains the custom CSS for layout, typography, loading animations and light/dark themes. The page background is static; the interactive chart retains its animations. Tailwind utilities are available; its reset is disabled to preserve these styles.
 
 The redesign uses a blue weather hero, Recent/Saved city menus, responsive weekly cards/rows and the existing interactive Chart.js chart. See [redesign integration notes](docs/redesign-integration.md) for component changes, real-data mappings and verification limits.
 

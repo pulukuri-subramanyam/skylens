@@ -28,35 +28,18 @@ test('theme switches reuse the chart without replacing its drawing context owner
   }
 });
 
-test('theme colours blend in both directions without replacing weather particles or resetting motion', async ({page})=>{
-  await page.emulateMedia({reducedMotion:'no-preference'});await providers(page);let code=65;
+test('all weather conditions retain a static page background in both themes', async ({page})=>{
+  await page.emulateMedia({reducedMotion:'no-preference'});await providers(page);let code=0;
   await page.route('https://api.open-meteo.com/**',route=>{const data=forecast();data.current.weather_code=code;return route.fulfill({json:data});});
   await page.goto('/');await expect(page.locator('#temperatureChart')).toBeVisible();
-  for(const weatherCode of [65,75,3,2,0]) {
+  for(const weatherCode of [0,2,3,45,65,75,95]) {
     code=weatherCode;await page.locator('#refreshBtn').click();await expect(page.locator('#refreshBtn')).toBeEnabled();
-    await expect(page.locator('.weather-scene.is-leaving')).toHaveCount(0);
-    const scene=await page.locator('.weather-scene.is-current').elementHandle();
-    const selector=weatherCode===0 ? '.weather-atmosphere' : [2,3].includes(weatherCode) ? '.cloud-evolution span' : '.weather-particle';
-    const moving=await page.locator('.weather-scene.is-current '+selector).first().elementHandle();
-    const started=await moving.evaluate(el=>el.getAnimations().find(a=>a instanceof CSSAnimation)?.startTime);
-    for(const [theme,target] of [['dark',1],['light',0]]) {
+    for(const theme of ['dark','light']) {
       await page.locator('#themeToggle').click();await expect(page.locator('html')).toHaveAttribute('data-theme',theme);
-      const intermediate=await page.waitForFunction(target=>{
-        const el=document.querySelector('.weather-scene.is-current .background-animation');
-        const animation=el.getAnimations({subtree:true}).find(a=>a instanceof CSSTransition && a.transitionProperty==='opacity' && Number(a.effect.getKeyframes().at(-1).opacity)===target && Number(a.effect.getKeyframes()[0].opacity)===1-target);
-        if(!animation)return false;
-        animation.pause();animation.currentTime=Number(animation.effect.getTiming().duration)/2;
-        return Number(getComputedStyle(el,'::before').opacity);
-      },target);
-      const opacity=await intermediate.jsonValue();expect(opacity).toBeGreaterThan(0);expect(opacity).toBeLessThan(1);
-      expect(await scene.evaluate(el=>el===document.querySelector('.weather-scene.is-current'))).toBe(true);
-      expect(await moving.evaluate(el=>el.isConnected)).toBe(true);
-      expect(await moving.evaluate(el=>el.getAnimations().find(a=>a instanceof CSSAnimation)?.startTime)).toBe(started);
-      await page.locator('.weather-scene.is-current .background-animation').evaluate(el=>el.getAnimations({subtree:true}).filter(a=>a instanceof CSSTransition && a.playState==='paused').forEach(a=>a.play()));
-      await expect.poll(()=>page.locator('.weather-scene.is-current .background-animation').evaluate(el=>Number(getComputedStyle(el,'::before').opacity))).toBe(target);
+      await expect(page.locator('.weather-backdrop,.weather-scene,.weather-particle,.weather-atmosphere,.cloud-evolution')).toHaveCount(0);
+      expect(await page.locator('.forecast-section,.chart-section').evaluateAll(elements=>elements.every(el=>getComputedStyle(el,'::before').content==='none'))).toBe(true);
+      expect(await page.evaluate(()=>document.getAnimations().some(animation=>animation.animationName?.startsWith('weather-')))).toBe(false);
+      await expect.poll(()=>page.locator('.app-shell').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe(theme==='dark'?'rgb(13, 20, 34)':'rgb(242, 247, 251)');
     }
   }
-  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#themeToggle').click();
-  await expect.poll(()=>page.locator('.weather-scene.is-current .background-animation').evaluate(el=>Number(getComputedStyle(el,'::before').opacity))).toBe(1);
-  expect(await page.locator('.weather-backdrop').evaluate(el=>el.getAnimations({subtree:true}).length)).toBe(0);
 });

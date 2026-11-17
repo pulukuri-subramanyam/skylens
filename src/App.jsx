@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Header } from './components/Header';
-import { WeatherBackground } from './components/WeatherBackground';
 import { SearchBar } from './components/SearchBar';
 import { SavedCities } from './components/SavedCities';
 import { WeatherCard } from './components/WeatherCard';
@@ -78,7 +77,6 @@ export default function App() {
     setStatus('Saved city order updated.');
   };
   return <div className="app-shell">
-    <WeatherBackground current={weather?.currentWeatherData.current} now={now}/>
     <a className="skip-link" href="#weatherContent">Skip to weather</a>
     <Header unit={unit} onUnit={setUnit} theme={theme} onTheme={() => setTheme(value => value === 'light' ? 'dark' : 'light')}/>
     <div className="search-row"><div className="toolbar-inner">
