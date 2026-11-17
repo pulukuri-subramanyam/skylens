@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { memo, useRef } from 'react';
 import { Icon } from './Icon';
 import { DaylightBar } from './DaylightBar';
 import { WeatherMetrics } from './WeatherMetrics';
@@ -7,7 +7,7 @@ import { weatherIconUrl } from '../lib/weatherIcons';
 import { formatTemperature } from '../lib/storage';
 import { useReadingFade } from '../hooks/useReadingFade';
 
-export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refreshing, error }) {
+export const WeatherCard = memo(function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refreshing, error }) {
   const card=useRef(null);
   useReadingFade(card,weather,unit);
   const {currentWeatherData:{current,location},forecastData,lastAirQuality,currentCity,lastFetchedAt}=weather;
@@ -40,4 +40,4 @@ export function WeatherCard({ weather, unit, now, saved, onSave, onRefresh, refr
     <WeatherMetrics current={current} airQuality={lastAirQuality}/>
     <DaylightBar current={current} timeZone={location.timezone} now={now}/>
   </section>;
-}
+});

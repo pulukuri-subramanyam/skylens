@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
 import { weatherService } from '../lib/weather';
 
@@ -35,6 +35,12 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
   const [metric, setMetric] = useState('temperature');
   const hours = days.flatMap(day => day.hour || []).slice(0, 24);
   const rainUnavailable = metric === 'rain' && !hours.some(hour => Number.isFinite(hour.precipitation_probability_percent));
+  const readings = useMemo(() => days.flatMap(day => day.hour || []).slice(0, 24).map(hour => ({
+    time: hour.time,
+    label: weatherService.formatLocationTime(hour.time, timeZone),
+    temperature: Number.isFinite(hour.temp_c) ? Math.round(unit==='F'?hour.temp_f:hour.temp_c)+'°'+unit : 'Unavailable',
+    rain: Number.isFinite(hour.precipitation_probability_percent) ? hour.precipitation_probability_percent+'%' : 'Unavailable'
+  })), [days, unit, timeZone]);
   useEffect(() => {
     const data = days.flatMap(day => day.hour || []).slice(0, 24);
     const rain = metric === 'rain';
@@ -117,6 +123,6 @@ export function HourlyChart({ days, unit, theme, timeZone, title = 'Hourly Forec
     </div>
     <div className="chart-container"><canvas ref={canvas} id="temperatureChart" role="img" aria-label={metric === 'rain' ? 'Hourly rain probability, percent' : 'Hourly temperature, degrees ' + unit} data-metric={metric}/></div>
     {rainUnavailable && <p className="chart-note">Hourly rain probability is unavailable. Refresh to check for newer data.</p>}
-    <div className="sr-only"><table><caption>{title} readings</caption><thead><tr><th scope="col">Local time</th><th scope="col">Temperature</th><th scope="col">Rain chance</th></tr></thead><tbody>{hours.map(hour=><tr key={hour.time}><th scope="row">{weatherService.formatLocationTime(hour.time,timeZone)}</th><td>{Number.isFinite(hour.temp_c) ? Math.round(unit==='F'?hour.temp_f:hour.temp_c)+'°'+unit : 'Unavailable'}</td><td>{Number.isFinite(hour.precipitation_probability_percent)?hour.precipitation_probability_percent+'%':'Unavailable'}</td></tr>)}</tbody></table></div>
+    <div className="sr-only"><table><caption>{title} readings</caption><thead><tr><th scope="col">Local time</th><th scope="col">Temperature</th><th scope="col">Rain chance</th></tr></thead><tbody>{readings.map(hour=><tr key={hour.time}><th scope="row">{hour.label}</th><td>{hour.temperature}</td><td>{hour.rain}</td></tr>)}</tbody></table></div>
   </section>;
 }

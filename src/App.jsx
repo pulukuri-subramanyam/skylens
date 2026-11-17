@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { WeatherBackground } from './components/WeatherBackground';
 import { SearchBar } from './components/SearchBar';
@@ -48,12 +48,15 @@ export default function App() {
   }, []);
 
   const isSaved = Boolean(weather && saved.some(city => city.id === weather.currentCity.id));
-  const toggleSave = () => {
+  const toggleSave = useCallback(() => {
     if (!weather) return;
     const city = weather.currentCity;
     setSaved(cities => isSaved ? cities.filter(item => item.id !== city.id) : [city, ...cities]);
     setStatus(city.label + (isSaved ? ' removed from saved cities.' : ' saved.'));
-  };
+  }, [weather, isSaved, setStatus]);
+  const refreshWeather = useCallback(() => {
+    if (weather) load(weather.currentCity, { refresh: true });
+  }, [weather, load]);
   const move = (index, direction) => {
     setSaved(cities => {
       const target = index + direction;
@@ -89,7 +92,7 @@ export default function App() {
       <button type="button" className="weather-notice-retry" id="retryBtn" onClick={retry} disabled={loading || refreshing}><Icon name="refresh"/>Try Again</button>
     </div> : <div className="error-container" id="errorContainer" role="alert"><div className="error-content"><Icon name="warning" className="error-icon"/><h3 className="error-title">Weather couldn't be loaded</h3><p className="error-message" id="errorMessage">{error}</p><button type="button" className="retry-btn" id="retryBtn" onClick={retry}><Icon name="refresh"/>Try Again</button></div></div>)}
     {loading || (!weather && !error) ? <LoadingWeather city={requestLabel}/> : weather ? <main className="weather-content" id="weatherContent" tabIndex={-1}>
-      <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onRefresh={() => load(weather.currentCity, { refresh: true })} refreshing={refreshing} error={error}/>
+      <WeatherCard weather={weather} unit={unit} now={now} saved={isSaved} onSave={toggleSave} onRefresh={refreshWeather} refreshing={refreshing} error={error}/>
       <ForecastExplorer key={weather.currentCity.id} days={weather.forecastData.forecast.forecastday} unit={unit} theme={theme} timeZone={weather.currentWeatherData.location.timezone}/>
     </main> : null}
     {!loading && (weather || error) && <Footer/>}
