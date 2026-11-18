@@ -48,6 +48,8 @@ test('installed app shell reloads offline with cached weather and a clear stale 
     'Weather loaded for London, England.',
   );
   await expect(page.locator('#refreshBtn')).toBeEnabled();
-  await expect(page.locator('#dataFreshness')).toHaveCount(1);
+  await expect(page.locator('#dataFreshness')).toHaveCount(0);
+  await expect(page.locator('#lastUpdated')).toContainText('Last updated:');
+  await expect(page.locator('#lastUpdated')).not.toContainText('May be outdated');
   await expect(page.locator('#currentTemp')).toHaveText('59°F');
 });

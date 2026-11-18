@@ -88,6 +88,7 @@ export const WeatherCard = memo(function WeatherCard({
           <div className="location-meta-row">
             <span id="lastUpdated" className="last-updated">
               Last updated: {service.formatTime(current.last_updated)}
+              {!error && stale && ' · May be outdated'}
             </span>
             <button
               id="refreshBtn"
@@ -101,15 +102,6 @@ export const WeatherCard = memo(function WeatherCard({
               <Icon name="refresh" className={refreshing ? 'animate-spin' : ''} />
               <span>{refreshing ? 'Refreshing…' : 'Refresh'}</span>
             </button>
-            {!error && (
-              <span
-                id="dataFreshness"
-                className={`data-freshness ${stale ? 'is-stale' : 'sr-only'}`}
-              >
-                {(stale ? 'May be outdated. Checked ' : 'Checked ') +
-                  service.formatTime(new Date(lastFetchedAt).toISOString())}
-              </span>
-            )}
           </div>
         </div>
       </div>

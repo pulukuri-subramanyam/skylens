@@ -32,6 +32,7 @@ async function setup(page) {
 test('returning to stale weather refreshes once, keeps readings visible and preserves forecast controls', async ({
   page,
 }) => {
+  await page.clock.install({ time: startedAt });
   const requests = await setup(page);
   await age(page, 14);
   await visibility(page);
@@ -51,11 +52,14 @@ test('returning to stale weather refreshes once, keeps readings visible and pres
     await route.fulfill({ json: data });
   });
   await age(page, 16);
+  await page.clock.runFor(60000);
   await visibility(page, 'hidden');
   await settle(page);
   expect(requests).toHaveLength(1);
   await visibility(page);
   await expect(page.locator('#refreshBtn')).toBeDisabled();
+  await expect(page.locator('#lastUpdated')).toContainText('May be outdated');
+  await expect(page.locator('#dataFreshness')).toHaveCount(0);
   await expect(page.locator('#currentTemp')).toHaveText('59°F');
   await expect(page.locator('#locationBtn')).toBeEnabled();
   await visibility(page);
@@ -64,6 +68,7 @@ test('returning to stale weather refreshes once, keeps readings visible and pres
   expect(requests).toHaveLength(2);
   release();
   await expect(page.locator('#currentTemp')).toHaveText('61°F');
+  await expect(page.locator('#lastUpdated')).not.toContainText('May be outdated');
   await expect(page.locator('#refreshBtn')).toBeEnabled();
   await expect(page.locator('#locationName')).toHaveText('London, England');
   await expect(page.locator('.forecast-item').nth(1)).toHaveAttribute('aria-pressed', 'true');
