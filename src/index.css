@@ -1641,6 +1641,22 @@
     .today-range {
       white-space: normal;
     }
+    .temperature-section {
+      gap: 6px;
+    }
+    .weather-icon-container {
+      flex-basis: 46px;
+    }
+    .weather-icon {
+      width: 46px;
+      height: 46px;
+    }
+    .temperature-degree {
+      font-size: 20px;
+    }
+    .condition-copy {
+      padding-left: 8px;
+    }
     .detail-item {
       padding: 7px;
       gap: 5px;
