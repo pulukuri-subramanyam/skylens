@@ -137,7 +137,6 @@ export const WeatherCard = memo(function WeatherCard({
                 ? formatTemperature(current.feelslike_c, unit)
                 : 'Unavailable'}
             </span>
-            <span aria-hidden="true"> · </span>
             <span className="today-range">
               High <span id="todayHigh">{formatTemperature(today.maxtemp_c, unit)}</span> / Low{' '}
               <span id="todayLow">{formatTemperature(today.mintemp_c, unit)}</span>
