@@ -364,7 +364,7 @@
   .city-suggestion-meta {
     display: flex;
     gap: 8px;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
   }
   .city-suggestion-details {
@@ -422,7 +422,7 @@
   .city-menu-count {
     border-radius: 999px;
     padding: 2px 6px;
-    font-size: 9px;
+    font-size: 12px;
     background: var(--secondary-bg);
     color: var(--accent-color);
   }
@@ -522,7 +522,7 @@
   .city-chip-region {
     flex-basis: 100%;
     min-width: 0;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.4;
     font-weight: 500;
     color: var(--text-secondary);
@@ -541,7 +541,7 @@
     white-space: nowrap;
   }
   .city-chip strong {
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
   }
   .city-chip.is-current {
@@ -727,7 +727,7 @@
     align-items: center;
   }
   .last-updated {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--hero-muted);
   }
@@ -737,7 +737,7 @@
     gap: 8px;
     min-height: 32px;
     padding: 8px 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     background: #ffffff40;
     color: var(--hero-text);
@@ -802,7 +802,7 @@
   }
   .feels-like {
     margin-top: 2px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1.8;
   }
@@ -847,7 +847,7 @@
   }
   .detail-label {
     display: block;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -861,7 +861,7 @@
     overflow-wrap: anywhere;
   }
   .detail-value small {
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 600;
   }
   #windDirection,
@@ -872,7 +872,7 @@
   }
   .air-pm25 {
     display: block;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--hero-muted);
     margin-top: 2px;
@@ -958,7 +958,7 @@
     gap: 16px;
   }
   .eyebrow {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.17em;
     text-transform: uppercase;
@@ -1019,7 +1019,7 @@
   .forecast-date small {
     display: block;
     margin-top: 4px;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text-muted);
   }
@@ -1055,7 +1055,7 @@
     align-items: center;
     gap: 4px;
     margin-top: 8px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     color: #356ba0;
   }
@@ -1119,7 +1119,7 @@
     flex-wrap: wrap;
     gap: 12px;
     padding: 24px 0;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
   }
   .footer-brand {
@@ -1281,7 +1281,7 @@
       height: 16px;
     }
     .detail-label {
-      font-size: 9px;
+      font-size: 12px;
     }
     .detail-value {
       font-size: 12px;
@@ -1306,7 +1306,7 @@
       font-size: 12px;
     }
     .feels-like {
-      font-size: 10px;
+      font-size: 12px;
     }
   }
   @media (max-width: 1023px) {
@@ -1344,7 +1344,7 @@
       height: 28px;
     }
     .detail-value {
-      font-size: 11px;
+      font-size: 12px;
     }
     .location-name {
       font-size: 23px;
@@ -1354,7 +1354,7 @@
       gap: 4px;
     }
     .save-city-btn span {
-      font-size: 11px;
+      font-size: 12px;
     }
     .forecast-item {
       padding: 10px 6px;
@@ -1416,7 +1416,7 @@
       font-size: 14px;
     }
     .feels-like {
-      font-size: 11px;
+      font-size: 12px;
     }
     .weather-details-grid {
       display: grid;
@@ -1480,11 +1480,11 @@
       padding-top: 4px;
     }
     .condition {
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.8;
     }
     .feels-like {
-      font-size: 10px;
+      font-size: 12px;
       line-height: 1.8;
     }
     .condition-copy {
@@ -1502,7 +1502,7 @@
       font-size: 12px;
     }
     .sun-time {
-      font-size: 10px;
+      font-size: 12px;
       gap: 5px;
     }
     .sun-time-label {
@@ -1562,7 +1562,7 @@
       font-size: 14px;
     }
     .forecast-date small {
-      font-size: 10px;
+      font-size: 12px;
       margin-top: 2px;
     }
     .forecast-icon {
@@ -1627,7 +1627,7 @@
     .app-footer {
       justify-content: center;
       text-align: center;
-      font-size: 10px;
+      font-size: 12px;
     }
     .error-content {
       padding: 20px 12px;
@@ -1662,7 +1662,7 @@
       height: 28px;
     }
     .detail-value {
-      font-size: 11px;
+      font-size: 12px;
     }
     .forecast-item {
       grid-template-columns: 50px 28px 38px minmax(0, 1fr);

@@ -18,7 +18,7 @@ export function Header({ unit, onUnit, theme, onTheme }) {
                 type="button"
                 className={`unit-option ${unit === value ? 'is-active' : ''}`}
                 aria-pressed={unit === value}
-                aria-label={value === 'C' ? 'Use Celsius' : 'Use Fahrenheit'}
+                aria-label={value === 'C' ? '°C, use Celsius' : '°F, use Fahrenheit'}
                 onClick={() => onUnit(value)}
               >
                 {'\u00b0'}

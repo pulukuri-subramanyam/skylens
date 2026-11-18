@@ -34,6 +34,12 @@ test('rejects methods, inherited route names, bad coordinates and cross-site cal
     for (const [method, query, headers, code] of [
       ['POST', {}, {}, 405],
       ['GET', { type: 'constructor' }, {}, 400],
+      ...['current', 'hourly', 'daily'].map((type) => [
+        'GET',
+        { type, lat: '20', lon: '10' },
+        {},
+        400,
+      ]),
       ['GET', { type: 'air', lat: '91', lon: '20' }, {}, 400],
       ['GET', { type: 'geocode', q: ['one', 'two'] }, {}, 400],
       ['GET', { type: 'air', lat: '20', lon: '10' }, { 'sec-fetch-site': 'cross-site' }, 403],

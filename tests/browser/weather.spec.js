@@ -18,7 +18,7 @@ test('keyboard suggestions select exact places; units and all forecast days work
   await input.press('Enter');
   await expect(page.locator('#locationName')).toHaveText('Nandyal, Andhra Pradesh');
   await expect(page.locator('#currentTemp')).toHaveText('28°C');
-  await page.getByRole('button', { name: 'Use Fahrenheit' }).click();
+  await page.getByRole('button', { name: '°F, use Fahrenheit' }).click();
   await expect(page.locator('#currentTemp')).toHaveText('82°F');
   for (let i = 0; i < 7; i++) {
     await page.locator('.forecast-item').nth(i).click();

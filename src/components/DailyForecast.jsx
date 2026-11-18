@@ -62,7 +62,7 @@ export const DailyForecast = memo(function DailyForecast({
                   onSelect(entry.date);
                 }
               }}
-              aria-label={`${name}, ${label}. ${day.condition.text}. Low ${formatTemperature(day.mintemp_c, unit)}, high ${formatTemperature(day.maxtemp_c, unit)} ${unit}.`}
+              aria-description={`${day.condition.text}. Temperatures in °${unit}; low then high, followed by rain chance.`}
               className={`forecast-item ${index === 0 ? 'is-today' : ''} ${index === 0 && selectedDate == null ? 'is-default' : ''} ${selectedDate === entry.date ? 'is-selected' : ''}`}
             >
               <div className="forecast-date">
