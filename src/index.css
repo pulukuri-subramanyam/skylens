@@ -1464,20 +1464,20 @@
     }
     .temperature-section {
       margin: 28px 0;
-      gap: 10px;
+      gap: 8px;
     }
     .weather-icon-container {
-      flex-basis: 62px;
+      flex-basis: 52px;
     }
     .weather-icon {
-      width: 62px;
-      height: 62px;
+      width: 52px;
+      height: 52px;
     }
     .temperature-number {
-      font-size: 72px;
+      font-size: 64px;
     }
     .temperature-degree {
-      font-size: 24px;
+      font-size: 22px;
       padding-top: 4px;
     }
     .condition {
@@ -1489,7 +1489,10 @@
       line-height: 1.8;
     }
     .condition-copy {
-      padding-left: 12px;
+      padding-left: 10px;
+    }
+    .today-range {
+      white-space: nowrap;
     }
     .weather-details-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1635,24 +1638,8 @@
     }
   }
   @media (max-width: 359px) {
-    .temperature-section {
-      gap: 6px;
-    }
-    .weather-icon-container {
-      flex-basis: 46px;
-    }
-    .weather-icon {
-      width: 46px;
-      height: 46px;
-    }
-    .temperature-number {
-      font-size: 64px;
-    }
-    .temperature-degree {
-      font-size: 20px;
-    }
-    .condition-copy {
-      padding-left: 8px;
+    .today-range {
+      white-space: normal;
     }
     .detail-item {
       padding: 7px;
