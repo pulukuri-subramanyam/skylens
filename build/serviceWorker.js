@@ -9,22 +9,22 @@ export function serviceWorkerPlugin() {
       const assets = Object.keys(bundle)
         .filter((name) => /\.(?:js|css|woff2)$/.test(name))
         .map((name) => '/' + name);
-      // The manifest is cached too; refresh installed shells when its colours change.
-      const manifest = readFileSync(new URL('../public/site.webmanifest', import.meta.url));
-      const revision = createHash('sha256')
-        .update(assets.join(','))
-        .update(manifest)
-        .digest('hex')
-        .slice(0, 12);
-      const shell = [
+      const staticShell = [
         '/',
         '/index.html',
         '/favicon.svg',
         '/site.webmanifest',
-        '/assets/fonts/inter-variable.woff2',
         '/assets/fonts/plus-jakarta-sans-latin.woff2',
-        ...assets,
       ];
+      // The manifest is cached too; refresh installed shells when its colours change.
+      const manifest = readFileSync(new URL('../public/site.webmanifest', import.meta.url));
+      const revision = createHash('sha256')
+        .update(assets.join(','))
+        .update(JSON.stringify(staticShell))
+        .update(manifest)
+        .digest('hex')
+        .slice(0, 12);
+      const shell = [...staticShell, ...assets];
       this.emitFile({
         type: 'asset',
         fileName: 'sw.js',

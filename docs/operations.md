@@ -56,6 +56,6 @@ Malformed core weather responses are rejected. Missing optional metrics render `
 
 The dashboard retains its layout. Keyboard users have a skip link, visible focus states, operable suggestions/forecast controls and screen-reader chart readings. Light-theme text controls use a slightly darker teal to meet contrast thresholds. Automated accessibility tests do not replace manual screen-reader and device testing.
 
-Background animations pause in hidden tabs and continue respecting reduced-motion preferences. Obsolete overridden metric hover rules were removed. Broader CSS restructuring is deliberately deferred until individual changes can be verified against the current design.
+The page background is static. Chart, loading and reading-update animations respect reduced-motion preferences; loading indicators pause while the page is hidden. Broader CSS restructuring is deferred until individual changes can be verified against the current design.
 
 The GitHub and LinkedIn footer logos use inline SVG artwork from Font Awesome Free 6.4.0. Attribution and the original license are retained in `public/assets/licenses/font-awesome.txt`. These drawings are bundled with the app code and cached with the app shell. No icon font, icon stylesheet, Font Awesome package or icon CDN is required.

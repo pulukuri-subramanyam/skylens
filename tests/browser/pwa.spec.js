@@ -12,6 +12,17 @@ test('installed app shell reloads offline with cached weather and a clear stale 
   await expect
     .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
     .toBe(true);
+  const cachedFonts = await page.evaluate(async () => {
+    const paths = [];
+    for (const key of await caches.keys()) {
+      if (!key.startsWith('skylens-react-')) continue;
+      const cache = await caches.open(key);
+      for (const request of await cache.keys()) paths.push(new URL(request.url).pathname);
+    }
+    return paths.filter((path) => path.includes('/assets/fonts/'));
+  });
+  expect(cachedFonts).toContain('/assets/fonts/plus-jakarta-sans-latin.woff2');
+  expect(cachedFonts).not.toContain('/assets/fonts/inter-variable.woff2');
   state.failWeather = true;
   await context.setOffline(true);
   await page.reload();
